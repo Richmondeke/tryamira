@@ -10,6 +10,8 @@ export default function LeadsPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [selectedLead, setSelectedLead] = useState<any | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
   
   // Real Data State
   const [allLeads, setAllLeads] = useState<any[]>([]);
@@ -22,22 +24,30 @@ export default function LeadsPage() {
 
   const fetchLeads = async () => {
     setIsLoading(true);
-    // Assuming workspace_id is handled, we'll fetch all leads for now
-    const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: false });
     
-    if (error) {
-      console.error('Error fetching leads:', error);
-      // Fallback to mock data if no keys are provided
-      setAllLeads([
-        { name: 'Sarah Smith', email: 'sarah.s@example.com', phone: '+1 (555) 0123', status: 'hot', score: 98 },
-        { name: 'Michael Chen', email: 'michael.c@example.com', phone: '+1 (555) 0124', status: 'warm', score: 74 },
-        { name: 'Elena Rodriguez', email: 'elena.r@example.com', phone: '+1 (555) 0125', status: 'cold', score: 32 },
-        { name: 'James Wilson', email: 'j.wilson@example.com', phone: '+1 (555) 0126', status: 'warm', score: 65 }
-      ]);
-    } else {
-      setAllLeads(data || []);
+    // Check if we are running with a dummy supabase URL
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      console.warn('Supabase URL not configured. Showing empty state.');
+      setAllLeads([]);
+      setIsLoading(false);
+      return;
     }
-    setIsLoading(false);
+
+    try {
+      const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching leads:', error);
+        setAllLeads([]); // Fallback to empty state
+      } else {
+        setAllLeads(data || []);
+      }
+    } catch (err) {
+      console.error('Exception while fetching leads:', err);
+      setAllLeads([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const filteredLeads = allLeads.filter(lead => 
@@ -71,13 +81,46 @@ export default function LeadsPage() {
 
     if (error) {
       setToast({ message: 'Error adding lead. Check Supabase keys.', type: 'error' });
-      // For demo purposes if keys aren't set, just append locally
-      setAllLeads(prev => [{ name, email, phone: '', status: 'new', score: 50 }, ...prev]);
       setShowAddModal(false);
     } else {
       setToast({ message: 'New lead added successfully to Supabase.', type: 'success' });
       setShowAddModal(false);
       fetchLeads(); // Refresh from DB
+    }
+  };
+
+  const handleUpdateLead = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!selectedLead) return;
+    setIsUpdating(true);
+    const formData = new FormData(e.currentTarget);
+    const updates = {
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      phone: formData.get('phone') as string,
+      status: formData.get('status') as string,
+    };
+
+    const { error } = await supabase.from('leads').update(updates).eq('id', selectedLead.id);
+    if (error) {
+      setToast({ message: 'Error updating lead.', type: 'error' });
+    } else {
+      setToast({ message: 'Lead updated successfully.', type: 'success' });
+      setSelectedLead(null);
+      fetchLeads();
+    }
+    setIsUpdating(false);
+  };
+
+  const handleDeleteLead = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this lead?")) return;
+    const { error } = await supabase.from('leads').delete().eq('id', id);
+    if (error) {
+      setToast({ message: 'Error deleting lead.', type: 'error' });
+    } else {
+      setToast({ message: 'Lead deleted.', type: 'success' });
+      setSelectedLead(null);
+      fetchLeads();
     }
   };
 
@@ -95,7 +138,7 @@ export default function LeadsPage() {
             <label style={{ display: 'block', fontSize: '12px', color: 'var(--stripe-label)', marginBottom: '4px' }}>Email Address</label>
             <input name="email" type="email" required style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px' }} />
           </div>
-          <button type="submit" style={{ marginTop: '1rem', padding: '0.75rem', backgroundColor: 'var(--stripe-purple)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>Save Lead</button>
+          <button type="submit" style={{ marginTop: '1rem', padding: '0.75rem', backgroundColor: '#6366f1', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>Save Lead</button>
         </form>
       </Modal>
 
@@ -108,7 +151,7 @@ export default function LeadsPage() {
           <button onClick={handleExport} disabled={isExporting} style={{ backgroundColor: '#ffffff', color: 'var(--stripe-navy)', border: '1px solid var(--stripe-border)', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '12px', fontWeight: 500, cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
             {isExporting ? 'Exporting...' : 'Export CSV'}
           </button>
-          <button onClick={() => setShowAddModal(true)} style={{ backgroundColor: 'var(--stripe-purple)', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '12px', fontWeight: 500, cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+          <button onClick={() => setShowAddModal(true)} style={{ backgroundColor: '#6366f1', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '12px', fontWeight: 500, cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', transition: 'background 0.2s' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4f46e5'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#6366f1'}>
             + Add Lead
           </button>
         </div>
@@ -142,7 +185,7 @@ export default function LeadsPage() {
                 </td>
               </tr>
             ) : filteredLeads.map((lead, i) => (
-              <tr key={i} style={{ borderBottom: '1px solid var(--stripe-border)' }}>
+              <tr key={i} onClick={() => setSelectedLead(lead)} style={{ borderBottom: '1px solid var(--stripe-border)', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
                 <td style={{ padding: '1rem 1.5rem', fontSize: '12px', color: 'var(--stripe-navy)', fontWeight: 500 }}>{lead.name}</td>
                 <td style={{ padding: '1rem 1.5rem', fontSize: '12px', color: 'var(--stripe-body)' }}>{lead.email}</td>
                 <td style={{ padding: '1rem 1.5rem', fontSize: '12px', color: 'var(--stripe-body)' }}>{lead.phone || '-'}</td>
@@ -166,6 +209,55 @@ export default function LeadsPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Side Panel Overlay */}
+      {selectedLead && (
+        <>
+          <div 
+            onClick={() => setSelectedLead(null)}
+            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.3)', zIndex: 999 }} 
+          />
+          <div style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: '400px', backgroundColor: '#fff', boxShadow: '-4px 0 24px rgba(0,0,0,0.1)', zIndex: 1000, padding: '2rem', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+              <h2 style={{ fontSize: '18px', margin: 0, color: 'var(--stripe-navy)', fontWeight: 500 }}>Lead Details</h2>
+              <button onClick={() => setSelectedLead(null)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--stripe-muted)' }}>&times;</button>
+            </div>
+
+            <form onSubmit={handleUpdateLead} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', color: 'var(--stripe-label)', marginBottom: '4px' }}>Full Name</label>
+                <input name="name" type="text" defaultValue={selectedLead.name} required style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', color: 'var(--stripe-label)', marginBottom: '4px' }}>Email Address</label>
+                <input name="email" type="email" defaultValue={selectedLead.email} required style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', color: 'var(--stripe-label)', marginBottom: '4px' }}>Phone Number</label>
+                <input name="phone" type="text" defaultValue={selectedLead.phone || ''} style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', color: 'var(--stripe-label)', marginBottom: '4px' }}>Status</label>
+                <select name="status" defaultValue={selectedLead.status?.toLowerCase()} style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px' }}>
+                  <option value="hot">Hot</option>
+                  <option value="warm">Warm</option>
+                  <option value="new">New</option>
+                  <option value="cold">Cold</option>
+                </select>
+              </div>
+
+              <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem', borderTop: '1px solid var(--stripe-border)', paddingTop: '1.5rem' }}>
+                <button type="submit" disabled={isUpdating} style={{ flex: 1, padding: '0.75rem', backgroundColor: '#6366f1', color: '#fff', border: 'none', borderRadius: '4px', cursor: isUpdating ? 'not-allowed' : 'pointer', fontWeight: 500 }}>
+                  {isUpdating ? 'Saving...' : 'Save Changes'}
+                </button>
+                <button type="button" onClick={() => handleDeleteLead(selectedLead.id)} style={{ padding: '0.75rem', backgroundColor: '#fff', color: '#d92d20', border: '1px solid #d92d20', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>
+                  Delete
+                </button>
+              </div>
+            </form>
+          </div>
+        </>
+      )}
     </div>
   );
 }

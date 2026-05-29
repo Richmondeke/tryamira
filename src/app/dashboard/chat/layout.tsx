@@ -7,6 +7,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
   const pathname = usePathname();
 
   const tabs = [
+    { name: 'Phone Calls', href: '/dashboard/chat/phone' },
     { name: 'Inbox', href: '/dashboard/chat/inbox' },
     { name: 'WhatsApp', href: '/dashboard/chat/whatsapp' },
     { name: 'Email Agent', href: '/dashboard/chat/email' },

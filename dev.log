@@ -2,9 +2,8 @@
 > tryamira@0.1.0 dev
 > next dev
 
-⚠ Port 3000 is in use by process 6100
-8174, using available port 3003 instead.
 ▲ Next.js 16.2.6 (Turbopack)
-- Local:         http://localhost:3003
-- Network:       http://192.168.8.100:3003
-✓ Ready in 1186ms
+- Local:         http://localhost:3000
+- Network:       http://192.168.8.100:3000
+- Environments: .env.local
+✓ Ready in 1620ms

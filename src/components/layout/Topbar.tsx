@@ -3,13 +3,38 @@ import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import styles from './Topbar.module.css';
 
-export function Topbar() {
+export function Topbar({ toggleMobileMenu }: { toggleMobileMenu?: () => void }) {
   const pathname = usePathname();
   const [theme, setTheme] = useState('light');
   
   const getPageTitle = () => {
     if (pathname === '/') return 'Overview';
     if (pathname === '/leads') return 'Leads';
+    
+    const parts = pathname.split('/').filter(Boolean);
+    if (parts.length >= 2 && parts[0] === 'dashboard') {
+      const section = parts[1];
+      if (section === 'ai-agent') return 'AI Agent';
+      if (section === 'webchat-setup') return 'Webchat Setup';
+      
+      // Clean up the section name
+      const formattedSection = section.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+      
+      // If there's a 3rd part to the URL
+      if (parts.length >= 3) {
+        const subSection = parts[2];
+        // If the subsection is a long string (like a UUID) or a number, ignore it
+        if (subSection.length > 15 || !isNaN(Number(subSection))) {
+          return formattedSection;
+        }
+        // Otherwise, format and append the subsection (e.g. /integrations/apps -> "Integrations Apps")
+        const formattedSub = subSection.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        return `${formattedSection} - ${formattedSub}`;
+      }
+      
+      return formattedSection;
+    }
+    
     return pathname.substring(1).charAt(0).toUpperCase() + pathname.substring(2);
   };
 
@@ -23,7 +48,33 @@ export function Topbar() {
 
   return (
     <header className={styles.topbar}>
-      <h1 className={styles.title}>{getPageTitle()}</h1>
+      <style dangerouslySetInnerHTML={{__html: `
+        .mobile-menu-btn {
+          display: none;
+          background: none;
+          border: none;
+          color: var(--stripe-navy);
+          cursor: pointer;
+          padding: 0;
+          margin-right: 1rem;
+        }
+        @media (max-width: 768px) {
+          .mobile-menu-btn {
+            display: flex;
+            align-items: center;
+          }
+        }
+      `}} />
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <button className="mobile-menu-btn" onClick={toggleMobileMenu}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <h1 className={styles.title}>{getPageTitle()}</h1>
+      </div>
       <div className={styles.actions}>
         <button className={styles.iconBtn}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>

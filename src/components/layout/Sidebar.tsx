@@ -36,7 +36,7 @@ const navItems: Record<string, NavItem[]> = {
   ]
 };
 
-export function Sidebar() {
+export function Sidebar({ closeMobileMenu }: { closeMobileMenu?: () => void }) {
   const pathname = usePathname();
   // Keep track of which sections are collapsed. By default, none are.
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
@@ -66,7 +66,7 @@ export function Sidebar() {
         padding: '0 1.5rem',
         borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
       }}>
-        <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }}>
+        <Link href="/dashboard" onClick={() => closeMobileMenu?.()} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }}>
           <img 
             src="https://framerusercontent.com/assets/Wo30Sktse9esY3HXGesSUG8i0o.png" 
             alt="Amira Logo" 
@@ -112,6 +112,7 @@ export function Sidebar() {
                         key={item.name} 
                         href={item.href} 
                         id={tourId}
+                        onClick={() => closeMobileMenu?.()}
                         style={{
                           display: 'flex',
                           alignItems: 'center',

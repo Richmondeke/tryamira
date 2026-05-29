@@ -1,114 +1,127 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { getAgents, createAgent } from '@/app/actions/agent';
 import Toast from '../../../components/ui/Toast';
 
-export default function AIAgentPage() {
+export default function AgentDirectoryPage() {
+  const router = useRouter();
+  const [agents, setAgents] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [files, setFiles] = useState<string[]>(['Pricing.pdf']);
 
-  const handleSave = () => {
-    setToast('Agent persona updated successfully.');
-  };
+  useEffect(() => {
+    async function fetchAgents() {
+      const res = await getAgents();
+      if (res.success && res.data) {
+        setAgents(res.data);
+      }
+      setIsLoading(false);
+    }
+    fetchAgents();
+  }, []);
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      setFiles([...files, e.dataTransfer.files[0].name]);
+  const handleCreateAgent = async () => {
+    setIsCreating(true);
+    const res = await createAgent('New Agent');
+    if (res.success && res.data) {
+      router.push(`/dashboard/ai-agent/${res.data.id}`);
+    } else {
+      setToast('Failed to create a new agent.');
+      setIsCreating(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div style={{ maxWidth: '1080px', margin: '0 auto', width: '100%', padding: '2rem', textAlign: 'center', color: 'var(--stripe-muted)' }}>
+        Loading agents...
+      </div>
+    );
+  }
 
   return (
     <div style={{ maxWidth: '1080px', margin: '0 auto', width: '100%' }}>
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}
       
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div>
-          <h1 style={{ fontSize: '20px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.25rem 0' }}>AI Agent Setup</h1>
-          <p style={{ color: 'var(--stripe-body)', fontSize: '12px', margin: 0 }}>Configure how your agent behaves and what it knows.</p>
+          <h1 style={{ fontSize: '20px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.25rem 0' }}>AI Agents</h1>
+          <p style={{ color: 'var(--stripe-body)', fontSize: '13px', margin: 0 }}>Manage your specialized AI employees.</p>
         </div>
-        <button onClick={handleSave} style={{ backgroundColor: 'var(--stripe-purple)', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '12px', fontWeight: 500, cursor: 'pointer', boxShadow: 'var(--stripe-shadow-action)' }}>Save Changes</button>
+        <button 
+          onClick={handleCreateAgent} 
+          disabled={isCreating}
+          style={{ 
+            backgroundColor: 'var(--stripe-purple)', 
+            color: '#ffffff', 
+            border: 'none', 
+            borderRadius: '4px', 
+            padding: '0.5rem 1.25rem', 
+            fontSize: '13px', 
+            fontWeight: 500, 
+            cursor: isCreating ? 'wait' : 'pointer', 
+            boxShadow: 'var(--stripe-shadow-action)',
+            opacity: isCreating ? 0.7 : 1
+          }}>
+          {isCreating ? 'Creating...' : '+ Create New Agent'}
+        </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-          
-          <div style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '1.25rem', boxShadow: 'var(--stripe-shadow-ambient)' }}>
-            <h3 style={{ fontSize: '12px', color: 'var(--stripe-navy)', margin: '0 0 1.5rem 0', fontWeight: 500 }}>System Prompt</h3>
-            <p style={{ fontSize: '12px', color: 'var(--stripe-body)', marginBottom: '1rem' }}>Tell the AI who it is and how it should respond.</p>
-            <textarea 
-              style={{ width: '100%', height: '150px', padding: '1rem', border: '1px solid var(--stripe-border)', borderRadius: '6px', fontSize: '12px', color: 'var(--stripe-navy)', outline: 'none', resize: 'vertical' }}
-              defaultValue="You are Amira, a helpful real estate assistant. Always be polite, ask for the user's budget, and try to schedule a viewing."
-            />
-          </div>
-
-          <div style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '1.25rem', boxShadow: 'var(--stripe-shadow-ambient)' }}>
-            <h3 style={{ fontSize: '12px', color: 'var(--stripe-navy)', margin: '0 0 1.5rem 0', fontWeight: 500 }}>Knowledge Base</h3>
-            <p style={{ fontSize: '12px', color: 'var(--stripe-body)', marginBottom: '1rem' }}>Upload PDFs, TXTs, or link your website for the AI to learn from.</p>
-            
+      {agents.length === 0 ? (
+        <div style={{ padding: '3rem', backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', textAlign: 'center', boxShadow: 'var(--stripe-shadow-ambient)' }}>
+          <h3 style={{ fontSize: '14px', color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0' }}>No Agents Yet</h3>
+          <p style={{ fontSize: '13px', color: 'var(--stripe-body)', marginBottom: '1.5rem' }}>Create your first AI agent to start automating your workflows.</p>
+          <button 
+            onClick={handleCreateAgent}
+            disabled={isCreating}
+            style={{ backgroundColor: '#fff', border: '1px solid var(--stripe-border)', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '13px', cursor: 'pointer', color: 'var(--stripe-navy)', fontWeight: 500 }}
+          >
+            Create Agent
+          </button>
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+          {agents.map((agent, idx) => (
             <div 
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
+              key={idx} 
+              onClick={() => router.push(`/dashboard/ai-agent/${agent.id}`)}
               style={{ 
-                border: isDragging ? '2px dashed var(--stripe-purple)' : '1px dashed var(--stripe-border)', 
-                backgroundColor: isDragging ? 'rgba(83,58,253,0.05)' : '#f9fafb', 
+                backgroundColor: '#ffffff', 
+                border: '1px solid var(--stripe-border)', 
                 borderRadius: '6px', 
-                padding: '3rem', 
-                textAlign: 'center', 
+                padding: '1.5rem', 
+                boxShadow: 'var(--stripe-shadow-ambient)',
                 cursor: 'pointer',
-                transition: 'all 0.2s'
+                transition: 'transform 0.1s, box-shadow 0.1s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = 'var(--stripe-shadow-action)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'var(--stripe-shadow-ambient)';
               }}
             >
-              <div style={{ color: 'var(--stripe-purple)', fontSize: '20px', marginBottom: '0.5rem' }}>+</div>
-              <div style={{ fontSize: '12px', color: 'var(--stripe-navy)', fontWeight: 500 }}>Click or drag file to upload</div>
-              <div style={{ fontSize: '12px', color: 'var(--stripe-muted)', marginTop: '0.25rem' }}>PDF, DOCX, TXT (Max 10MB)</div>
-            </div>
-
-            {files.length > 0 && (
-              <div style={{ marginTop: '1.5rem' }}>
-                {files.map((file, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', backgroundColor: '#f6f9fc', borderRadius: '4px', marginBottom: '0.5rem' }}>
-                    <span style={{ color: 'var(--stripe-purple)' }}>📄</span>
-                    <span style={{ fontSize: '12px', color: 'var(--stripe-navy)', flex: 1 }}>{file}</span>
-                    <span style={{ fontSize: '12px', color: 'var(--stripe-success-text)', backgroundColor: 'rgba(21,190,83,0.1)', padding: '2px 6px', borderRadius: '4px' }}>Ready</span>
-                  </div>
-                ))}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(83,58,253,0.1)', color: 'var(--stripe-purple)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+                  🤖
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '14px', color: 'var(--stripe-navy)', margin: '0 0 0.25rem 0', fontWeight: 500 }}>{agent.name}</h3>
+                  <div style={{ fontSize: '12px', color: 'var(--stripe-muted)' }}>{agent.config?.attachedWorkflows?.length || 0} Workflows</div>
+                </div>
               </div>
-            )}
-          </div>
+              <p style={{ fontSize: '12px', color: 'var(--stripe-body)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                {agent.config?.systemPrompt || 'No system prompt configured.'}
+              </p>
+            </div>
+          ))}
         </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-          <div style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '1.25rem', boxShadow: 'var(--stripe-shadow-ambient)' }}>
-            <h3 style={{ fontSize: '12px', color: 'var(--stripe-navy)', margin: '0 0 1.5rem 0', fontWeight: 500 }}>Personality</h3>
-            
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', cursor: 'pointer' }}>
-              <input type="checkbox" defaultChecked style={{ width: '16px', height: '16px', accentColor: 'var(--stripe-purple)' }} />
-              <span style={{ fontSize: '12px', color: 'var(--stripe-navy)' }}>Use emojis naturally 😊</span>
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', cursor: 'pointer' }}>
-              <input type="checkbox" style={{ width: '16px', height: '16px', accentColor: 'var(--stripe-purple)' }} />
-              <span style={{ fontSize: '12px', color: 'var(--stripe-navy)' }}>Keep responses under 2 sentences</span>
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
-              <input type="checkbox" defaultChecked style={{ width: '16px', height: '16px', accentColor: 'var(--stripe-purple)' }} />
-              <span style={{ fontSize: '12px', color: 'var(--stripe-navy)' }}>Always capture email first</span>
-            </label>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
