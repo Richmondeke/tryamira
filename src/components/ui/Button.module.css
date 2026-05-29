@@ -22,6 +22,15 @@
 .primary:hover:not(:disabled) {
   background-color: var(--brand-primary-hover);
 }
+.secondary {
+  background-color: var(--bg-surface-hover);
+  color: var(--brand-primary);
+  border-color: transparent;
+}
+.secondary:hover:not(:disabled) {
+  background-color: var(--bg-surface);
+  border-color: var(--brand-primary);
+}
 .outline {
   background-color: transparent;
   border-color: var(--border-strong);
