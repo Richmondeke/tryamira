@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { createClient } from '../../utils/supabase/client';
+import AdCarousel from '../../components/ui/AdCarousel';
 
 // Helper to format timestamps to relative time (e.g. "10 mins ago")
 function getRelativeTime(timestamp: string) {
@@ -66,6 +67,15 @@ export default function OverviewPage() {
 
   return (
     <div style={{ maxWidth: '1080px', margin: '0 auto', width: '100%' }}>
+      {/* Ticker */}
+      <div style={{ width: '100%', backgroundColor: 'var(--stripe-navy)', color: '#fff', padding: '0.6rem 1rem', textAlign: 'center', fontSize: '13px', fontWeight: 500, borderRadius: '8px', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontFeatureSettings: '"ss01"' }}>
+        <span style={{ display: 'inline-block', width: '8px', height: '8px', backgroundColor: '#15be53', borderRadius: '50%', boxShadow: '0 0 8px #15be53' }} />
+        Amira V2.0 now live. Explore the new Omnichannel Inbox and improved A.I capabilities today!
+      </div>
+
+      {/* Ad Banner Carousel */}
+      <AdCarousel />
+
       <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 style={{ fontSize: '20px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', letterSpacing: '-0.64px', fontFeatureSettings: '"ss01"' }}>Welcome back, Ashley</h1>
