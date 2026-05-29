@@ -1,0 +1,2424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Amira | Your A.I Powered Call Center</title>
+  <meta name="description" content="Amira does the work of 1000 Call Center Agents, answering calls like a real human. Streamline customer interactions, reduce operational costs, and boost productivity with smart, scalable, and seamless solutions." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Paytone+One&family=Poppins:wght@400;500;600;700&family=Quantico:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/png" href="https://framerusercontent.com/images/s6PTI0917GyaZC8qM5Tzk1HIAA.png" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; width: 100%; overflow-x: hidden; scroll-behavior: smooth; }
+    body {
+      font-family: 'Poppins', system-ui, sans-serif;
+      background-color: #0d0d0d;
+      color: #cccccc;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* Page container styling */
+    .container {
+      background-color: #0d0d0d;
+      color: #cccccc;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Subtle Grid Background style */
+    .gridBg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+      background-size: 40px 40px;
+      background-position: center top;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Top Glow */
+    .glowTop {
+      position: absolute;
+      top: -300px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1000px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(0, 82, 204, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* --- NAV BAR --- */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(13, 13, 13, 0.8);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .navContainer {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.25rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .navLogo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+    }
+
+    .navLogoImg {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+    }
+
+    .navLogoText {
+      font-family: 'Paytone One', sans-serif;
+      font-size: 1.25rem;
+      color: #ffffff;
+      font-weight: 400;
+    }
+
+    .navLinks {
+      display: flex;
+      align-items: center;
+      gap: 2.25rem;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .navLink {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .navLink:hover {
+      color: #ffffff;
+    }
+
+    .navActions {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    .navSignIn {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .navSignIn:hover {
+      color: #ffffff;
+    }
+
+    .navSecondaryBtn {
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: transparent;
+      padding: 0.5rem 1.25rem;
+      border-radius: 100px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .navSecondaryBtn:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .navCta {
+      background: #0052cc;
+      color: #ffffff;
+      padding: 0.5rem 1.25rem;
+      border-radius: 100px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0, 82, 204, 0.2);
+    }
+
+    .navCta:hover {
+      background: #0065ff;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(0, 82, 204, 0.35);
+    }
+
+    /* --- HERO --- */
+    .hero {
+      position: relative;
+      padding: 9rem 2rem 5rem;
+      z-index: 2;
+    }
+
+    .heroContainer {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .heroBadge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.375rem 1rem 0.375rem 0.5rem;
+      border-radius: 100px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.03);
+      margin-bottom: 2rem;
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    .heroBadgeHighlight {
+      background: #ffffff;
+      color: #0d0d0d;
+      font-size: 0.625rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      padding: 0.15rem 0.5rem;
+      border-radius: 100px;
+    }
+
+    .heroBadgeText {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .heroTitle {
+      font-family: 'Paytone One', sans-serif;
+      font-size: clamp(2.5rem, 6.5vw, 5.25rem);
+      color: #ffffff;
+      margin: 0 0 1.5rem;
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      max-width: 900px;
+      animation: fadeInUp 0.6s ease-out 0.1s both;
+    }
+
+    .textAccent {
+      color: #0052cc;
+      background: linear-gradient(135deg, #0065ff 0%, #0047b3 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .heroSubtitle {
+      font-size: clamp(1.1rem, 2vw, 1.25rem);
+      color: rgba(255, 255, 255, 0.5);
+      max-width: 680px;
+      margin: 0 0 2.5rem;
+      line-height: 1.6;
+      animation: fadeInUp 0.6s ease-out 0.2s both;
+    }
+
+    .heroCtas {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+      animation: fadeInUp 0.6s ease-out 0.3s both;
+    }
+
+    .heroCtaPrimary {
+      background: #0052cc;
+      color: #ffffff;
+      padding: 0.875rem 2.25rem;
+      border-radius: 100px;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .heroCtaPrimary:hover {
+      background: #0065ff;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 82, 204, 0.4);
+    }
+
+    .heroCtaSecondary {
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: transparent;
+      padding: 0.875rem 2.25rem;
+      border-radius: 100px;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .heroCtaSecondary:hover {
+      border-color: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .metaSubtext {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.3);
+      margin: 0 0 4rem;
+      animation: fadeInUp 0.6s ease-out 0.35s both;
+    }
+
+    /* --- DASHBOARD MOCKUP --- */
+    .dashboardContainer {
+      width: 100%;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(20, 20, 20, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      overflow: hidden;
+      box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      animation: fadeInUp 0.8s ease-out 0.4s both;
+      text-align: left;
+    }
+
+    .dashboardHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(10, 10, 10, 0.4);
+    }
+
+    .headerDots {
+      display: flex;
+      gap: 0.375rem;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .headerDots .dot:nth-child(1) { background: #ff5f56; }
+    .headerDots .dot:nth-child(2) { background: #ffbd2e; }
+    .headerDots .dot:nth-child(3) { background: #27c93f; }
+
+    .headerTitle {
+      font-family: 'Quantico', monospace;
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.4);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .headerStatus {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      color: #27c93f;
+      font-weight: 500;
+    }
+
+    .pulseIndicator {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #27c93f;
+      box-shadow: 0 0 0 rgba(39, 201, 63, 0.4);
+      animation: pulse 2s infinite;
+    }
+
+    .dashboardBody {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: 400px;
+    }
+
+    .dashSidebar {
+      background: rgba(10, 10, 10, 0.5);
+      border-right: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 1.5rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .sidebarItem {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.625rem 0.875rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .sidebarItem:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: #ffffff;
+    }
+
+    .sidebarItemActive {
+      background: rgba(0, 82, 204, 0.1);
+      color: #4D9AFF;
+      border-left: 2px solid #0052cc;
+    }
+
+    .sidebarIcon {
+      font-size: 1rem;
+    }
+
+    .dashMain {
+      padding: 1.5rem;
+      background: rgba(15, 15, 15, 0.4);
+    }
+
+    .dashGrid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 1.5rem;
+      height: 100%;
+    }
+
+    .consoleCard, .crmCard {
+      background: rgba(24, 24, 24, 0.5);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .cardHeader {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .cardHeader h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin: 0;
+      color: #ffffff;
+    }
+
+    /* Console details */
+    .transcriptBox {
+      flex: 1;
+      padding: 1.25rem;
+      background: rgba(10, 10, 10, 0.3);
+      min-height: 280px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .emptyTranscript {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      text-align: center;
+    }
+
+    .emptyIcon {
+      font-size: 2.5rem;
+      margin-bottom: 0.75rem;
+      opacity: 0.3;
+    }
+
+    .emptyTranscript p {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.4);
+      margin: 0 0 1.25rem;
+      max-width: 280px;
+      line-height: 1.5;
+    }
+
+    .simulateBtn {
+      background: #0052cc;
+      color: #ffffff;
+      border: none;
+      padding: 0.625rem 1.25rem;
+      border-radius: 100px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .simulateBtn:hover {
+      background: #0065ff;
+      transform: scale(1.02);
+    }
+
+    .transcriptLines {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .transcriptBubble {
+      max-width: 85%;
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    .bubbleAi {
+      background: rgba(0, 82, 204, 0.15);
+      border: 1px solid rgba(0, 82, 204, 0.2);
+      align-self: flex-start;
+      color: #e2e8f0;
+    }
+
+    .bubbleUser {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      align-self: flex-end;
+      color: #cbd5e1;
+    }
+
+    .bubbleSender {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-bottom: 0.25rem;
+      opacity: 0.5;
+    }
+
+    .badgeLive {
+      background: rgba(39, 201, 63, 0.15);
+      color: #27c93f;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 100px;
+      text-transform: uppercase;
+    }
+
+    .badgeCalling {
+      background: rgba(255, 189, 46, 0.15);
+      color: #ffbd2e;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 100px;
+      text-transform: uppercase;
+    }
+
+    .badgeEnded {
+      background: rgba(255, 95, 86, 0.15);
+      color: #ff5f56;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 100px;
+      text-transform: uppercase;
+    }
+
+    .badgeIdle {
+      background: rgba(255, 255, 255, 0.05);
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 100px;
+      text-transform: uppercase;
+    }
+
+    .consoleFooter {
+      padding: 0.75rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      text-align: center;
+    }
+
+    .resetBtn {
+      background: transparent;
+      color: rgba(255, 255, 255, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 0.4rem 1rem;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .resetBtn:hover {
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .dialingState {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-top: 2px solid #0052cc;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    /* Typing Indicator Animation */
+    .typingState {
+      display: flex;
+      gap: 4px;
+      align-self: flex-start;
+      padding: 0.5rem 1rem;
+      background: rgba(0, 82, 204, 0.08);
+      border-radius: 100px;
+      width: fit-content;
+    }
+
+    .typingState span {
+      width: 6px;
+      height: 6px;
+      background-color: rgba(255, 255, 255, 0.4);
+      border-radius: 50%;
+      animation: bounce 1.4s infinite ease-in-out both;
+    }
+
+    .typingState span:nth-child(1) { animation-delay: -0.32s; }
+    .typingState span:nth-child(2) { animation-delay: -0.16s; }
+
+    /* Leads feed panel */
+    .crmSyncBadge {
+      font-size: 0.7rem;
+      color: #27c93f;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .crmSyncBadge::before {
+      content: '';
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #27c93f;
+    }
+
+    .leadsList {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 1rem;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .leadItem {
+      padding: 0.875rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .leadName {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 0.15rem;
+    }
+
+    .leadPhone {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .leadMeta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.25rem;
+    }
+
+    .leadStatus {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.1rem 0.4rem;
+      border-radius: 100px;
+    }
+
+    .statusQual {
+      background: rgba(39, 201, 63, 0.12);
+      color: #27c93f;
+    }
+
+    .statusBook {
+      background: rgba(0, 82, 204, 0.15);
+      color: #4D9AFF;
+    }
+
+    .leadTime {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.35);
+    }
+
+    /* --- TRUSTED LOGOS --- */
+    .trusted {
+      padding: 3rem 2rem;
+      background: #0d0d0d;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .trustedContainer {
+      max-width: 1100px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .trustedLabel {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: rgba(255, 255, 255, 0.3);
+      margin-bottom: 1.75rem;
+      font-weight: 600;
+    }
+
+    .trustedLogos {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3.5rem;
+      flex-wrap: wrap;
+    }
+
+    .trustedLogo {
+      font-family: 'Paytone One', sans-serif;
+      font-size: 1.15rem;
+      color: rgba(255, 255, 255, 0.35);
+      letter-spacing: 0.02em;
+      font-weight: 400;
+    }
+
+    /* --- DETAILED SPLIT ROW SECTION --- */
+    .splitFeatures {
+      padding: 7rem 2rem;
+      background: #0d0d0d;
+    }
+
+    .splitContainer {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 7rem;
+    }
+
+    .splitRow {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+
+    .rowInverse {
+      direction: rtl;
+    }
+
+    .rowInverse .splitTextCol {
+      direction: ltr;
+    }
+
+    .rowInverse .splitGraphicCol {
+      direction: ltr;
+    }
+
+    .splitTextCol {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .rowTag {
+      color: #0052cc;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.75rem;
+    }
+
+    .rowTitle {
+      font-family: 'Paytone One', sans-serif;
+      font-size: clamp(1.75rem, 3.2vw, 2.5rem);
+      color: #ffffff;
+      margin: 0 0 1rem;
+      line-height: 1.25;
+    }
+
+    .rowSubtitle {
+      font-size: 1rem;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    .rowList {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .rowList li {
+      font-size: 0.95rem;
+      color: rgba(255, 255, 255, 0.75);
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      line-height: 1.5;
+    }
+
+    .listCheck {
+      color: #0052cc;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .splitGraphicCol {
+      display: flex;
+      justify-content: center;
+    }
+
+    .graphicBox {
+      width: 100%;
+      max-width: 440px;
+      aspect-ratio: 1.2;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.015);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      padding: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Channels Graphics */
+    .channelWidget {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .channelItem {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .channelIconBg {
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      background: rgba(0, 82, 204, 0.15);
+      color: #4D9AFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .channelName {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .channelStatus {
+      font-size: 0.75rem;
+      color: #27c93f;
+    }
+
+    /* Knowledge Base Graphics */
+    .knowledgeWidget {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .knowledgeHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .uploadBtn {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+      border: none;
+      padding: 0.3rem 0.75rem;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .fileItem {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      font-size: 0.8rem;
+    }
+
+    .fileStatus {
+      color: #27c93f;
+      font-weight: 600;
+    }
+
+    /* Autopilot widget */
+    .autopilotWidget {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .autopilotTitle {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .activeCallList {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .activeCallItem {
+      display: flex;
+      align-items: center;
+      gap: 0.875rem;
+      padding: 0.875rem;
+      border-radius: 10px;
+      background: rgba(0, 82, 204, 0.05);
+      border: 1px solid rgba(0, 82, 204, 0.15);
+    }
+
+    .avatarMini {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0052cc, #0065ff);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .activeCallDetails {
+      flex: 1;
+    }
+
+    .activeCallNumber {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .activeCallProgress {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .liveBadgeMini {
+      font-size: 0.65rem;
+      color: #27c93f;
+      font-weight: 700;
+      text-transform: uppercase;
+      border: 1px solid rgba(39, 201, 63, 0.3);
+      padding: 0.15rem 0.35rem;
+      border-radius: 4px;
+    }
+
+    /* --- FEATURE BLOCK DEPLOYMENT --- */
+    .featureBlock {
+      padding: 5rem 2rem;
+      background: #111111;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      text-align: center;
+    }
+
+    .innerBlockCentered {
+      max-width: 700px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* --- ADVANTAGES CAPABILITIES GRID --- */
+    .capabilities {
+      padding: 7rem 2rem;
+      background: #0d0d0d;
+    }
+
+    .sectionHeaderCentered {
+      text-align: center;
+      margin-bottom: 4rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .sectionTag {
+      display: inline-flex;
+      padding: 0.375rem 1rem;
+      border-radius: 100px;
+      border: 1px solid rgba(0, 82, 204, 0.3);
+      background: rgba(0, 82, 204, 0.08);
+      color: #4D9AFF;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 1rem;
+    }
+
+    .sectionTitle {
+      font-family: 'Paytone One', sans-serif;
+      font-size: clamp(2rem, 3.8vw, 2.75rem);
+      color: #ffffff;
+      margin: 0 0 1rem;
+      line-height: 1.2;
+    }
+
+    .sectionSubtitle {
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.45);
+      max-width: 560px;
+      margin: 0 0 1.5rem;
+      line-height: 1.6;
+    }
+
+    .capabilitiesGrid {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .capabilityCard {
+      padding: 2.25rem 2rem;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.015);
+      transition: all 0.3s ease;
+      text-align: left;
+    }
+
+    .capabilityCard:hover {
+      border-color: rgba(0, 82, 204, 0.3);
+      background: rgba(0, 82, 204, 0.04);
+      transform: translateY(-4px);
+    }
+
+    .capIcon {
+      font-size: 1.75rem;
+      margin-bottom: 1.25rem;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: rgba(0, 82, 204, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .capTitle {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin: 0 0 0.75rem;
+      line-height: 1.4;
+    }
+
+    .capDesc {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.45);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* --- DEMO PLAYGROUND --- */
+    .demoPlayground {
+      padding: 7rem 2rem;
+      background: #111111;
+      text-align: center;
+    }
+
+    .demoFrame {
+      max-width: 760px;
+      margin: 0 auto;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      background: #0d0d0d;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+      padding: 10px;
+    }
+
+    .demoIframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+      border-radius: 14px;
+      background: #0d0d0d;
+      display: block;
+    }
+
+    /* --- PRICING --- */
+    .pricing {
+      padding: 7rem 2rem;
+      background: #0d0d0d;
+    }
+
+    .toggleContainer {
+      display: inline-flex;
+      padding: 0.35rem;
+      border-radius: 100px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      margin-top: 1.5rem;
+    }
+
+    .toggleBtn {
+      background: transparent;
+      color: rgba(255, 255, 255, 0.5);
+      border: none;
+      padding: 0.5rem 1.25rem;
+      border-radius: 100px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .toggleActive {
+      background: #0052cc;
+      color: #ffffff;
+    }
+
+    .discountBadge {
+      font-size: 0.65rem;
+      background: #27c93f;
+      color: #0d0d0d;
+      padding: 0.1rem 0.4rem;
+      border-radius: 100px;
+      font-weight: 700;
+    }
+
+    .pricingGrid {
+      max-width: 1100px;
+      margin: 4rem auto 0;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      align-items: start;
+    }
+
+    .pricingCard {
+      padding: 3rem 2.25rem;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.015);
+      position: relative;
+      text-align: left;
+    }
+
+    .pricingCardPopular {
+      border-color: rgba(0, 82, 204, 0.5);
+      background: rgba(0, 82, 204, 0.04);
+      box-shadow: 0 20px 45px rgba(0, 82, 204, 0.1);
+    }
+
+    .popularBadge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0052cc;
+      color: #ffffff;
+      padding: 0.3rem 1.25rem;
+      border-radius: 100px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+
+    .planName {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin: 0 0 0.5rem;
+    }
+
+    .planDesc {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.4);
+      margin: 0 0 2rem;
+      line-height: 1.5;
+    }
+
+    .planPrice {
+      font-family: 'Paytone One', sans-serif;
+      font-size: 3.25rem;
+      color: #ffffff;
+      margin: 0 0 0.25rem;
+      font-weight: 400;
+    }
+
+    .planPrice span {
+      font-size: 1rem;
+      color: rgba(255, 255, 255, 0.35);
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .planPeriod {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.35);
+      margin: 0 0 2.25rem;
+      text-transform: capitalize;
+    }
+
+    .planFeatures {
+      list-style: none;
+      margin: 0 0 2.5rem;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.875rem;
+    }
+
+    .planFeatures li {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.7);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .planFeatures li::before {
+      content: '✓';
+      color: #0052cc;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .btnPlan {
+      width: 100%;
+      padding: 0.875rem;
+      border-radius: 100px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+      display: block;
+    }
+
+    .btnPlanFilled {
+      background: #0052cc;
+      color: #ffffff;
+      border: none;
+    }
+
+    .btnPlanFilled:hover {
+      background: #0065ff;
+      box-shadow: 0 4px 20px rgba(0, 82, 204, 0.45);
+    }
+
+    .btnPlanOutline {
+      background: transparent;
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .btnPlanOutline:hover {
+      border-color: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* --- CLIENT TESTIMONIALS --- */
+    .testimonials {
+      padding: 7rem 2rem;
+      background: #111111;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      text-align: center;
+    }
+
+    .testimonialsGrid {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .testimonialCard {
+      padding: 2.25rem;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.015);
+      text-align: left;
+    }
+
+    .stars {
+      color: #FFB800;
+      font-size: 0.875rem;
+      margin-bottom: 1.25rem;
+      letter-spacing: 2px;
+    }
+
+    .testimonialText {
+      font-size: 0.925rem;
+      color: rgba(255, 255, 255, 0.65);
+      line-height: 1.7;
+      margin: 0 0 2rem;
+      font-style: italic;
+    }
+
+    .testimonialAuthor {
+      display: flex;
+      align-items: center;
+      gap: 0.875rem;
+    }
+
+    .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0052cc, #0065ff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+
+    .authorName {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin: 0 0 0.15rem;
+    }
+
+    .authorRole {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.4);
+      margin: 0;
+    }
+
+    .guaranteeText {
+      text-align: center;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.4);
+      max-width: 600px;
+      margin: 3.5rem auto 0;
+      line-height: 1.6;
+    }
+
+    /* --- FOOTER CTA BANNER --- */
+    .footerCtaBanner {
+      padding: 8rem 2rem;
+      background: #0d0d0d;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .footerCtaGlow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 700px;
+      height: 450px;
+      background: radial-gradient(ellipse, rgba(0, 82, 204, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .footerCtaContent {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .footerCtaTitle {
+      font-family: 'Paytone One', sans-serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      color: #ffffff;
+      margin: 0 0 1.25rem;
+      line-height: 1.2;
+    }
+
+    .footerCtaDesc {
+      font-size: 1.1rem;
+      color: rgba(255, 255, 255, 0.45);
+      margin: 0 auto 2.5rem;
+      max-width: 520px;
+      line-height: 1.6;
+    }
+
+    .btnCtaMain {
+      background: #0052cc;
+      color: #ffffff;
+      padding: 1rem 2.5rem;
+      border-radius: 100px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 24px rgba(0, 82, 204, 0.35);
+    }
+
+    .btnCtaMain:hover {
+      background: #0065ff;
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(0, 82, 204, 0.5);
+    }
+
+    /* --- FOOTER --- */
+    .footer {
+      padding: 5rem 2rem 2.5rem;
+      background: #080808;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .footerInner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 4rem;
+      margin-bottom: 4rem;
+    }
+
+    .footerBrand {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      text-align: left;
+    }
+
+    .footerBrandName {
+      font-family: 'Paytone One', sans-serif;
+      font-size: 1.35rem;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      font-weight: 400;
+    }
+
+    .footerLogoImg {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+    }
+
+    .footerBrandDesc {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.35);
+      line-height: 1.6;
+      max-width: 320px;
+      margin: 0;
+    }
+
+    .footerCol {
+      text-align: left;
+    }
+
+    .footerCol h4 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(255, 255, 255, 0.55);
+      margin: 0 0 1.25rem;
+      font-weight: 600;
+    }
+
+    .footerCol ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.875rem;
+    }
+
+    .footerCol a {
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 0.875rem;
+      transition: color 0.2s ease;
+    }
+
+    .footerCol a:hover {
+      color: #ffffff;
+    }
+
+    .footerBottom {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footerCopy {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.25);
+    }
+
+    .footerSocials {
+      display: flex;
+      gap: 1.25rem;
+    }
+
+    .footerSocials a {
+      color: rgba(255, 255, 255, 0.3);
+      font-size: 0.85rem;
+      transition: color 0.2s ease;
+    }
+
+    .footerSocials a:hover {
+      color: #ffffff;
+    }
+
+    /* --- ANIMATIONS AND KEYFRAMES --- */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(39, 201, 63, 0.7); }
+      70% { box-shadow: 0 0 0 6px rgba(39, 201, 63, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(39, 201, 63, 0); }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1.0); }
+    }
+
+    /* --- RESPONSIVE DESIGNS --- */
+    @media (max-width: 1024px) {
+      .navLinks, .navActions a:nth-child(2) { display: none; }
+      .dashboardBody { grid-template-columns: 1fr; }
+      .dashSidebar { display: none; }
+      .dashGrid { grid-template-columns: 1fr; }
+      .splitRow { grid-template-columns: 1fr; gap: 2.5rem; }
+      .rowInverse { direction: ltr; }
+      .capabilitiesGrid { grid-template-columns: repeat(2, 1fr); }
+      .pricingGrid { grid-template-columns: repeat(2, 1fr); }
+      .testimonialsGrid { grid-template-columns: repeat(2, 1fr); }
+      .footerInner { grid-template-columns: 1fr 1fr; gap: 3rem; }
+    }
+
+    @media (max-width: 768px) {
+      .capabilitiesGrid, .pricingGrid, .testimonialsGrid { grid-template-columns: 1fr; }
+      .heroCtas { flex-direction: column; width: 100%; }
+      .heroCtaPrimary, .heroCtaSecondary { width: 100%; text-align: center; }
+      .footerInner { grid-template-columns: 1fr; gap: 2.5rem; }
+      .footerBottom { flex-direction: column; gap: 1.25rem; text-align: center; }
+      .leadItem { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+      .leadMeta { align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- BACKGROUND GRAPHICS -->
+    <div class="gridBg"></div>
+    <div class="glowTop"></div>
+
+    <!-- NAV BAR -->
+    <nav class="nav">
+      <div class="navContainer">
+        <a href="#" class="nav-logo">
+          <img src="https://framerusercontent.com/assets/Wo30Sktse9esY3HXGesSUG8i0o.png" alt="Amira Logo" class="navLogoImg" />
+          <span class="navLogoText">Amira</span>
+        </a>
+        
+        <ul class="navLinks">
+          <li><a href="#features" class="navLink">Features</a></li>
+          <li><a href="#how-it-works" class="navLink">How It Works</a></li>
+          <li><a href="#pricing" class="navLink">Pricing</a></li>
+          <li><a href="#demo" class="navLink">Interactive Demo</a></li>
+        </ul>
+
+        <div class="navActions">
+          <a href="#" class="navSignIn">Login</a>
+          <a href="#demo" class="navSecondaryBtn">Talk to Sales</a>
+          <a href="#" class="navCta">Start Free Trial</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <header class="hero">
+      <div class="heroContainer">
+        <div class="heroBadge">
+          <span class="heroBadgeHighlight">Official Integrations</span>
+          <span class="heroBadgeText">Meta Business, Twilio &amp; Telnyx</span>
+        </div>
+
+        <h1 class="heroTitle">
+          Your customers call.<br />
+          <span class="textAccent">Your AI answers.</span><br />
+          You get paid.
+        </h1>
+
+        <p class="heroSubtitle">
+          Connect your phone lines, web call widget, and CRM to one AI Voice Agent.
+          Amira handles inbound support, qualifies outbound campaigns, and answers 24/7.
+        </p>
+
+        <div class="heroCtas">
+          <a href="#" class="heroCtaPrimary">Start Free Trial</a>
+          <a href="#demo" class="heroCtaSecondary">Talk to Sales</a>
+        </div>
+
+        <p class="metaSubtext">No credit card required • Live in 5 minutes</p>
+
+        <!-- INTERACTIVE DASHBOARD DEMO CONTAINER -->
+        <div class="dashboardContainer">
+          <div class="dashboardHeader">
+            <div class="headerDots">
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+            </div>
+            <div class="headerTitle">Amira Agent Dashboard v2.1</div>
+            <div class="headerStatus">
+              <span class="pulseIndicator"></span>
+              System Active
+            </div>
+          </div>
+
+          <div class="dashboardBody">
+            <!-- Sidebar -->
+            <div class="dashSidebar">
+              <div class="sidebarItem sidebarItemActive">
+                <span class="sidebarIcon">📞</span> Inbound Voice Lines
+              </div>
+              <div class="sidebarItem">
+                <span class="sidebarIcon">🤖</span> Voice AI Profiles
+              </div>
+              <div class="sidebarItem">
+                <span class="sidebarIcon">📈</span> Campaign Dialer
+              </div>
+              <div class="sidebarItem">
+                <span class="sidebarIcon">🗂️</span> CRM Integrations
+              </div>
+              <div class="sidebarItem">
+                <span class="sidebarIcon">⚙️</span> Settings
+              </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="dashMain">
+              <div class="dashGrid">
+                <!-- Left Column - Live Caller Console -->
+                <div class="consoleCard">
+                  <div class="cardHeader">
+                    <h3>Live Calling Console</h3>
+                    <span class="badgeIdle" id="consoleBadge">Ready</span>
+                  </div>
+                  
+                  <div class="transcriptBox" id="transcriptBox">
+                    <div class="emptyTranscript" id="emptyState">
+                      <span class="emptyIcon">🎙️</span>
+                      <p>Click below to simulate a real customer call with Amira</p>
+                      <button onclick="startDemoCall()" class="simulateBtn">
+                        Simulate Call
+                      </button>
+                    </div>
+                    <div class="transcriptLines" id="transcriptLines" style="display: none;"></div>
+                  </div>
+
+                  <div class="consoleFooter" id="consoleFooter" style="display: none;">
+                    <button onclick="resetDemoCall()" class="resetBtn">
+                      Reset Simulation
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Right Column - Live CRM Leads feed -->
+                <div class="crmCard">
+                  <div class="cardHeader">
+                    <h3>Automated CRM Feeds</h3>
+                    <span class="crmSyncBadge">Synced</span>
+                  </div>
+
+                  <div class="leadsList" id="leadsList">
+                    <div class="leadItem">
+                      <div class="leadInfo">
+                        <div class="leadName">John Doe</div>
+                        <div class="leadPhone">+1 (555) 019-2834</div>
+                      </div>
+                      <div class="leadMeta">
+                        <span class="leadStatus statusQual">Qualified</span>
+                        <div class="leadTime">Just now</div>
+                      </div>
+                    </div>
+                    <div class="leadItem">
+                      <div class="leadInfo">
+                        <div class="leadName">Sarah Jenkins</div>
+                        <div class="leadPhone">+1 (555) 048-1290</div>
+                      </div>
+                      <div class="leadMeta">
+                        <span class="leadStatus statusBook">Booked Call</span>
+                        <div class="leadTime">2 mins ago</div>
+                      </div>
+                    </div>
+                    <div class="leadItem">
+                      <div class="leadInfo">
+                        <div class="leadName">Marcus Kincaid</div>
+                        <div class="leadPhone">+44 20 7946 0958</div>
+                      </div>
+                      <div class="leadMeta">
+                        <span class="leadStatus statusQual">Qualified</span>
+                        <div class="leadTime">15 mins ago</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- TRUSTED BY LOGOS -->
+    <section class="trusted">
+      <div class="trustedContainer">
+        <p class="trustedLabel">Trusted by innovative brands worldwide</p>
+        <div class="trustedLogos">
+          <span class="trustedLogo">TechStars</span>
+          <span class="trustedLogo">Y-Combinator</span>
+          <span class="trustedLogo">Zenith Inc.</span>
+          <span class="trustedLogo">Apex Group</span>
+          <span class="trustedLogo">ScaleFlow</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- LIVE IN 5 MINUTES -->
+    <section class="featureBlock">
+      <div class="innerBlockCentered">
+        <span class="sectionTag">Instant Deployment</span>
+        <h2 class="sectionTitle">Live in Under 5 Minutes.</h2>
+        <p class="sectionSubtitle">
+          No code. No tech team. No waiting. Sign up and your Voice AI is running today.
+        </p>
+      </div>
+    </section>
+
+    <!-- SPLIT SCREEN FEATURES (MIRRORING JOHA) -->
+    <section class="splitFeatures" id="features">
+      <div class="splitContainer">
+        
+        <!-- BLOCK 1: Connect channels -->
+        <div class="splitRow">
+          <div class="splitTextCol">
+            <span class="rowTag">Step 1</span>
+            <h3 class="rowTitle">Connect every phone line in 60 seconds.</h3>
+            <p class="rowSubtitle">
+              Inbound support lines. Outbound dialing. Web call widgets. All in one dashboard.
+            </p>
+            <ul class="rowList">
+              <li>
+                <span class="listCheck">✓</span>
+                Local &amp; international numbers in 40+ countries
+              </li>
+              <li>
+                <span class="listCheck">✓</span>
+                Web voice call widget, ready with one line of code
+              </li>
+              <li>
+                <span class="listCheck">✓</span>
+                All channels active simultaneously from day one
+              </li>
+            </ul>
+          </div>
+          <div class="splitGraphicCol">
+            <div class="graphicBox">
+              <div class="channelWidget">
+                <div class="channelItem">
+                  <div class="channelIconBg">📞</div>
+                  <div>
+                    <div class="channelName">Twilio Integration</div>
+                    <div class="channelStatus">Connected</div>
+                  </div>
+                </div>
+                <div class="channelItem">
+                  <div class="channelIconBg">🌐</div>
+                  <div>
+                    <div class="channelName">Web Widget</div>
+                    <div class="channelStatus">Connected</div>
+                  </div>
+                </div>
+                <div class="channelItem">
+                  <div class="channelIconBg">🧬</div>
+                  <div>
+                    <div class="channelName">Telnyx Trunking</div>
+                    <div class="channelStatus">Active</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BLOCK 2: Teach business -->
+        <div class="splitRow rowInverse">
+          <div class="splitTextCol">
+            <span class="rowTag">Step 2</span>
+            <h3 class="rowTitle">Teach your AI everything about your business.</h3>
+            <p class="rowSubtitle">
+              Your knowledge. Your voice. Fully automated.
+            </p>
+            <ul class="rowList">
+              <li>
+                <span class="listCheck">✓</span>
+                Upload FAQs, PDFs, and sales scripts in any format
+              </li>
+              <li>
+                <span class="listCheck">✓</span>
+                Set custom brand voice, vocabulary, and escalation rules
+              </li>
+              <li>
+                <span class="listCheck">✓</span>
+                Test your AI's voice responses in real time before going live
+              </li>
+            </ul>
+          </div>
+          <div class="splitGraphicCol">
+            <div class="graphicBox">
+              <div class="knowledgeWidget">
+                <div class="knowledgeHeader">
+                  <span>Knowledge Source</span>
+                  <button class="uploadBtn">+ Upload</button>
+                </div>
+                <div class="fileItem">
+                  <span>📄 Product_Catalog_2026.pdf</span>
+                  <span class="fileStatus">Trained</span>
+                </div>
+                <div class="fileItem">
+                  <span>📄 Support_FAQ_Sheet.txt</span>
+                  <span class="fileStatus">Trained</span>
+                </div>
+                <div class="fileItem">
+                  <span>📄 Outbound_Script.md</span>
+                  <span class="fileStatus">Trained</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BLOCK 3: Go live / Autopilot -->
+        <div class="splitRow">
+          <div class="splitTextCol">
+            <span class="rowTag">Step 3</span>
+            <h3 class="rowTitle">Your AI is live. Your voice operations run on autopilot.</h3>
+            <p class="rowSubtitle">
+              Every call answered. Every lead qualified. Every customer served.
+            </p>
+            <ul class="rowList">
+              <li>
+                <span class="listCheck">✓</span>
+                Instant voice responses with ultra-low latency (under 500ms)
+              </li>
+              <li>
+                <span class="listCheck">✓</span>
+                Every call auto-captured as a structured CRM contact
+              </li>
+              <li>
+                <span class="listCheck">✓</span>
+                One-click live handoff to your human team when it matters
+              </li>
+            </ul>
+          </div>
+          <div class="splitGraphicCol">
+            <div class="graphicBox">
+              <div class="autopilotWidget">
+                <div class="autopilotTitle">Active Calls Processing</div>
+                <div class="activeCallList">
+                  <div class="activeCallItem">
+                    <div class="avatarMini">AM</div>
+                    <div class="activeCallDetails">
+                      <div class="activeCallNumber">+1 (555) 492-2034</div>
+                      <div class="activeCallProgress">Solving Billing issue • 1m 45s</div>
+                    </div>
+                    <div class="liveBadgeMini">Live</div>
+                  </div>
+                  <div class="activeCallItem">
+                    <div class="avatarMini">AM</div>
+                    <div class="activeCallDetails">
+                      <div class="activeCallNumber">+1 (555) 782-9012</div>
+                      <div class="activeCallProgress">Booking Appointment • 42s</div>
+                    </div>
+                    <div class="liveBadgeMini">Live</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- CORE CAPABILITIES GRID (MIRRORING JOHA) -->
+    <section class="capabilities" id="how-it-works">
+      <div class="sectionHeaderCentered">
+        <span class="sectionTag">Key Advantages</span>
+        <h2 class="sectionTitle">Train once. Let it handle every call.</h2>
+        <p class="sectionSubtitle">
+          Always on. Always accurate. Zero extra staff.
+        </p>
+      </div>
+
+      <div class="capabilitiesGrid">
+        <!-- CARD 1 -->
+        <div class="capabilityCard">
+          <div class="capIcon">🎙️</div>
+          <h4 class="capTitle">Train once. Let it handle every call.</h4>
+          <p class="capDesc">
+            Amira works across all your local lines, toll-free numbers, and website widgets.
+            Train on your PDF catalogs, txt instructions, or pricing files.
+          </p>
+        </div>
+
+        <!-- CARD 2 -->
+        <div class="capabilityCard">
+          <div class="capIcon">📊</div>
+          <h4 class="capTitle">Every call becomes a lead. Automatically.</h4>
+          <p class="capDesc">
+            Your CRM fills itself while you sleep. Auto-capture names, phone numbers,
+            deal stages, and sentiment analytics directly into your unified dashboard.
+          </p>
+        </div>
+
+        <!-- CARD 3 -->
+        <div class="capabilityCard">
+          <div class="capIcon">🚀</div>
+          <h4 class="capTitle">Reach thousands of leads in one click.</h4>
+          <p class="capDesc">
+            Import lead lists and fire automated outbound call sequences. Amira rings
+            them up, pitches your offers, answers objections, and captures results.
+          </p>
+        </div>
+
+        <!-- CARD 4 -->
+        <div class="capabilityCard">
+          <div class="capIcon">🤝</div>
+          <h4 class="capTitle">Your whole team, one dashboard.</h4>
+          <p class="capDesc">
+            Review transcripts, listen to voice recordings, assign call actions, and leave internal notes.
+            Connect Zapier, Salesforce, Hubspot, and GoHighLevel in seconds.
+          </p>
+        </div>
+
+        <!-- CARD 5 -->
+        <div class="capabilityCard">
+          <div class="capIcon">📅</div>
+          <h4 class="capTitle">Talk to them. Book them. In the same place.</h4>
+          <p class="capDesc">
+            Sync your Google Calendar or Cal.com. Amira answers available slot times,
+            books appointments, and sends confirmations without you lifting a finger.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTERACTIVE CALLING PLAYGROUND -->
+    <section class="demoPlayground" id="demo">
+      <div class="sectionHeaderCentered">
+        <span class="sectionTag">Live Playground</span>
+        <h2 class="sectionTitle">Talk to Amira Right Now</h2>
+        <p class="sectionSubtitle">
+          Experience firsthand the industry-leading speed, voice quality, and responsiveness of Amira.
+        </p>
+      </div>
+      
+      <div class="demoFrame">
+        <iframe 
+          src="https://amira-call-demo.vercel.app/" 
+          title="Amira Interactive Call Demo"
+          allow="microphone"
+          class="demoIframe"
+        ></iframe>
+      </div>
+    </section>
+
+    <!-- PRICING SECTION -->
+    <section class="pricing" id="pricing">
+      <div class="sectionHeaderCentered">
+        <span class="sectionTag">Pricing Plans</span>
+        <h2 class="sectionTitle">Scale at Your Own Pace</h2>
+        <p class="sectionSubtitle">
+          Transparent, flexible billing based on call volume. Upgrade or cancel anytime.
+        </p>
+
+        <div class="toggleContainer">
+          <button class="toggleBtn toggleActive" id="monthlyBtn" onclick="setPricing('monthly')">
+            Billed Monthly
+          </button>
+          <button class="toggleBtn" id="yearlyBtn" onclick="setPricing('annually')">
+            Billed Annually <span class="discountBadge">Save 20%</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="pricingGrid">
+        <!-- STARTER -->
+        <div class="pricingCard">
+          <h4 class="planName">Starter</h4>
+          <p class="planDesc">Perfect for solo operators and small projects testing out AI voice support.</p>
+          <div class="planPrice">
+            $<span id="starterPrice">49</span><span>/mo</span>
+          </div>
+          <p class="planPeriod" id="starterPeriod">Billed monthly</p>
+          
+          <ul class="planFeatures">
+            <li>500 call minutes included</li>
+            <li>1 custom AI phone line</li>
+            <li>Knowledge base training (up to 5MB)</li>
+            <li>Basic dashboard logs &amp; analytics</li>
+            <li>Webhooks &amp; email support</li>
+          </ul>
+
+          <a href="#" class="btnPlan btnPlanOutline">Start Free Trial</a>
+        </div>
+
+        <!-- PROFESSIONAL -->
+        <div class="pricingCard pricingCardPopular">
+          <div class="popularBadge">Most Popular</div>
+          <h4 class="planName">Professional</h4>
+          <p class="planDesc">Ideal for growing teams automating medium to high voice support volume.</p>
+          <div class="planPrice">
+            $<span id="proPrice">199</span><span>/mo</span>
+          </div>
+          <p class="planPeriod" id="proPeriod">Billed monthly</p>
+          
+          <ul class="planFeatures">
+            <li>3,000 call minutes included</li>
+            <li>5 custom AI phone lines</li>
+            <li>Unlimited document training space</li>
+            <li>Smart human handoff &amp; escalation</li>
+            <li>Advanced dashboard analytics &amp; CRM</li>
+            <li>Priority customer support</li>
+          </ul>
+
+          <a href="#" class="btnPlan btnPlanFilled">Go Professional</a>
+        </div>
+
+        <!-- ENTERPRISE -->
+        <div class="pricingCard">
+          <h4 class="planName">Enterprise</h4>
+          <p class="planDesc">Built for high-scale call centers requiring advanced reliability and security.</p>
+          <div class="planPrice">
+            Custom
+          </div>
+          <p class="planPeriod">Tailored options available</p>
+          
+          <ul class="planFeatures">
+            <li>Unlimited custom call minutes</li>
+            <li>Dedicated infrastructure (SLA guaranteed)</li>
+            <li>Custom voice model fine-tuning</li>
+            <li>Advanced API gateways &amp; webhooks</li>
+            <li>HIPAA &amp; enterprise compliance</li>
+            <li>Dedicated account manager &amp; 24/7 support</li>
+          </ul>
+
+          <a href="#" class="btnPlan btnPlanOutline">Contact Sales</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- CLIENT TESTIMONIALS (JOHA ALIGNED) -->
+    <section class="testimonials">
+      <div class="sectionHeaderCentered">
+        <span class="sectionTag">Client Stories</span>
+        <h2 class="sectionTitle">Businesses That Made the Switch</h2>
+        <p class="sectionSubtitle">
+          Hear directly from founders and operators who chose to stop competing manually and let AI handle the phones.
+        </p>
+      </div>
+
+      <div class="testimonialsGrid">
+        <div class="testimonialCard">
+          <div class="stars">★★★★★</div>
+          <p class="testimonialText">
+            "Our AI chatbot handled over 800 conversations in the first month. We closed 23 new clients without a single manual sales call. Amira built something I genuinely didn't think was possible at this scale or price point."
+          </p>
+          <div class="testimonialAuthor">
+            <div class="avatar">SJ</div>
+            <div>
+              <p class="authorName">Sarah Jenkins</p>
+              <p class="authorRole">Operations Lead, ScaleFlow</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonialCard">
+          <div class="stars">★★★★★</div>
+          <p class="testimonialText">
+            "The AI voice agent answers our inbound calls 24/7 and books property viewings automatically. We went from missing 60% of after-hours leads to capturing every single one. Revenue is up 40% quarter-on-quarter."
+          </p>
+          <div class="testimonialAuthor">
+            <div class="avatar">MK</div>
+            <div>
+              <p class="authorName">Marcus Kincaid</p>
+              <p class="authorRole">VP of Sales, Zenith Inc.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonialCard">
+          <div class="stars">★★★★★</div>
+          <p class="testimonialText">
+            "Within 6 weeks of launching our AI voice agents, our team's outbound call productivity jumped from 1.8× to 4.2×. The voice response is indistinguishable from real operators. Our competitors have no idea how we're doing it."
+          </p>
+          <div class="testimonialAuthor">
+            <div class="avatar">DR</div>
+            <div>
+              <p class="authorName">Daniel Ryan</p>
+              <p class="authorRole">Co-Founder, Apex Group</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="guaranteeText">
+        🔒 <strong>No lock-in:</strong> Cancel anytime. If your call response rate and lead capture don't improve in 30 days, we work with you until they do, or refund you in full.
+      </p>
+    </section>
+
+    <!-- FOOTER CTA BANNER -->
+    <section class="footerCtaBanner">
+      <div class="footerCtaGlow"></div>
+      <div class="footerCtaContent">
+        <h2 class="footerCtaTitle">Your customers are calling right now.<br />Who's replying?</h2>
+        <p class="footerCtaDesc">
+          Every unanswered call is a lead walking out the door. Set up your Voice AI Agent today.
+        </p>
+        <a href="#" class="btnCtaMain">Start Free Trial</a>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <div class="footerInner">
+        <div class="footerBrand">
+          <div class="footerBrandName">
+            <img src="https://framerusercontent.com/assets/Wo30Sktse9esY3HXGesSUG8i0o.png" alt="Amira Logo" class="footerLogoImg" />
+            Amira
+          </div>
+          <p class="footerBrandDesc">
+            The AI call center platform that helps businesses respond faster, qualify leads, and close more sales.
+          </p>
+        </div>
+
+        <div class="footerCol">
+          <h4>Product</h4>
+          <ul>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="#how-it-works">How It Works</a></li>
+            <li><a href="#demo">Live Demo</a></li>
+          </ul>
+        </div>
+
+        <div class="footerCol">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="#">Careers</a></li>
+            <li><a href="#">Security</a></li>
+            <li><a href="#">Contact Support</a></li>
+          </ul>
+        </div>
+
+        <div class="footerCol">
+          <h4>Contact Us</h4>
+          <ul>
+            <li><a href="mailto:support@amirapro.com">Email: support@amirapro.com</a></li>
+            <li><a href="https://wa.me/2349032449461">WhatsApp: +234 903 244 9461</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footerBottom">
+        <span class="footerCopy">&copy; 2026 Amira Technologies Inc. All rights reserved.</span>
+        <div class="footerSocials">
+          <a href="#">Twitter</a>
+          <a href="#">LinkedIn</a>
+          <a href="#">GitHub</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // Handle Interactive Simulation Call state
+    let callTimer = null;
+    let callSequenceTimers = [];
+
+    function startDemoCall() {
+      // Clear any existing timers
+      clearCallTimers();
+
+      const badge = document.getElementById("consoleBadge");
+      const emptyState = document.getElementById("emptyState");
+      const transcriptLines = document.getElementById("transcriptLines");
+      const footer = document.getElementById("consoleFooter");
+
+      emptyState.style.display = "none";
+      transcriptLines.style.display = "block";
+      transcriptLines.innerHTML = "";
+      footer.style.display = "block";
+
+      // Set state to Calling
+      badge.className = "badgeCalling";
+      badge.textContent = "Dialing...";
+      
+      const statusLine = document.createElement("div");
+      statusLine.className = "dialingState";
+      statusLine.id = "dialingSpinner";
+      statusLine.innerHTML = `<span class="spinner"></span> Calling demo interface...`;
+      transcriptLines.appendChild(statusLine);
+
+      // Connected after 1.5s
+      callTimer = setTimeout(() => {
+        const spinner = document.getElementById("dialingSpinner");
+        if (spinner) spinner.remove();
+
+        badge.className = "badgeLive";
+        badge.textContent = "Connected";
+
+        addBubble("ai", "Thank you for calling Amira support. How can I help you scale today?");
+        runDialogueSequence();
+      }, 1500);
+    }
+
+    function runDialogueSequence() {
+      const dialogue = [
+        { delay: 3000, sender: "user", text: "Hi, I need to know if Amira integrates with Salesforce and Hubspot CRM." },
+        { delay: 6500, sender: "ai", text: "Yes! Amira has direct native integrations with Salesforce, HubSpot, and 1,000+ other apps via Zapier. It logs transcripts and details instantly." },
+        { delay: 10500, sender: "user", text: "That is perfect. Can I set up a free trial to test the voice response latency?" },
+        { delay: 14000, sender: "ai", text: "Absolutely. I've just sent a trial link to your mobile number. You can be live in under 5 minutes!" },
+        { delay: 17500, sender: "user", text: "Awesome, thank you!" },
+        { delay: 19500, sender: "ai", text: "You're welcome! Have a great day." }
+      ];
+
+      dialogue.forEach((line) => {
+        const t = setTimeout(() => {
+          removeTypingState();
+          addBubble(line.sender, line.text);
+          if (line.text.includes("trial link")) {
+            addNewCrmLead("New Visitor", "+1 (555) 012-7890", "Qualified");
+          }
+          if (line.sender === "user" && line.text !== "Awesome, thank you!") {
+            addTypingState();
+          }
+        }, line.delay);
+        callSequenceTimers.push(t);
+      });
+
+      const endT = setTimeout(() => {
+        removeTypingState();
+        const badge = document.getElementById("consoleBadge");
+        badge.className = "badgeEnded";
+        badge.textContent = "Call Ended";
+      }, 22000);
+      callSequenceTimers.push(endT);
+    }
+
+    function addBubble(sender, text) {
+      const box = document.getElementById("transcriptLines");
+      const bubble = document.createElement("div");
+      bubble.className = `transcriptBubble ${sender === "ai" ? "bubbleAi" : "bubbleUser"}`;
+      
+      bubble.innerHTML = `
+        <div class="bubbleSender">${sender === "ai" ? "Amira (AI Agent)" : "Customer"}</div>
+        <div class="bubbleText">${text}</div>
+      `;
+      box.appendChild(bubble);
+      
+      const trBox = document.getElementById("transcriptBox");
+      trBox.scrollTop = trBox.scrollHeight;
+    }
+
+    function addTypingState() {
+      const box = document.getElementById("transcriptLines");
+      const typing = document.createElement("div");
+      typing.className = "typingState";
+      typing.id = "typingIndicator";
+      typing.innerHTML = "<span></span><span></span><span></span>";
+      box.appendChild(typing);
+
+      const trBox = document.getElementById("transcriptBox");
+      trBox.scrollTop = trBox.scrollHeight;
+    }
+
+    function removeTypingState() {
+      const typing = document.getElementById("typingIndicator");
+      if (typing) typing.remove();
+    }
+
+    function addNewCrmLead(name, phone, status) {
+      const list = document.getElementById("leadsList");
+      const lead = document.createElement("div");
+      lead.className = "leadItem";
+      lead.innerHTML = `
+        <div class="leadInfo">
+          <div class="leadName">${name}</div>
+          <div class="leadPhone">${phone}</div>
+        </div>
+        <div class="leadMeta">
+          <span class="leadStatus statusQual">${status}</span>
+          <div class="leadTime">Just now</div>
+        </div>
+      `;
+      list.insertBefore(lead, list.firstChild);
+    }
+
+    function clearCallTimers() {
+      if (callTimer) clearTimeout(callTimer);
+      callSequenceTimers.forEach((t) => clearTimeout(t));
+      callSequenceTimers = [];
+    }
+
+    function resetDemoCall() {
+      clearCallTimers();
+      const badge = document.getElementById("consoleBadge");
+      badge.className = "badgeIdle";
+      badge.textContent = "Ready";
+
+      document.getElementById("emptyState").style.display = "flex";
+      document.getElementById("transcriptLines").style.display = "none";
+      document.getElementById("consoleFooter").style.display = "none";
+    }
+
+    // Handle Pricing Toggle
+    function setPricing(plan) {
+      const monthlyBtn = document.getElementById("monthlyBtn");
+      const yearlyBtn = document.getElementById("yearlyBtn");
+      const starterPrice = document.getElementById("starterPrice");
+      const proPrice = document.getElementById("proPrice");
+      const starterPeriod = document.getElementById("starterPeriod");
+      const proPeriod = document.getElementById("proPeriod");
+
+      if (plan === "monthly") {
+        monthlyBtn.classList.add("toggleActive");
+        yearlyBtn.classList.remove("toggleActive");
+        starterPrice.textContent = "49";
+        proPrice.textContent = "199";
+        starterPeriod.textContent = "Billed monthly";
+        proPeriod.textContent = "Billed monthly";
+      } else {
+        yearlyBtn.classList.add("toggleActive");
+        monthlyBtn.classList.remove("toggleActive");
+        starterPrice.textContent = "39";
+        proPrice.textContent = "159";
+        starterPeriod.textContent = "Billed annually";
+        proPeriod.textContent = "Billed annually";
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,377 +1,689 @@
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
+import React, { useState, useEffect } from "react";
 import styles from "./page.module.css";
 
 export default function LandingPage() {
   const [activePlan, setActivePlan] = useState<"monthly" | "annually">("monthly");
+  const [activeFeatureTab, setActiveFeatureTab] = useState<"channels" | "knowledge" | "automation">("channels");
+  const [liveTranscript, setLiveTranscript] = useState<Array<{ sender: "user" | "ai"; text: string }>>([]);
+  const [currentCallStatus, setCurrentCallStatus] = useState<"idle" | "calling" | "connected" | "ended">("idle");
+  const [crmLeads, setCrmLeads] = useState<Array<{ name: string; phone: string; status: string; date: string }>>([
+    { name: "John Doe", phone: "+1 (555) 019-2834", status: "Qualified", date: "Just now" },
+    { name: "Sarah Jenkins", phone: "+1 (555) 048-1290", status: "Booked Call", date: "2 mins ago" },
+    { name: "Marcus Kincaid", phone: "+44 20 7946 0958", status: "Replied", date: "15 mins ago" },
+  ]);
+
+  // Handle mock live caller simulation
+  useEffect(() => {
+    if (currentCallStatus === "calling") {
+      const timer = setTimeout(() => {
+        setCurrentCallStatus("connected");
+        setLiveTranscript([{ sender: "ai", text: "Thank you for calling Amira support. How can I help you scale today?" }]);
+      }, 1500);
+      return () => clearTimeout(timer);
+    } else if (currentCallStatus === "connected") {
+      const dialogue = [
+        { delay: 3000, sender: "user", text: "Hi, I need to know if Amira integrates with Salesforce and Hubspot CRM." },
+        { delay: 6000, sender: "ai", text: "Yes! Amira has direct native integrations with Salesforce, HubSpot, and 1,000+ other apps via Zapier. It logs transcripts and details instantly." },
+        { delay: 9500, sender: "user", text: "That is perfect. Can I set up a free trial to test the voice response latency?" },
+        { delay: 12500, sender: "ai", text: "Absolutely. I've just sent a trial link to your mobile number. You can be live in under 5 minutes!" },
+        { delay: 15500, sender: "user", text: "Awesome, thank you!" },
+        { delay: 17500, sender: "ai", text: "You're welcome! Have a great day." }
+      ];
+
+      const timers = dialogue.map((line) => {
+        return setTimeout(() => {
+          setLiveTranscript((prev) => [...prev, { sender: line.sender as "user" | "ai", text: line.text }]);
+          if (line.text.includes("trial link")) {
+            // Auto add to CRM
+            setCrmLeads((prev) => [
+              { name: "New Visitor", phone: "+1 (555) 012-7890", status: "Qualified", date: "Just now" },
+              ...prev
+            ]);
+          }
+        }, line.delay);
+      });
+
+      const endTimer = setTimeout(() => {
+        setCurrentCallStatus("ended");
+      }, 20000);
+
+      return () => {
+        timers.forEach((t) => clearTimeout(t));
+        clearTimeout(endTimer);
+      };
+    }
+  }, [currentCallStatus]);
+
+  const startDemoCall = () => {
+    setLiveTranscript([]);
+    setCurrentCallStatus("calling");
+  };
 
   return (
-    <div style={{ backgroundColor: "#0D0D0D", minHeight: "100vh", color: "#CCCCCC", fontFamily: "var(--font-poppins), sans-serif" }}>
-      {/* GLOW BACKGROUND EFFECT */}
-      <div className={styles.heroGlow} />
+    <div className={styles.container}>
+      {/* BACKGROUND GRAPHICS */}
+      <div className={styles.gridBg} />
+      <div className={styles.glowTop} />
 
-      {/* NAVIGATION */}
+      {/* NAV BAR */}
       <nav className={styles.nav}>
-        <Link href="/" className={styles.navLogo}>
-          <img src="/images/amira-logo.png" alt="Amira Logo" className={styles.navLogoImg} />
-          <span className={styles.navLogoText}>Amira</span>
-        </Link>
-        
-        <ul className={styles.navLinks}>
-          <li><a href="#features" className={styles.navLink}>Features</a></li>
-          <li><a href="#how-it-works" className={styles.navLink}>How It Works</a></li>
-          <li><a href="#demo" className={styles.navLink}>Interactive Demo</a></li>
-          <li><a href="#pricing" className={styles.navLink}>Pricing</a></li>
-          <li><a href="#testimonials" className={styles.navLink}>Testimonials</a></li>
-        </ul>
+        <div className={styles.navContainer}>
+          <a href="#" className={styles.navLogo}>
+            <img 
+              src="https://framerusercontent.com/assets/Wo30Sktse9esY3HXGesSUG8i0o.png" 
+              alt="Amira Logo" 
+              className={styles.navLogoImg} 
+            />
+            <span className={styles.navLogoText}>Amira</span>
+          </a>
+          
+          <ul className={styles.navLinks}>
+            <li><a href="#features" className={styles.navLink}>Features</a></li>
+            <li><a href="#how-it-works" className={styles.navLink}>How It Works</a></li>
+            <li><a href="#pricing" className={styles.navLink}>Pricing</a></li>
+            <li><a href="#demo" className={styles.navLink}>Interactive Demo</a></li>
+          </ul>
 
-        <div className={styles.navActions}>
-          <Link href="/login" className={styles.navSignIn}>Sign In</Link>
-          <Link href="/signup" className={styles.navCta}>Start Free</Link>
+          <div className={styles.navActions}>
+            <a href="#" className={styles.navSignIn}>Login</a>
+            <a href="#demo" className={styles.navSecondaryBtn}>Talk to Sales</a>
+            <a href="#" className={styles.navCta}>Start Free Trial</a>
+          </div>
         </div>
       </nav>
 
       {/* HERO SECTION */}
-      <section className={styles.hero}>
-        <div className={styles.heroGlow} />
-        
-        <div className={styles.heroBadge}>
-          <span className={styles.heroBadgeNew}>New</span>
-          <span className={styles.heroBadgeText}>Amira voice model v2.1 is now live</span>
-        </div>
+      <header className={styles.hero}>
+        <div className={styles.heroContainer}>
+          <div className={styles.heroBadge}>
+            <span className={styles.heroBadgeHighlight}>Official Integrations</span>
+            <span className={styles.heroBadgeText}>Meta Business, Twilio &amp; Telnyx</span>
+          </div>
 
-        <h1 className={styles.heroTitle}>
-          <span className={styles.heroTitleGradient}>Your A.I Powered</span>
-          <br />
-          <span style={{ color: "#0052CC" }}>Call Center</span>
-        </h1>
+          <h1 className={styles.heroTitle}>
+            Your customers call.<br />
+            <span className={styles.textAccent}>Your AI answers.</span><br />
+            You get paid.
+          </h1>
 
-        <p className={styles.heroSubtitle}>
-          Amira does the work of 1,000 Call Center Agents, answering calls like a real human. Fully automated, 24/7 inbound & outbound voice operations at a fraction of the cost.
-        </p>
+          <p className={styles.heroSubtitle}>
+            Connect your phone lines, web call widget, and CRM to one AI Voice Agent.
+            Amira handles inbound support, qualifies outbound campaigns, and answers 24/7.
+          </p>
 
-        <div className={styles.heroCtas}>
-          <a href="#demo" className={styles.heroCtaPrimary}>
-            Try Amira Live
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </a>
-          <Link href="/signup" className={styles.heroCtaSecondary}>
-            Get Started Free
-          </Link>
-        </div>
+          <div className={styles.heroCtas}>
+            <a href="#" className={styles.heroCtaPrimary}>Start Free Trial</a>
+            <a href="#demo" className={styles.heroCtaSecondary}>Talk to Sales</a>
+          </div>
 
-        {/* Dashboard Preview Image Container */}
-        <div className={styles.heroImage}>
-          <div className={styles.heroImageInner}>
-            <img src="/images/dashboard-preview.png" alt="Amira CRM Dashboard Layout" />
+          <p className={styles.metaSubtext}>No credit card required • Live in 5 minutes</p>
+
+          {/* INTERACTIVE DASHBOARD DEMO CONTAINER */}
+          <div className={styles.dashboardContainer}>
+            <div className={styles.dashboardHeader}>
+              <div className={styles.headerDots}>
+                <span className={styles.dot} />
+                <span className={styles.dot} />
+                <span className={styles.dot} />
+              </div>
+              <div className={styles.headerTitle}>Amira Agent Dashboard v2.1</div>
+              <div className={styles.headerStatus}>
+                <span className={styles.pulseIndicator} />
+                System Active
+              </div>
+            </div>
+
+            <div className={styles.dashboardBody}>
+              {/* Sidebar */}
+              <div className={styles.dashSidebar}>
+                <div className={`${styles.sidebarItem} ${styles.sidebarItemActive}`}>
+                  <span className={styles.sidebarIcon}>📞</span> Inbound Voice Lines
+                </div>
+                <div className={styles.sidebarItem}>
+                  <span className={styles.sidebarIcon}>🤖</span> Voice AI Profiles
+                </div>
+                <div className={styles.sidebarItem}>
+                  <span className={styles.sidebarIcon}>📈</span> Campaign Dialer
+                </div>
+                <div className={styles.sidebarItem}>
+                  <span className={styles.sidebarIcon}>🗂️</span> CRM Integrations
+                </div>
+                <div className={styles.sidebarItem}>
+                  <span className={styles.sidebarIcon}>⚙️</span> Settings
+                </div>
+              </div>
+
+              {/* Main Content Area */}
+              <div className={styles.dashMain}>
+                <div className={styles.dashGrid}>
+                  {/* Left Column - Live Caller Console */}
+                  <div className={styles.consoleCard}>
+                    <div className={styles.cardHeader}>
+                      <h3>Live Calling Console</h3>
+                      {currentCallStatus === "connected" && (
+                        <span className={styles.badgeLive}>Connected</span>
+                      )}
+                      {currentCallStatus === "calling" && (
+                        <span className={styles.badgeCalling}>Dialing...</span>
+                      )}
+                      {currentCallStatus === "ended" && (
+                        <span className={styles.badgeEnded}>Call Ended</span>
+                      )}
+                      {currentCallStatus === "idle" && (
+                        <span className={styles.badgeIdle}>Ready</span>
+                      )}
+                    </div>
+                    
+                    <div className={styles.transcriptBox}>
+                      {currentCallStatus === "idle" && (
+                        <div className={styles.emptyTranscript}>
+                          <span className={styles.emptyIcon}>🎙️</span>
+                          <p>Click below to simulate a real customer call with Amira</p>
+                          <button onClick={startDemoCall} className={styles.simulateBtn}>
+                            Simulate Call
+                          </button>
+                        </div>
+                      )}
+
+                      {currentCallStatus !== "idle" && (
+                        <div className={styles.transcriptLines}>
+                          {liveTranscript.map((line, index) => (
+                            <div 
+                              key={index} 
+                              className={`${styles.transcriptBubble} ${
+                                line.sender === "ai" ? styles.bubbleAi : styles.bubbleUser
+                              }`}
+                            >
+                              <div className={styles.bubbleSender}>
+                                {line.sender === "ai" ? "Amira (AI Agent)" : "Customer"}
+                              </div>
+                              <div className={styles.bubbleText}>{line.text}</div>
+                            </div>
+                          ))}
+                          {currentCallStatus === "calling" && (
+                            <div className={styles.dialingState}>
+                              <span className={styles.spinner} /> Calling demo interface...
+                            </div>
+                          )}
+                          {currentCallStatus === "connected" && liveTranscript.length % 2 === 1 && (
+                            <div className={styles.typingState}>
+                              <span></span><span></span><span></span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {currentCallStatus !== "idle" && (
+                      <div className={styles.consoleFooter}>
+                        <button 
+                          onClick={() => setCurrentCallStatus("idle")} 
+                          className={styles.resetBtn}
+                        >
+                          Reset Simulation
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Column - Live CRM Leads feed */}
+                  <div className={styles.crmCard}>
+                    <div className={styles.cardHeader}>
+                      <h3>Automated CRM Feeds</h3>
+                      <span className={styles.crmSyncBadge}>Synced</span>
+                    </div>
+
+                    <div className={styles.leadsList}>
+                      {crmLeads.map((lead, index) => (
+                        <div key={index} className={styles.leadItem}>
+                          <div className={styles.leadInfo}>
+                            <div className={styles.leadName}>{lead.name}</div>
+                            <div className={styles.leadPhone}>{lead.phone}</div>
+                          </div>
+                          <div className={styles.leadMeta}>
+                            <span className={`${styles.leadStatus} ${
+                              lead.status === "Qualified" ? styles.statusQual : styles.statusBook
+                            }`}>
+                              {lead.status}
+                            </span>
+                            <div className={styles.leadTime}>{lead.date}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </section>
+      </header>
 
       {/* TRUSTED BY LOGOS */}
       <section className={styles.trusted}>
-        <p className={styles.trustedLabel}>Trusted by top innovative teams worldwide</p>
-        <div className={styles.trustedLogos}>
-          <span className={styles.trustedLogo}>TechStars</span>
-          <span className={styles.trustedLogo}>Y-Combinator</span>
-          <span className={styles.trustedLogo}>Zenith Inc.</span>
-          <span className={styles.trustedLogo}>Apex Group</span>
-          <span className={styles.trustedLogo}>ScaleFlow</span>
-        </div>
-      </section>
-
-      {/* STATS SECTION */}
-      <section className={styles.stats}>
-        <div className={styles.statsGrid}>
-          <div className={styles.statCard}>
-            <div className={styles.statNumber}>98%</div>
-            <div className={styles.statLabel}>Average CSAT Rating</div>
-          </div>
-          <div className={styles.statCard}>
-            <div className={styles.statNumber}>&lt;$0.10</div>
-            <div className={styles.statLabel}>Cost Per Call Minute</div>
-          </div>
-          <div className={styles.statCard}>
-            <div className={styles.statNumber}>24/7</div>
-            <div className={styles.statLabel}>Inbound/Outbound Availability</div>
-          </div>
-          <div className={styles.statCard}>
-            <div className={styles.statNumber}>0s</div>
-            <div className={styles.statLabel}>Customer Hold Time</div>
+        <div className={styles.trustedContainer}>
+          <p className={styles.trustedLabel}>Trusted by innovative brands worldwide</p>
+          <div className={styles.trustedLogos}>
+            <span className={styles.trustedLogo}>TechStars</span>
+            <span className={styles.trustedLogo}>Y-Combinator</span>
+            <span className={styles.trustedLogo}>Zenith Inc.</span>
+            <span className={styles.trustedLogo}>Apex Group</span>
+            <span className={styles.trustedLogo}>ScaleFlow</span>
           </div>
         </div>
       </section>
 
-      {/* FEATURES SECTION */}
-      <section id="features" className={styles.features}>
-        <div className={styles.featuresHeader}>
-          <span className={styles.sectionTag}>Core Capabilities</span>
-          <h2 className={styles.sectionTitle}>Everything You Need to Scale Support</h2>
+      {/* LIVE IN 5 MINUTES */}
+      <section className={styles.featureBlock}>
+        <div className={styles.innerBlockCentered}>
+          <span className={styles.sectionTag}>Instant Deployment</span>
+          <h2 className={styles.sectionTitle}>Live in Under 5 Minutes.</h2>
           <p className={styles.sectionSubtitle}>
-            Supercharge your telecommunications and customer service. Amira combines human clarity with AI power.
+            No code. No tech team. No waiting. Sign up and your Voice AI is running today.
+          </p>
+        </div>
+      </section>
+
+      {/* SPLIT SCREEN FEATURES (MIRRORING JOHA) */}
+      <section className={styles.splitFeatures} id="features">
+        <div className={styles.splitContainer}>
+          
+          {/* BLOCK 1: Connect channels */}
+          <div className={styles.splitRow}>
+            <div className={styles.splitTextCol}>
+              <span className={styles.rowTag}>Step 1</span>
+              <h3 className={styles.rowTitle}>Connect every phone line in 60 seconds.</h3>
+              <p className={styles.rowSubtitle}>
+                Inbound support lines. Outbound dialing. Web call widgets. All in one dashboard.
+              </p>
+              <ul className={styles.rowList}>
+                <li>
+                  <span className={styles.listCheck}>✓</span>
+                  Local &amp; international numbers in 40+ countries
+                </li>
+                <li>
+                  <span className={styles.listCheck}>✓</span>
+                  Web voice call widget, ready with one line of code
+                </li>
+                <li>
+                  <span className={styles.listCheck}>✓</span>
+                  All channels active simultaneously from day one
+                </li>
+              </ul>
+            </div>
+            <div className={styles.splitGraphicCol}>
+              <div className={styles.graphicBox}>
+                <div className={styles.channelWidget}>
+                  <div className={styles.channelItem}>
+                    <div className={styles.channelIconBg}>📞</div>
+                    <div>
+                      <div className={styles.channelName}>Twilio Integration</div>
+                      <div className={styles.channelStatus}>Connected</div>
+                    </div>
+                  </div>
+                  <div className={styles.channelItem}>
+                    <div className={styles.channelIconBg}>🌐</div>
+                    <div>
+                      <div className={styles.channelName}>Web Widget</div>
+                      <div className={styles.channelStatus}>Connected</div>
+                    </div>
+                  </div>
+                  <div className={styles.channelItem}>
+                    <div className={styles.channelIconBg}>🧬</div>
+                    <div>
+                      <div className={styles.channelName}>Telnyx Trunking</div>
+                      <div className={styles.channelStatus}>Active</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* BLOCK 2: Teach business */}
+          <div className={`${styles.splitRow} ${styles.rowInverse}`}>
+            <div className={styles.splitTextCol}>
+              <span className={styles.rowTag}>Step 2</span>
+              <h3 className={styles.rowTitle}>Teach your AI everything about your business.</h3>
+              <p className={styles.rowSubtitle}>
+                Your knowledge. Your voice. Fully automated.
+              </p>
+              <ul className={styles.rowList}>
+                <li>
+                  <span className={styles.listCheck}>✓</span>
+                  Upload FAQs, PDFs, and sales scripts in any format
+                </li>
+                <li>
+                  <span className={styles.listCheck}>✓</span>
+                  Set custom brand voice, vocabulary, and escalation rules
+                </li>
+                <li>
+                  <span className={styles.listCheck}>✓</span>
+                  Test your AI's voice responses in real time before going live
+                </li>
+              </ul>
+            </div>
+            <div className={styles.splitGraphicCol}>
+              <div className={styles.graphicBox}>
+                <div className={styles.knowledgeWidget}>
+                  <div className={styles.knowledgeHeader}>
+                    <span>Knowledge Source</span>
+                    <button className={styles.uploadBtn}>+ Upload</button>
+                  </div>
+                  <div className={styles.fileItem}>
+                    <span>📄 Product_Catalog_2026.pdf</span>
+                    <span className={styles.fileStatus}>Trained</span>
+                  </div>
+                  <div className={styles.fileItem}>
+                    <span>📄 Support_FAQ_Sheet.txt</span>
+                    <span className={styles.fileStatus}>Trained</span>
+                  </div>
+                  <div className={styles.fileItem}>
+                    <span>📄 Outbound_Script.md</span>
+                    <span className={styles.fileStatus}>Trained</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* BLOCK 3: Go live / Autopilot */}
+          <div className={styles.splitRow}>
+            <div className={styles.splitTextCol}>
+              <span className={styles.rowTag}>Step 3</span>
+              <h3 className={styles.rowTitle}>Your AI is live. Your voice operations run on autopilot.</h3>
+              <p className={styles.rowSubtitle}>
+                Every call answered. Every lead qualified. Every customer served.
+              </p>
+              <ul className={styles.rowList}>
+                <li>
+                  <span className={styles.listCheck}>✓</span>
+                  Instant voice responses with ultra-low latency (under 500ms)
+                </li>
+                <li>
+                  <span className={styles.listCheck}>✓</span>
+                  Every call auto-captured as a structured CRM contact
+                </li>
+                <li>
+                  <span className={styles.listCheck}>✓</span>
+                  One-click live handoff to your human team when it matters
+                </li>
+              </ul>
+            </div>
+            <div className={styles.splitGraphicCol}>
+              <div className={styles.graphicBox}>
+                <div className={styles.autopilotWidget}>
+                  <div className={styles.autopilotTitle}>Active Calls Processing</div>
+                  <div className={styles.activeCallList}>
+                    <div className={styles.activeCallItem}>
+                      <div className={styles.avatarMini}>AM</div>
+                      <div className={styles.activeCallDetails}>
+                        <div className={styles.activeCallNumber}>+1 (555) 492-2034</div>
+                        <div className={styles.activeCallProgress}>Solving Billing issue • 1m 45s</div>
+                      </div>
+                      <div className={styles.liveBadgeMini}>Live</div>
+                    </div>
+                    <div className={styles.activeCallItem}>
+                      <div className={styles.avatarMini}>AM</div>
+                      <div className={styles.activeCallDetails}>
+                        <div className={styles.activeCallNumber}>+1 (555) 782-9012</div>
+                        <div className={styles.activeCallProgress}>Booking Appointment • 42s</div>
+                      </div>
+                      <div className={styles.liveBadgeMini}>Live</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* CORE CAPABILITIES GRID (MIRRORING JOHA) */}
+      <section className={styles.capabilities} id="how-it-works">
+        <div className={styles.sectionHeaderCentered}>
+          <span className={styles.sectionTag}>Key Advantages</span>
+          <h2 className={styles.sectionTitle}>Train once. Let it handle every call.</h2>
+          <p className={styles.sectionSubtitle}>
+            Always on. Always accurate. Zero extra staff.
           </p>
         </div>
 
-        <div className={styles.featuresGrid}>
-          <div className={styles.featureCard}>
-            <div className={styles.featureIcon}>📞</div>
-            <h3 className={styles.featureTitle}>Human-like Conversations</h3>
-            <p className={styles.featureDesc}>
-              Advanced text-to-speech synthesis and latency management make Amira indistinguishable from a seasoned human operator.
+        <div className={styles.capabilitiesGrid}>
+          {/* CARD 1 */}
+          <div className={styles.capabilityCard}>
+            <div className={styles.capIcon}>🎙️</div>
+            <h4 className={styles.capTitle}>Train once. Let it handle every call.</h4>
+            <p className={styles.capDesc}>
+              Amira works across all your local lines, toll-free numbers, and website widgets.
+              Train on your PDF catalogs, txt instructions, or pricing files.
             </p>
           </div>
-          <div className={styles.featureCard}>
-            <div className={styles.featureIcon}>🧠</div>
-            <h3 className={styles.featureTitle}>Instant Knowledge Access</h3>
-            <p className={styles.featureDesc}>
-              Upload your company documents, PDFs, or site FAQs. Amira masters all your parameters and business voice instantly.
+
+          {/* CARD 2 */}
+          <div className={styles.capabilityCard}>
+            <div className={styles.capIcon}>📊</div>
+            <h4 className={styles.capTitle}>Every call becomes a lead. Automatically.</h4>
+            <p className={styles.capDesc}>
+              Your CRM fills itself while you sleep. Auto-capture names, phone numbers,
+              deal stages, and sentiment analytics directly into your unified dashboard.
             </p>
           </div>
-          <div className={styles.featureCard}>
-            <div className={styles.featureIcon}>⚡</div>
-            <h3 className={styles.featureTitle}>Sub-500ms Response Times</h3>
-            <p className={styles.featureDesc}>
-              Ultra-fast processing architectures remove awkward AI pauses, guaranteeing high-velocity, fluent conversations.
+
+          {/* CARD 3 */}
+          <div className={styles.capabilityCard}>
+            <div className={styles.capIcon}>🚀</div>
+            <h4 className={styles.capTitle}>Reach thousands of leads in one click.</h4>
+            <p className={styles.capDesc}>
+              Import lead lists and fire automated outbound call sequences. Amira rings
+              them up, pitches your offers, answers objections, and captures results.
             </p>
           </div>
-          <div className={styles.featureCard}>
-            <div className={styles.featureIcon}>📊</div>
-            <h3 className={styles.featureTitle}>Unified CRM Sync</h3>
-            <p className={styles.featureDesc}>
-              Every call transcription, summary, and client sentiment analysis maps directly into your CRM database dashboard.
+
+          {/* CARD 4 */}
+          <div className={styles.capabilityCard}>
+            <div className={styles.capIcon}>🤝</div>
+            <h4 className={styles.capTitle}>Your whole team, one dashboard.</h4>
+            <p className={styles.capDesc}>
+              Review transcripts, listen to voice recordings, assign call actions, and leave internal notes.
+              Connect Zapier, Salesforce, Hubspot, and GoHighLevel in seconds.
             </p>
           </div>
-          <div className={styles.featureCard}>
-            <div className={styles.featureIcon}>🔄</div>
-            <h3 className={styles.featureTitle}>Smart Human Escalation</h3>
-            <p className={styles.featureDesc}>
-              When a complex call requires manual override, Amira gracefully transfers the line along with the live logs.
-            </p>
-          </div>
-          <div className={styles.featureCard}>
-            <div className={styles.featureIcon}>🚀</div>
-            <h3 className={styles.featureTitle}>Unlimited Scaling</h3>
-            <p className={styles.featureDesc}>
-              Say goodbye to hiring queues. Handle 10,000 phone calls simultaneously without losing an ounce of quality.
+
+          {/* CARD 5 */}
+          <div className={styles.capabilityCard}>
+            <div className={styles.capIcon}>📅</div>
+            <h4 className={styles.capTitle}>Talk to them. Book them. In the same place.</h4>
+            <p className={styles.capDesc}>
+              Sync your Google Calendar or Cal.com. Amira answers available slot times,
+              books appointments, and sends confirmations without you lifting a finger.
             </p>
           </div>
         </div>
       </section>
 
-      {/* HOW IT WORKS SECTION */}
-      <section id="how-it-works" className={styles.howItWorks}>
-        <div className={styles.howItWorksHeader}>
-          <span className={styles.sectionTag}>Easy Setup</span>
-          <h2 className={styles.sectionTitle}>Get Started in Under 5 Minutes</h2>
-          <p className={styles.sectionSubtitle}>
-            No code templates. No engineering overhead. Just define your scope and let Amira handle the rest.
-          </p>
-        </div>
-
-        <div className={styles.stepsContainer}>
-          <div className={styles.step}>
-            <div className={styles.stepNumber}>1</div>
-            <div className={styles.stepContent}>
-              <h3 className={styles.stepTitle}>Train Your Agent</h3>
-              <p className={styles.stepDesc}>
-                Define Amira's prompt instructions and upload documents. Feed her with custom business guidelines so she knows exactly what to pitch or troubleshoot.
-              </p>
-            </div>
-          </div>
-
-          <div className={styles.step}>
-            <div className={styles.stepNumber}>2</div>
-            <div className={styles.stepContent}>
-              <h3 className={styles.stepTitle}>Connect Your Phone System</h3>
-              <p className={styles.stepDesc}>
-                Instantly provision premium local or international telephone lines, or securely bridge your existing business numbers to Amira.
-              </p>
-            </div>
-          </div>
-
-          <div className={styles.step}>
-            <div className={styles.stepNumber}>3</div>
-            <div className={styles.stepContent}>
-              <h3 className={styles.stepTitle}>Go Live & Automate</h3>
-              <p className={styles.stepDesc}>
-                Watch Amira make/receive calls, answer queries, capture details, and populate your dashboard. Set custom rules for automated outbound text notifications.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* LIVE CALL SHOWCASE SECTION */}
-      <section id="demo" className={styles.showcase}>
-        <div className={styles.showcaseHeader}>
+      {/* INTERACTIVE CALLING PLAYGROUND */}
+      <section className={styles.demoPlayground} id="demo">
+        <div className={styles.sectionHeaderCentered}>
           <span className={styles.sectionTag}>Live Playground</span>
           <h2 className={styles.sectionTitle}>Talk to Amira Right Now</h2>
           <p className={styles.sectionSubtitle}>
-            Give her a quick call or request an outbound line. Experience firsthand the revolutionary latency and human-grade voice response model.
+            Experience firsthand the industry-leading speed, voice quality, and responsiveness of Amira.
           </p>
         </div>
-        <div className={styles.showcaseImage} style={{ background: "#111", border: "1px solid rgba(255, 255, 255, 0.08)", padding: "8px" }}>
+        
+        <div className={styles.demoFrame}>
           <iframe 
             src="https://amira-call-demo.vercel.app/" 
-            style={{ width: "100%", height: "600px", border: "none", borderRadius: "16px", background: "#0d0d0d" }} 
-            title="Amira Interactive Call Demo Playground"
+            title="Amira Interactive Call Demo"
             allow="microphone"
+            className={styles.demoIframe}
           />
         </div>
       </section>
 
       {/* PRICING SECTION */}
-      <section id="pricing" className={styles.pricing}>
-        <div className={styles.pricingHeader}>
-          <span className={styles.sectionTag}>Transparent Plans</span>
+      <section className={styles.pricing} id="pricing">
+        <div className={styles.sectionHeaderCentered}>
+          <span className={styles.sectionTag}>Pricing Plans</span>
           <h2 className={styles.sectionTitle}>Scale at Your Own Pace</h2>
           <p className={styles.sectionSubtitle}>
-            Choose a plan that matches your current call volume. Start with absolute flexibility and upgrade anytime.
+            Transparent, flexible billing based on call volume. Upgrade or cancel anytime.
           </p>
+
+          <div className={styles.toggleContainer}>
+            <button 
+              className={`${styles.toggleBtn} ${activePlan === "monthly" ? styles.toggleActive : ""}`}
+              onClick={() => setActivePlan("monthly")}
+            >
+              Billed Monthly
+            </button>
+            <button 
+              className={`${styles.toggleBtn} ${activePlan === "annually" ? styles.toggleActive : ""}`}
+              onClick={() => setActivePlan("annually")}
+            >
+              Billed Annually <span className={styles.discountBadge}>Save 20%</span>
+            </button>
+          </div>
         </div>
 
         <div className={styles.pricingGrid}>
           {/* STARTER */}
           <div className={styles.pricingCard}>
-            <h3 className={styles.pricingPlanName}>Starter</h3>
-            <p className={styles.pricingPlanDesc}>Perfect for solo operators and small projects testing out AI voice support.</p>
-            <div className={styles.pricingPrice}>
-              $49<span className={styles.pricingPriceUnit}>/mo</span>
+            <h4 className={styles.planName}>Starter</h4>
+            <p className={styles.planDesc}>Perfect for solo operators and small projects testing out AI voice support.</p>
+            <div className={styles.planPrice}>
+              ${activePlan === "monthly" ? "49" : "39"}<span>/mo</span>
             </div>
-            <p className={styles.pricingPeriod}>Billed monthly</p>
+            <p className={styles.planPeriod}>Billed {activePlan}</p>
             
-            <ul className={styles.pricingFeatures}>
-              <li className={styles.pricingFeature}>500 call minutes included</li>
-              <li className={styles.pricingFeature}>1 custom AI phone line</li>
-              <li className={styles.pricingFeature}>Knowledge base training (up to 5MB)</li>
-              <li className={styles.pricingFeature}>Basic dashboard logs & analytics</li>
-              <li className={styles.pricingFeature}>Webhooks & email support</li>
+            <ul className={styles.planFeatures}>
+              <li>500 call minutes included</li>
+              <li>1 custom AI phone line</li>
+              <li>Knowledge base training (up to 5MB)</li>
+              <li>Basic dashboard logs &amp; analytics</li>
+              <li>Webhooks &amp; email support</li>
             </ul>
 
-            <Link href="/signup" className={`${styles.pricingCta} ${styles.pricingCtaOutline}`}>
-              Start Starter Free
-            </Link>
+            <a href="#" className={`${styles.btnPlan} ${styles.btnPlanOutline}`}>Start Free Trial</a>
           </div>
 
           {/* PROFESSIONAL */}
           <div className={`${styles.pricingCard} ${styles.pricingCardPopular}`}>
-            <div className={styles.pricingPopularBadge}>Most Popular</div>
-            <h3 className={styles.pricingPlanName}>Professional</h3>
-            <p className={styles.pricingPlanDesc}>Ideal for growing organizations automating medium to high support volume.</p>
-            <div className={styles.pricingPrice}>
-              $199<span className={styles.pricingPriceUnit}>/mo</span>
+            <div className={styles.popularBadge}>Most Popular</div>
+            <h4 className={styles.planName}>Professional</h4>
+            <p className={styles.planDesc}>Ideal for growing teams automating medium to high voice support volume.</p>
+            <div className={styles.planPrice}>
+              ${activePlan === "monthly" ? "199" : "159"}<span>/mo</span>
             </div>
-            <p className={styles.pricingPeriod}>Billed monthly</p>
+            <p className={styles.planPeriod}>Billed {activePlan}</p>
             
-            <ul className={styles.pricingFeatures}>
-              <li className={styles.pricingFeature}>3,000 call minutes included</li>
-              <li className={styles.pricingFeature}>5 custom AI phone lines</li>
-              <li className={styles.pricingFeature}>Unlimited document training space</li>
-              <li className={styles.pricingFeature}>Smart human handoff & escalation</li>
-              <li className={styles.pricingFeature}>Advanced dashboard analytics & CRM integrations</li>
-              <li className={styles.pricingFeature}>Priority customer support</li>
+            <ul className={styles.planFeatures}>
+              <li>3,000 call minutes included</li>
+              <li>5 custom AI phone lines</li>
+              <li>Unlimited document training space</li>
+              <li>Smart human handoff &amp; escalation</li>
+              <li>Advanced dashboard analytics &amp; CRM</li>
+              <li>Priority customer support</li>
             </ul>
 
-            <Link href="/signup" className={`${styles.pricingCta} ${styles.pricingCtaPrimary}`}>
-              Go Professional
-            </Link>
+            <a href="#" className={`${styles.btnPlan} ${styles.btnPlanFilled}`}>Go Professional</a>
           </div>
 
           {/* ENTERPRISE */}
           <div className={styles.pricingCard}>
-            <h3 className={styles.pricingPlanName}>Enterprise</h3>
-            <p className={styles.pricingPlanDesc}>Built for high-scale call centers requiring advanced reliability and security.</p>
-            <div className={styles.pricingPrice}>
+            <h4 className={styles.planName}>Enterprise</h4>
+            <p className={styles.planDesc}>Built for high-scale call centers requiring advanced reliability and security.</p>
+            <div className={styles.planPrice}>
               Custom
             </div>
-            <p className={styles.pricingPeriod}>Tailored options available</p>
+            <p className={styles.planPeriod}>Tailored options available</p>
             
-            <ul className={styles.pricingFeatures}>
-              <li className={styles.pricingFeature}>Unlimited custom call minutes</li>
-              <li className={styles.pricingFeature}>Dedicated infrastructure (SLA guaranteed)</li>
-              <li className={styles.pricingFeature}>Custom voice model fine-tuning</li>
-              <li className={styles.pricingFeature}>Advanced API gateways & webhook configs</li>
-              <li className={styles.pricingFeature}>HIPAA & enterprise compliance</li>
-              <li className={styles.pricingFeature}>Dedicated account manager & 24/7 phone support</li>
+            <ul className={styles.planFeatures}>
+              <li>Unlimited custom call minutes</li>
+              <li>Dedicated infrastructure (SLA guaranteed)</li>
+              <li>Custom voice model fine-tuning</li>
+              <li>Advanced API gateways &amp; webhooks</li>
+              <li>HIPAA &amp; enterprise compliance</li>
+              <li>Dedicated account manager &amp; 24/7 support</li>
             </ul>
 
-            <Link href="/signup" className={`${styles.pricingCta} ${styles.pricingCtaOutline}`}>
-              Contact Sales
-            </Link>
+            <a href="#" className={`${styles.btnPlan} ${styles.btnPlanOutline}`}>Contact Sales</a>
           </div>
         </div>
       </section>
 
-      {/* TESTIMONIALS SECTION */}
-      <section id="testimonials" className={styles.testimonials}>
-        <div className={styles.testimonialsHeader}>
-          <span className={styles.sectionTag}>Testimonials</span>
-          <h2 className={styles.sectionTitle}>Validated by Leading Teams</h2>
+      {/* CLIENT TESTIMONIALS (JOHA ALIGNED) */}
+      <section className={styles.testimonials}>
+        <div className={styles.sectionHeaderCentered}>
+          <span className={styles.sectionTag}>Client Stories</span>
+          <h2 className={styles.sectionTitle}>Businesses That Made the Switch</h2>
           <p className={styles.sectionSubtitle}>
-            Hear from industry leaders who retired traditional answering machines and scaled with Amira.
+            Hear directly from founders and operators who chose to stop competing manually and let AI handle the phones.
           </p>
         </div>
 
         <div className={styles.testimonialsGrid}>
           <div className={styles.testimonialCard}>
-            <div className={styles.testimonialStars}>★★★★★</div>
+            <div className={styles.stars}>★★★★★</div>
             <p className={styles.testimonialText}>
-              "Amira took over our after-hours customer service line. We went from losing 40% of our evening inquiries to capturing and resolving every single phone call. Our revenue grew 35% in just two months!"
+              "Our AI chatbot handled over 800 conversations in the first month. We closed 23 new clients without a single manual sales call. Amira built something I genuinely didn't think was possible at this scale or price point."
             </p>
             <div className={styles.testimonialAuthor}>
-              <div className={styles.testimonialAvatar}>SJ</div>
+              <div className={styles.avatar}>SJ</div>
               <div>
-                <h4 className={styles.testimonialName}>Sarah Jenkins</h4>
-                <p className={styles.testimonialRole}>Operations Lead, ScaleFlow</p>
+                <p className={styles.authorName}>Sarah Jenkins</p>
+                <p className={styles.authorRole}>Operations Lead, ScaleFlow</p>
               </div>
             </div>
           </div>
 
           <div className={styles.testimonialCard}>
-            <div className={styles.testimonialStars}>★★★★★</div>
+            <div className={styles.stars}>★★★★★</div>
             <p className={styles.testimonialText}>
-              "Answering outbound calls is exhausting. With Amira, we deployed an outbound agent that qualifies 500 leads per day. The voice quality is so perfect that most customers don't even realize she's an AI."
+              "The AI voice agent answers our inbound calls 24/7 and books property viewings automatically. We went from missing 60% of after-hours leads to capturing every single one. Revenue is up 40% quarter-on-quarter."
             </p>
             <div className={styles.testimonialAuthor}>
-              <div className={styles.testimonialAvatar}>MK</div>
+              <div className={styles.avatar}>MK</div>
               <div>
-                <h4 className={styles.testimonialName}>Marcus Kincaid</h4>
-                <p className={styles.testimonialRole}>VP of Sales, Zenith Inc.</p>
+                <p className={styles.authorName}>Marcus Kincaid</p>
+                <p className={styles.authorRole}>VP of Sales, Zenith Inc.</p>
               </div>
             </div>
           </div>
 
           <div className={styles.testimonialCard}>
-            <div className={styles.testimonialStars}>★★★★★</div>
+            <div className={styles.stars}>★★★★★</div>
             <p className={styles.testimonialText}>
-              "Setting up Amira took less than 15 minutes. It integrates perfectly with our internal systems, updating customer tickets in Zendesk and Slack instantly. Highly recommended."
+              "Within 6 weeks of launching our AI voice agents, our team's outbound call productivity jumped from 1.8× to 4.2×. The voice response is indistinguishable from real operators. Our competitors have no idea how we're doing it."
             </p>
             <div className={styles.testimonialAuthor}>
-              <div className={styles.testimonialAvatar}>DR</div>
+              <div className={styles.avatar}>DR</div>
               <div>
-                <h4 className={styles.testimonialName}>Daniel Ryan</h4>
-                <p className={styles.testimonialRole}>Co-Founder, Apex Group</p>
+                <p className={styles.authorName}>Daniel Ryan</p>
+                <p className={styles.authorRole}>Co-Founder, Apex Group</p>
               </div>
             </div>
           </div>
         </div>
+
+        <p className={styles.guaranteeText}>
+          🔒 <strong>No lock-in:</strong> Cancel anytime. If your call response rate and lead capture don't improve in 30 days, we work with you until they do, or refund you in full.
+        </p>
       </section>
 
-      {/* CTA BANNER */}
-      <section className={styles.ctaBanner}>
-        <div className={styles.ctaBannerGlow} />
-        <div className={styles.ctaBannerContent}>
-          <h2 className={styles.ctaBannerTitle}>Ready to Automate Your Support?</h2>
-          <p className={styles.ctaBannerDesc}>
-            Join thousands of modern businesses saving time, scaling phone channels, and driving high-converting outbound operations with Amira.
+      {/* FOOTER CTA BANNER */}
+      <section className={styles.footerCtaBanner}>
+        <div className={styles.footerCtaGlow} />
+        <div className={styles.footerCtaContent}>
+          <h2 className={styles.footerCtaTitle}>Your customers are calling right now.<br />Who's replying?</h2>
+          <p className={styles.footerCtaDesc}>
+            Every unanswered call is a lead walking out the door. Set up your Voice AI Agent today.
           </p>
-          <Link href="/signup" className={styles.navCta} style={{ display: "inline-block", fontSize: "1rem", padding: "0.875rem 2rem" }}>
-            Get Started Free Now
-          </Link>
+          <a href="#" className={styles.btnCtaMain}>Start Free Trial</a>
         </div>
       </section>
 
@@ -380,11 +692,15 @@ export default function LandingPage() {
         <div className={styles.footerInner}>
           <div className={styles.footerBrand}>
             <div className={styles.footerBrandName}>
-              <img src="/images/amira-logo.png" alt="Amira Footer Logo" style={{ width: "24px", height: "24px", borderRadius: "6px" }} />
+              <img 
+                src="https://framerusercontent.com/assets/Wo30Sktse9esY3HXGesSUG8i0o.png" 
+                alt="Amira Logo" 
+                className={styles.footerLogoImg} 
+              />
               Amira
             </div>
             <p className={styles.footerBrandDesc}>
-              The premium A.I-powered call center that scales customer support, qualifiers outbound campaigns, and automates revenue on autopilot.
+              The AI call center platform that helps businesses respond faster, qualify leads, and close more sales.
             </p>
           </div>
 
@@ -393,7 +709,7 @@ export default function LandingPage() {
             <ul>
               <li><a href="#features">Features</a></li>
               <li><a href="#pricing">Pricing</a></li>
-              <li><Link href="/dashboard">Dashboard</Link></li>
+              <li><a href="#how-it-works">How It Works</a></li>
               <li><a href="#demo">Live Demo</a></li>
             </ul>
           </div>
@@ -401,7 +717,6 @@ export default function LandingPage() {
           <div className={styles.footerCol}>
             <h4>Company</h4>
             <ul>
-              <li><a href="#">About Us</a></li>
               <li><a href="#">Careers</a></li>
               <li><a href="#">Security</a></li>
               <li><a href="#">Contact Support</a></li>
@@ -409,17 +724,16 @@ export default function LandingPage() {
           </div>
 
           <div className={styles.footerCol}>
-            <h4>Legal</h4>
+            <h4>Contact Us</h4>
             <ul>
-              <li><a href="#">Privacy Policy</a></li>
-              <li><a href="#">Terms of Service</a></li>
-              <li><a href="#">DPA & GDPR</a></li>
+              <li><a href="mailto:support@amirapro.com">Email: support@amirapro.com</a></li>
+              <li><a href="https://wa.me/2349032449461">WhatsApp: +234 903 244 9461</a></li>
             </ul>
           </div>
         </div>
 
         <div className={styles.footerBottom}>
-          <span className={styles.footerCopy}>&copy; {new Date().getFullYear()} Amira Technologies Inc. All rights reserved.</span>
+          <span className={styles.footerCopy}>&copy; 2026 Amira Technologies Inc. All rights reserved.</span>
           <div className={styles.footerSocials}>
             <a href="#">Twitter</a>
             <a href="#">LinkedIn</a>
