@@ -1,0 +1,38 @@
+.container {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+}
+.headerActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+.emptyState {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+.emptyIcon {
+  width: 64px;
+  height: 64px;
+  background: var(--bg-surface-hover);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  color: var(--text-secondary);
+}
+.emptyTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.emptyDesc {
+  color: var(--text-secondary);
+  max-width: 400px;
+  margin: 0 auto 2rem;
+  font-size: 0.875rem;
+}

@@ -1,0 +1,26 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1rem;
+  white-space: nowrap;
+}
+.default {
+  background-color: var(--bg-surface-hover);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+}
+.primary {
+  background-color: var(--brand-primary);
+  color: var(--text-inverse);
+  border: 1px solid transparent;
+}
+.danger {
+  background-color: var(--error);
+  color: var(--text-inverse);
+  border: 1px solid transparent;
+}
