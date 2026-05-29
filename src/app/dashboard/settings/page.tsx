@@ -18,7 +18,7 @@ export default function Page() {
               <label style={{ display: 'block', fontSize: '14px', color: 'var(--stripe-label)', marginBottom: '0.5rem', fontWeight: 500 }}>Timezone</label>
               <select style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px', fontSize: '14px', color: 'var(--stripe-navy)', backgroundColor: '#fff' }}>
                 <option>Pacific Time (PT)</option>
-                <option selected>Eastern Time (ET)</option>
+                <option>Eastern Time (ET)</option>
                 <option>Greenwich Mean Time (GMT)</option>
               </select>
             </div>

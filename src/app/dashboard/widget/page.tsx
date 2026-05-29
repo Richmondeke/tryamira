@@ -14,11 +14,11 @@ export default function Page() {
           <button style={{ position: 'absolute', top: '1rem', right: '1rem', backgroundColor: 'rgba(255,255,255,0.1)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px', padding: '0.25rem 0.5rem', fontSize: '12px', cursor: 'pointer' }}>Copy Code</button>
           <pre style={{ margin: 0, color: '#a0aec0', fontSize: '13px', fontFamily: 'monospace', overflowX: 'auto' }}>
 <code>&lt;script&gt;
-  window.AmiraConfig = {{
+  window.AmiraConfig = {"{"}
     workspaceId: "ws_live_9a8b7c6d5e",
     theme: "light",
     position: "bottom-right"
-  }};
+  {"}"};
 &lt;/script&gt;
 &lt;script src="https://cdn.heyamira.com/widget.js" async&gt;&lt;/script&gt;</code>
           </pre>
