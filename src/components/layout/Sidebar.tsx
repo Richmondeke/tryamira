@@ -1,8 +1,8 @@
-"use client";
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import styles from './Sidebar.module.css';
 
 interface NavItem {
   name: string;
@@ -38,69 +38,118 @@ const navItems: Record<string, NavItem[]> = {
 
 export function Sidebar() {
   const pathname = usePathname();
+  // Keep track of which sections are collapsed. By default, none are.
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+
+  const toggleSection = (section: string) => {
+    setCollapsedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
 
   return (
     <aside style={{ 
       width: '260px', 
       height: '100vh', 
-      backgroundColor: '#ffffff',
-      borderRight: '1px solid var(--stripe-border)',
+      backgroundColor: '#0a1128', // Dark blackish blue
+      borderRight: '1px solid rgba(255, 255, 255, 0.1)',
       display: 'flex', 
       flexDirection: 'column',
       fontFeatureSettings: '"ss01"'
     }}>
       {/* Logo Section */}
       <div style={{ 
-        height: '64px', 
+        height: '96px', // Increased height to fit larger logo
         display: 'flex', 
         alignItems: 'center', 
         padding: '0 1.5rem',
-        borderBottom: '1px solid var(--stripe-border)'
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
       }}>
         <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }}>
           <img 
             src="https://framerusercontent.com/assets/Wo30Sktse9esY3HXGesSUG8i0o.png" 
             alt="Amira Logo" 
-            style={{ width: '32px', height: '32px', objectFit: 'contain' }} 
+            style={{ width: '64px', height: '64px', objectFit: 'contain' }} // Logo is 2x larger
           />
         </Link>
       </div>
 
       {/* Navigation */}
-      <nav style={{ flex: 1, overflowY: 'auto', padding: '1rem' }}>
-        {Object.entries(navItems).map(([section, items]) => (
-          <div key={section} style={{ marginBottom: '1rem' }}>
-            <div style={{ padding: '0 0.75rem 0.5rem', fontSize: '12px', color: 'var(--stripe-muted)', fontWeight: 600 }}>{section}</div>
-            {items.map(item => (
-              <Link 
-                key={item.name} 
-                href={item.href} 
-                style={{
+      <nav style={{ flex: 1, overflowY: 'auto', padding: '1.5rem 1rem' }}> {/* Increased top padding for spacing */}
+        {Object.entries(navItems).map(([section, items]) => {
+          const isCollapsed = collapsedSections[section];
+          return (
+            <div key={section} style={{ marginBottom: '2rem' }}> {/* Increased spacing between sections */}
+              <div 
+                onClick={() => toggleSection(section)}
+                style={{ 
+                  padding: '0 0.75rem 0.5rem', 
+                  fontSize: '12px', 
+                  color: '#94a3b8', 
+                  fontWeight: 600,
+                  cursor: 'pointer',
                   display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  padding: '0.5rem 0.75rem',
-                  color: pathname === item.href ? 'var(--stripe-purple)' : 'var(--stripe-label)',
-                  textDecoration: 'none',
-                  fontSize: '12px',
-                  fontWeight: 500,
-                  borderRadius: '6px',
-                  backgroundColor: pathname === item.href ? 'var(--stripe-bg)' : 'transparent'
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
                 }}
               >
-                {item.name}
-              </Link>
-            ))}
-          </div>
-        ))}
+                <span>{section}</span>
+                <span style={{ fontSize: '10px' }}>{isCollapsed ? '▼' : '▲'}</span>
+              </div>
+              
+              {!isCollapsed && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  {items.map(item => {
+                    const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                    return (
+                      <Link 
+                        key={item.name} 
+                        href={item.href} 
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.75rem',
+                          padding: '0.5rem 0.75rem',
+                          color: isActive ? '#ffffff' : '#cbd5e1',
+                          textDecoration: 'none',
+                          fontSize: '12px',
+                          fontWeight: 500,
+                          borderRadius: '6px',
+                          backgroundColor: isActive ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        {item.name}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </nav>
 
-      <div style={{ padding: '1rem', borderTop: '1px solid var(--stripe-border)' }}>
+      {/* User Profile Section */}
+      <div style={{ padding: '1.5rem 1rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: 'var(--stripe-purple)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>AO</div>
+          <div style={{ 
+            width: '32px', 
+            height: '32px', 
+            borderRadius: '6px', 
+            background: 'var(--stripe-purple)', 
+            color: 'white', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            fontWeight: 'bold' 
+          }}>
+            AO
+          </div>
           <div>
-            <div style={{ fontSize: '12px', fontWeight: 600 }}>Ashley Okoye</div>
-            <div style={{ fontSize: '11px', color: 'var(--stripe-muted)' }}>Free Plan</div>
+            <div style={{ fontSize: '12px', fontWeight: 600, color: '#ffffff' }}>Ashley Okoye</div>
+            <div style={{ fontSize: '11px', color: '#94a3b8' }}>Free Plan</div>
           </div>
         </div>
       </div>
