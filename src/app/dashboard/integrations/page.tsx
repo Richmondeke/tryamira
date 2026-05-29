@@ -1,29 +1,18 @@
-import styles from '../page.module.css';
-
 export default function Page() {
   return (
-    <div className={styles.container}>
-      <div className={styles.onboardingSection} style={{ marginBottom: '2rem' }}>
-        <div className={styles.onboardingHeader} style={{ marginBottom: '1rem' }}>
-          <div>
-            <h2 className={styles.onboardingTitle}>Integrations</h2>
-            <p className={styles.onboardingSubtitle}>Connect Amira to your CRM, payment gateways, and tools.</p>
-          </div>
-          <div className={styles.progressWrapper} style={{ textAlign: 'right' }}>
-            <img 
-              src="https://framerusercontent.com/assets/Wo30Sktse9esY3HXGesSUG8i0o.png" 
-              alt="Amira Logo" 
-              style={{ height: '32px', width: 'auto', display: 'inline-block' }} 
-            />
-          </div>
-        </div>
+    <div style={ maxWidth: '1080px', margin: '0 auto', width: '100%' }>
+      <div style={ marginBottom: '2rem' }>
+        <h1 style={ fontSize: '32px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', letterSpacing: '-0.64px' }>Integrations</h1>
+        <p style={ color: 'var(--stripe-body)', fontSize: '16px', margin: 0, fontWeight: 300 }>Configure and manage your Integrations settings.</p>
       </div>
-
-      <div className={styles.statCard} style={{ minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)', borderStyle: 'dashed' }}>
-        <div>
-          <h3 style={{ textAlign: 'center', marginBottom: '1rem', color: 'var(--text-secondary)' }}>Integrations Dashboard</h3>
-          <p>Integration cards...</p>
+      
+      <div style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '300px', textAlign: 'center' }}>
+        <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: '#f6f9fc', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}>
+          <span style={{ color: 'var(--stripe-purple)', fontSize: '24px' }}>✨</span>
         </div>
+        <h3 style={{ fontSize: '20px', color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', fontWeight: 500 }}>Integrations is coming soon</h3>
+        <p style={{ color: 'var(--stripe-body)', maxWidth: '400px', lineHeight: 1.5, margin: '0 0 1.5rem 0' }}>We're working hard to bring you the best experience for this feature. Check back soon for updates.</p>
+        <button style={{ backgroundColor: 'var(--stripe-purple)', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>Join Waitlist</button>
       </div>
     </div>
   );

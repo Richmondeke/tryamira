@@ -1,87 +1,65 @@
-import { Button } from '@/components/ui/Button';
-import styles from './page.module.css';
-
 export default function OverviewPage() {
   return (
-    <div className={styles.container}>
-      <div className={styles.onboardingSection} style={{ marginBottom: '1rem', background: 'transparent', padding: '1rem 0', border: 'none' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h1 style={{ fontSize: '2rem', fontWeight: 600, margin: '0 0 0.5rem 0' }}>Welcome back, Ashley</h1>
-            <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Here's what's happening with your AI agent today.</p>
-          </div>
-          <img 
-            src="https://framerusercontent.com/assets/Wo30Sktse9esY3HXGesSUG8i0o.png" 
-            alt="Amira Logo" 
-            style={{ height: '40px', width: 'auto' }} 
-          />
+    <div style={{ maxWidth: '1080px', margin: '0 auto', width: '100%' }}>
+      <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1 style={{ fontSize: '32px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', letterSpacing: '-0.64px', fontFeatureSettings: '"ss01"' }}>Welcome back, Ashley</h1>
+          <p style={{ color: 'var(--stripe-body)', fontSize: '16px', margin: 0, fontWeight: 300, fontFeatureSettings: '"ss01"' }}>Here's what's happening with your AI agent today.</p>
         </div>
+        <img 
+          src="https://framerusercontent.com/assets/Wo30Sktse9esY3HXGesSUG8i0o.png" 
+          alt="Amira Logo" 
+          style={{ height: '40px', width: 'auto' }} 
+        />
       </div>
 
-      <div className={styles.statsGrid}>
-          <div className={styles.statCard}>
-            <div className={styles.statTitle}>Total Conversations</div>
-            <div className={styles.statValue}>1,248</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '2rem' }}>
+        {[
+          { title: 'Total Leads', value: '1,248', trend: '+12%', positive: true },
+          { title: 'Active Conversations', value: '42', trend: '+5%', positive: true },
+          { title: 'Agent Deflection Rate', value: '89%', trend: '-2%', positive: false }
+        ].map((stat, i) => (
+          <div key={i} style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '1.5rem', boxShadow: 'var(--stripe-shadow-ambient)' }}>
+            <div style={{ fontSize: '14px', color: 'var(--stripe-label)', marginBottom: '0.5rem', fontWeight: 500, fontFeatureSettings: '"ss01"' }}>{stat.title}</div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem' }}>
+              <div style={{ fontSize: '32px', fontWeight: 300, color: 'var(--stripe-navy)', fontFeatureSettings: '"tnum", "ss01"', letterSpacing: '-0.64px' }}>{stat.value}</div>
+              <div style={{ 
+                fontSize: '12px', 
+                fontWeight: 500,
+                color: stat.positive ? 'var(--stripe-success-text)' : '#d92d20',
+                backgroundColor: stat.positive ? 'rgba(21,190,83,0.1)' : 'rgba(217,45,32,0.1)',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                fontFeatureSettings: '"tnum"'
+              }}>
+                {stat.trend}
+              </div>
+            </div>
           </div>
-          <div className={styles.statCard}>
-            <div className={styles.statTitle}>AI Resolutions</div>
-            <div className={styles.statValue}>984</div>
-          </div>
-          <div className={styles.statCard}>
-            <div className={styles.statTitle}>New Leads</div>
-            <div className={styles.statValue}>142</div>
-          </div>
-        </div>
+        ))}
+      </div>
 
-        <section className={styles.onboardingSection}>
-          <div className={styles.onboardingHeader}>
-            <div>
-              <h2 className={styles.onboardingTitle}>TryAmira configuration</h2>
-              <p className={styles.onboardingSubtitle}>Complete these steps to fully unlock your AI agent's potential.</p>
+      <div style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '2rem', boxShadow: 'var(--stripe-shadow-ambient)', minHeight: '400px' }}>
+        <h3 style={{ fontSize: '16px', color: 'var(--stripe-navy)', margin: '0 0 1.5rem 0', fontWeight: 500, fontFeatureSettings: '"ss01"' }}>Recent Activity</h3>
+        
+        {[
+          { action: 'New lead captured', entity: 'John Doe', time: '10 mins ago' },
+          { action: 'Agent handled objection', entity: 'Pricing query', time: '1 hour ago' },
+          { action: 'Knowledge base updated', entity: 'Pricing.pdf', time: '3 hours ago' },
+          { action: 'Campaign finished', entity: 'Q3 Promo Drip', time: '1 day ago' }
+        ].map((item, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: i === 3 ? 'none' : '1px solid var(--stripe-border)' }}>
+            <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#f6f9fc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--stripe-purple)', flexShrink: 0 }}>
+              <span style={{ fontSize: '16px', lineHeight: 1 }}>•</span>
             </div>
-            <div className={styles.progressWrapper}>
-              <div className={styles.progressText}>1 / 4 Completed</div>
-              <div className={styles.progressBar}>
-                <div className={styles.progressFill}></div>
-              </div>
+            <div style={{ flex: 1, fontFeatureSettings: '"ss01"' }}>
+              <div style={{ fontSize: '14px', color: 'var(--stripe-navy)', fontWeight: 500, marginBottom: '0.25rem' }}>{item.action}</div>
+              <div style={{ fontSize: '14px', color: 'var(--stripe-body)' }}>{item.entity}</div>
             </div>
+            <div style={{ fontSize: '12px', color: 'var(--stripe-muted)', fontFeatureSettings: '"ss01"' }}>{item.time}</div>
           </div>
-
-          <div className={styles.tasksGrid}>
-            <div className={styles.taskCard}>
-              <div className={styles.taskIcon}>✓</div>
-              <div className={styles.taskContent}>
-                <h3 className={styles.taskTitle}>Connect WhatsApp</h3>
-                <p className={styles.taskDesc}>Your primary channel is connected successfully.</p>
-                <Button variant="secondary" size="sm">Manage Connection</Button>
-              </div>
-            </div>
-            <div className={styles.taskCard}>
-              <div className={styles.taskIcon}>2</div>
-              <div className={styles.taskContent}>
-                <h3 className={styles.taskTitle}>Upload Knowledgebase</h3>
-                <p className={styles.taskDesc}>Train your AI agent with your business documents and FAQs.</p>
-                <Button size="sm">Upload Data</Button>
-              </div>
-            </div>
-            <div className={styles.taskCard}>
-              <div className={styles.taskIcon}>3</div>
-              <div className={styles.taskContent}>
-                <h3 className={styles.taskTitle}>Customize Webchat</h3>
-                <p className={styles.taskDesc}>Match the widget to your website's branding and colors.</p>
-                <Button size="sm">Customize</Button>
-              </div>
-            </div>
-            <div className={styles.taskCard}>
-              <div className={styles.taskIcon}>4</div>
-              <div className={styles.taskContent}>
-                <h3 className={styles.taskTitle}>Deploy AI Agent</h3>
-                <p className={styles.taskDesc}>Enable the AI agent to start answering customer queries automatically.</p>
-                <Button size="sm">Deploy</Button>
-              </div>
-            </div>
-          </div>
-        </section>
+        ))}
+      </div>
     </div>
   );
 }

@@ -16,6 +16,11 @@
   --border-subtle: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.15);
   
+  --stripe-label: #273951;
+  --stripe-body: #64748d;
+  --stripe-muted: #8492a6;
+  --stripe-border: #e5edf5;
+
   --success: #00e676;
   --error: #ff1744;
   --warning: #ffea00;
