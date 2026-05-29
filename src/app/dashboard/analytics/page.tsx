@@ -1,9 +1,9 @@
 export default function Page() {
   return (
-    <div style={ maxWidth: '1080px', margin: '0 auto', width: '100%' }>
-      <div style={ marginBottom: '2rem' }>
-        <h1 style={ fontSize: '32px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', letterSpacing: '-0.64px' }>Analytics</h1>
-        <p style={ color: 'var(--stripe-body)', fontSize: '16px', margin: 0, fontWeight: 300 }>Visualize your AI agent's performance.</p>
+    <div style={{ maxWidth: '1080px', margin: '0 auto', width: '100%' }}>
+      <div style={{ marginBottom: '2rem' }}>
+        <h1 style={{ fontSize: '32px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', letterSpacing: '-0.64px' }}>Analytics</h1>
+        <p style={{ color: 'var(--stripe-body)', fontSize: '16px', margin: 0, fontWeight: 300 }}>Visualize your AI agent's performance.</p>
       </div>
       
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
