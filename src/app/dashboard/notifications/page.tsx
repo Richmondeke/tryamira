@@ -10,10 +10,10 @@ export default function Page() {
         <h3 style={{ fontSize: '16px', color: 'var(--stripe-navy)', margin: '0 0 1.5rem 0', fontWeight: 500 }}>Email Alerts</h3>
         
         {[
-          { title: 'New Lead Captured', desc: 'Get an email every time the AI captures a new lead.', active: True },
-          { title: 'Agent Handover Request', desc: 'Alert me when a user asks to speak to a human.', active: True },
-          { title: 'Daily Performance Summary', desc: 'A morning digest of yesterday's metrics.', active: False },
-          { title: 'Billing & Account', desc: 'Invoices, limits, and subscription updates.', active: True }
+          { title: 'New Lead Captured', desc: 'Get an email every time the AI captures a new lead.', active: true },
+          { title: 'Agent Handover Request', desc: 'Alert me when a user asks to speak to a human.', active: true },
+          { title: 'Daily Performance Summary', desc: "A morning digest of yesterday's metrics.", active: false },
+          { title: 'Billing & Account', desc: 'Invoices, limits, and subscription updates.', active: true }
         ].map((setting, i) => (
           <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '1.5rem', marginBottom: '1.5rem', borderBottom: i === 3 ? 'none' : '1px solid var(--stripe-border)' }}>
             <div>

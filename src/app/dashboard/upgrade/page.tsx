@@ -9,7 +9,7 @@ export default function Page() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
         {[
           { name: 'Starter', price: '$29', limit: '100 conversations/mo', features: ['Webchat widget', 'Basic knowledge base', '1 Team member'] },
-          { name: 'Pro', price: '$99', limit: '1,000 conversations/mo', features: ['WhatsApp & Social', 'Automated Drips', 'Zapier Integration', '5 Team members'], highlighted: True },
+          { name: 'Pro', price: '$99', limit: '1,000 conversations/mo', features: ['WhatsApp & Social', 'Automated Drips', 'Zapier Integration', '5 Team members'], highlighted: true },
           { name: 'Enterprise', price: '$299', limit: 'Unlimited', features: ['Custom API access', 'Dedicated success rep', 'White-labeling', 'Unlimited members'] }
         ].map((plan, i) => (
           <div key={i} style={{ backgroundColor: '#ffffff', border: plan.highlighted ? '2px solid var(--stripe-purple)' : '1px solid var(--stripe-border)', borderRadius: '8px', padding: '2rem', boxShadow: plan.highlighted ? '0 8px 30px rgba(83,58,253,0.12)' : 'var(--stripe-shadow-ambient)', position: 'relative' }}>

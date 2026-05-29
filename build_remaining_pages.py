@@ -262,10 +262,10 @@ pages_data = {
         "content": """
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem' }}>
         {[
-          { name: 'WhatsApp Business', status: 'Connected', desc: 'Connect via official Cloud API.', active: True },
-          { name: 'Facebook Messenger', status: 'Disconnected', desc: 'Reply to page messages automatically.', active: False },
-          { name: 'Instagram Direct', status: 'Disconnected', desc: 'Engage with IG followers and story replies.', active: False },
-          { name: 'SMS / Twilio', status: 'Disconnected', desc: 'Send text messages via Twilio.', active: False }
+          { name: 'WhatsApp Business', status: 'Connected', desc: 'Connect via official Cloud API.', active: true },
+          { name: 'Facebook Messenger', status: 'Disconnected', desc: 'Reply to page messages automatically.', active: false },
+          { name: 'Instagram Direct', status: 'Disconnected', desc: 'Engage with IG followers and story replies.', active: false },
+          { name: 'SMS / Twilio', status: 'Disconnected', desc: 'Send text messages via Twilio.', active: false }
         ].map((channel, i) => (
           <div key={i} style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '1.5rem', boxShadow: 'var(--stripe-shadow-ambient)', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
             <div style={{ width: '48px', height: '48px', borderRadius: '8px', backgroundColor: '#f6f9fc', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -327,12 +327,12 @@ pages_data = {
         "content": """
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
         {[
-          { name: 'HubSpot', desc: 'Sync leads and conversations.', connected: True },
-          { name: 'Salesforce', desc: 'Enterprise CRM sync.', connected: False },
-          { name: 'Zapier', desc: 'Connect to 5,000+ apps.', connected: False },
-          { name: 'Stripe', desc: 'Accept payments in chat.', connected: False },
-          { name: 'Google Calendar', desc: 'Book meetings instantly.', connected: True },
-          { name: 'Slack', desc: 'Get notified of hot leads.', connected: False }
+          { name: 'HubSpot', desc: 'Sync leads and conversations.', connected: true },
+          { name: 'Salesforce', desc: 'Enterprise CRM sync.', connected: false },
+          { name: 'Zapier', desc: 'Connect to 5,000+ apps.', connected: false },
+          { name: 'Stripe', desc: 'Accept payments in chat.', connected: false },
+          { name: 'Google Calendar', desc: 'Book meetings instantly.', connected: true },
+          { name: 'Slack', desc: 'Get notified of hot leads.', connected: false }
         ].map((app, i) => (
           <div key={i} style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '1.5rem', boxShadow: 'var(--stripe-shadow-ambient)', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
@@ -357,10 +357,10 @@ pages_data = {
         <h3 style={{ fontSize: '16px', color: 'var(--stripe-navy)', margin: '0 0 1.5rem 0', fontWeight: 500 }}>Email Alerts</h3>
         
         {[
-          { title: 'New Lead Captured', desc: 'Get an email every time the AI captures a new lead.', active: True },
-          { title: 'Agent Handover Request', desc: 'Alert me when a user asks to speak to a human.', active: True },
-          { title: 'Daily Performance Summary', desc: 'A morning digest of yesterday\'s metrics.', active: False },
-          { title: 'Billing & Account', desc: 'Invoices, limits, and subscription updates.', active: True }
+          { title: 'New Lead Captured', desc: 'Get an email every time the AI captures a new lead.', active: true },
+          { title: 'Agent Handover Request', desc: 'Alert me when a user asks to speak to a human.', active: true },
+          { title: 'Daily Performance Summary', desc: "A morning digest of yesterday's metrics.", active: false },
+          { title: 'Billing & Account', desc: 'Invoices, limits, and subscription updates.', active: true }
         ].map((setting, i) => (
           <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '1.5rem', marginBottom: '1.5rem', borderBottom: i === 3 ? 'none' : '1px solid var(--stripe-border)' }}>
             <div>
@@ -544,7 +544,7 @@ pages_data = {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
         {[
           { name: 'Starter', price: '$29', limit: '100 conversations/mo', features: ['Webchat widget', 'Basic knowledge base', '1 Team member'] },
-          { name: 'Pro', price: '$99', limit: '1,000 conversations/mo', features: ['WhatsApp & Social', 'Automated Drips', 'Zapier Integration', '5 Team members'], highlighted: True },
+          { name: 'Pro', price: '$99', limit: '1,000 conversations/mo', features: ['WhatsApp & Social', 'Automated Drips', 'Zapier Integration', '5 Team members'], highlighted: true },
           { name: 'Enterprise', price: '$299', limit: 'Unlimited', features: ['Custom API access', 'Dedicated success rep', 'White-labeling', 'Unlimited members'] }
         ].map((plan, i) => (
           <div key={i} style={{ backgroundColor: '#ffffff', border: plan.highlighted ? '2px solid var(--stripe-purple)' : '1px solid var(--stripe-border)', borderRadius: '8px', padding: '2rem', boxShadow: plan.highlighted ? '0 8px 30px rgba(83,58,253,0.12)' : 'var(--stripe-shadow-ambient)', position: 'relative' }}>

@@ -8,10 +8,10 @@ export default function Page() {
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem' }}>
         {[
-          { name: 'WhatsApp Business', status: 'Connected', desc: 'Connect via official Cloud API.', active: True },
-          { name: 'Facebook Messenger', status: 'Disconnected', desc: 'Reply to page messages automatically.', active: False },
-          { name: 'Instagram Direct', status: 'Disconnected', desc: 'Engage with IG followers and story replies.', active: False },
-          { name: 'SMS / Twilio', status: 'Disconnected', desc: 'Send text messages via Twilio.', active: False }
+          { name: 'WhatsApp Business', status: 'Connected', desc: 'Connect via official Cloud API.', active: true },
+          { name: 'Facebook Messenger', status: 'Disconnected', desc: 'Reply to page messages automatically.', active: false },
+          { name: 'Instagram Direct', status: 'Disconnected', desc: 'Engage with IG followers and story replies.', active: false },
+          { name: 'SMS / Twilio', status: 'Disconnected', desc: 'Send text messages via Twilio.', active: false }
         ].map((channel, i) => (
           <div key={i} style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '1.5rem', boxShadow: 'var(--stripe-shadow-ambient)', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
             <div style={{ width: '48px', height: '48px', borderRadius: '8px', backgroundColor: '#f6f9fc', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

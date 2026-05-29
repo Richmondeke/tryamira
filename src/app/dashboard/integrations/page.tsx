@@ -8,12 +8,12 @@ export default function Page() {
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
         {[
-          { name: 'HubSpot', desc: 'Sync leads and conversations.', connected: True },
-          { name: 'Salesforce', desc: 'Enterprise CRM sync.', connected: False },
-          { name: 'Zapier', desc: 'Connect to 5,000+ apps.', connected: False },
-          { name: 'Stripe', desc: 'Accept payments in chat.', connected: False },
-          { name: 'Google Calendar', desc: 'Book meetings instantly.', connected: True },
-          { name: 'Slack', desc: 'Get notified of hot leads.', connected: False }
+          { name: 'HubSpot', desc: 'Sync leads and conversations.', connected: true },
+          { name: 'Salesforce', desc: 'Enterprise CRM sync.', connected: false },
+          { name: 'Zapier', desc: 'Connect to 5,000+ apps.', connected: false },
+          { name: 'Stripe', desc: 'Accept payments in chat.', connected: false },
+          { name: 'Google Calendar', desc: 'Book meetings instantly.', connected: true },
+          { name: 'Slack', desc: 'Get notified of hot leads.', connected: false }
         ].map((app, i) => (
           <div key={i} style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '1.5rem', boxShadow: 'var(--stripe-shadow-ambient)', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
