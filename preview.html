@@ -87,14 +87,11 @@
       text-decoration: none;
     }
 
-    .navLogoImg {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-    }
+    .navLogoImg { width: auto; height: 32px; }
 
     .navLogoText {
-      font-family: 'Paytone One', sans-serif;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
       font-size: 1.25rem;
       color: #ffffff;
       font-weight: 400;
@@ -216,7 +213,8 @@
     }
 
     .heroTitle {
-      font-family: 'Paytone One', sans-serif;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
       font-size: clamp(2.5rem, 6.5vw, 5.25rem);
       color: #ffffff;
       margin: 0 0 1.5rem;
@@ -242,44 +240,85 @@
       animation: fadeInUp 0.6s ease-out 0.2s both;
     }
 
-    .heroCtas {
+    .vapiWidgetContainer {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 1.25rem;
+      gap: 0.5rem;
       margin-bottom: 1.5rem;
       animation: fadeInUp 0.6s ease-out 0.3s both;
+      width: 100%;
+      max-width: 480px;
     }
 
-    .heroCtaPrimary {
-      background: #0052cc;
-      color: #ffffff;
-      padding: 0.875rem 2.25rem;
-      border-radius: 100px;
-      font-size: 1rem;
-      font-weight: 600;
-      transition: all 0.3s ease;
-    }
-
-    .heroCtaPrimary:hover {
-      background: #0065ff;
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0, 82, 204, 0.4);
-    }
-
-    .heroCtaSecondary {
-      color: #ffffff;
+    .vapiWidgetInner {
+      display: flex;
+      align-items: stretch;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      overflow: hidden;
+      width: 100%;
+      height: 52px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+    }
+
+    .vapiSelect {
+      flex: 1;
       background: transparent;
-      padding: 0.875rem 2.25rem;
-      border-radius: 100px;
+      color: #fff;
+      border: none;
+      padding: 0 1rem;
+      font-family: inherit;
       font-size: 1rem;
       font-weight: 500;
-      transition: all 0.3s ease;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+    }
+    .vapiSelect option {
+      background: #111;
+      color: #fff;
     }
 
-    .heroCtaSecondary:hover {
-      border-color: rgba(255, 255, 255, 0.3);
-      background: rgba(255, 255, 255, 0.05);
+    .vapiButton {
+      background: #ffffff;
+      color: #000000;
+      border: none;
+      padding: 0 1.25rem;
+      font-weight: 600;
+      font-family: inherit;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .vapiButton:hover {
+      background: #f0f0f0;
+    }
+
+    .vapiIcon {
+      width: 18px;
+      height: 18px;
+    }
+
+    .vapiMeta {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .vapiMetaText {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.4);
+      text-decoration: underline;
+      text-decoration-style: dotted;
+      text-underline-offset: 4px;
+      cursor: pointer;
     }
 
     .metaSubtext {
@@ -728,7 +767,8 @@
     }
 
     .trustedLogo {
-      font-family: 'Paytone One', sans-serif;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
       font-size: 1.15rem;
       color: rgba(255, 255, 255, 0.35);
       letter-spacing: 0.02em;
@@ -784,7 +824,8 @@
     }
 
     .rowTitle {
-      font-family: 'Paytone One', sans-serif;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
       font-size: clamp(1.75rem, 3.2vw, 2.5rem);
       color: #ffffff;
       margin: 0 0 1rem;
@@ -1042,7 +1083,8 @@
     }
 
     .sectionTitle {
-      font-family: 'Paytone One', sans-serif;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
       font-size: clamp(2rem, 3.8vw, 2.75rem);
       color: #ffffff;
       margin: 0 0 1rem;
@@ -1233,7 +1275,8 @@
     }
 
     .planPrice {
-      font-family: 'Paytone One', sans-serif;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
       font-size: 3.25rem;
       color: #ffffff;
       margin: 0 0 0.25rem;
@@ -1422,7 +1465,8 @@
     }
 
     .footerCtaTitle {
-      font-family: 'Paytone One', sans-serif;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
       font-size: clamp(2rem, 4vw, 3rem);
       color: #ffffff;
       margin: 0 0 1.25rem;
@@ -1478,7 +1522,8 @@
     }
 
     .footerBrandName {
-      font-family: 'Paytone One', sans-serif;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
       font-size: 1.35rem;
       color: #ffffff;
       display: flex;
@@ -1488,8 +1533,8 @@
     }
 
     .footerLogoImg {
-      width: 26px;
-      height: 26px;
+      width: auto;
+      height: 42px;
       border-radius: 6px;
     }
 
@@ -1606,8 +1651,8 @@
 
     @media (max-width: 768px) {
       .capabilitiesGrid, .pricingGrid, .testimonialsGrid { grid-template-columns: 1fr; }
-      .heroCtas { flex-direction: column; width: 100%; }
-      .heroCtaPrimary, .heroCtaSecondary { width: 100%; text-align: center; }
+      
+      
       .footerInner { grid-template-columns: 1fr; gap: 2.5rem; }
       .footerBottom { flex-direction: column; gap: 1.25rem; text-align: center; }
       .leadItem { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
@@ -1627,7 +1672,7 @@
       <div class="navContainer">
         <a href="#" class="nav-logo">
           <img src="https://framerusercontent.com/assets/Wo30Sktse9esY3HXGesSUG8i0o.png" alt="Amira Logo" class="navLogoImg" />
-          <span class="navLogoText">Amira</span>
+          
         </a>
         
         <ul class="navLinks">
@@ -1638,9 +1683,9 @@
         </ul>
 
         <div class="navActions">
-          <a href="#" class="navSignIn">Login</a>
+          <a href="/dashboard" class="navSignIn">Login</a>
           <a href="#demo" class="navSecondaryBtn">Talk to Sales</a>
-          <a href="#" class="navCta">Start Free Trial</a>
+          <a href="/dashboard" class="navCta">Start Free Trial</a>
         </div>
       </div>
     </nav>
@@ -1664,12 +1709,24 @@
           Amira handles inbound support, qualifies outbound campaigns, and answers 24/7.
         </p>
 
-        <div class="heroCtas">
-          <a href="#" class="heroCtaPrimary">Start Free Trial</a>
-          <a href="#demo" class="heroCtaSecondary">Talk to Sales</a>
+        <div class="vapiWidgetContainer">
+          <div class="vapiWidgetInner">
+            <select class="vapiSelect">
+              <option value="support">Customer Support</option>
+              <option value="lead">Lead Qualification</option>
+              <option value="sales">Outbound Sales</option>
+            </select>
+            <button class="vapiButton">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="vapiIcon">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+              </svg>
+              Talk to Amira
+            </button>
+          </div>
+          <div class="vapiMeta">
+            <span class="vapiMetaText">Mic permissions needed • No credit card required</span>
+          </div>
         </div>
-
-        <p class="metaSubtext">No credit card required • Live in 5 minutes</p>
 
         <!-- INTERACTIVE DASHBOARD DEMO CONTAINER -->
         <div class="dashboardContainer">
@@ -2207,7 +2264,6 @@
         <div class="footerBrand">
           <div class="footerBrandName">
             <img src="https://framerusercontent.com/assets/Wo30Sktse9esY3HXGesSUG8i0o.png" alt="Amira Logo" class="footerLogoImg" />
-            Amira
           </div>
           <p class="footerBrandDesc">
             The AI call center platform that helps businesses respond faster, qualify leads, and close more sales.

@@ -4,14 +4,14 @@
   --brand-primary-hover: #0065ff;
   --brand-primary-active: #0047b3;
   
-  --bg-primary: #0d0d0d;
-  --bg-surface: #141414;
-  --bg-surface-hover: #1e1e1e;
+  --bg-primary: #0a0b0e;
+  --bg-surface: #0e1219;
+  --bg-surface-hover: #161c26;
   
   --text-primary: #ffffff;
-  --text-secondary: #cccccc;
-  --text-tertiary: #808080;
-  --text-inverse: #0d0d0d;
+  --text-secondary: #a0a8b5;
+  --text-tertiary: #6b7280;
+  --text-inverse: #0a0b0e;
   
   --border-subtle: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.15);

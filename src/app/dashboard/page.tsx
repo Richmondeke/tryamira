@@ -1,12 +1,24 @@
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import styles from './page.module.css';
 
 export default function OverviewPage() {
   return (
-    <DashboardLayout>
-      <div className={styles.container}>
-        <div className={styles.statsGrid}>
+    <div className={styles.container}>
+      <div className={styles.onboardingSection} style={{ marginBottom: '1rem', background: 'transparent', padding: '1rem 0', border: 'none' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h1 style={{ fontSize: '2rem', fontWeight: 600, margin: '0 0 0.5rem 0' }}>Welcome back, Ashley</h1>
+            <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Here's what's happening with your AI agent today.</p>
+          </div>
+          <img 
+            src="https://framerusercontent.com/assets/Wo30Sktse9esY3HXGesSUG8i0o.png" 
+            alt="Amira Logo" 
+            style={{ height: '40px', width: 'auto' }} 
+          />
+        </div>
+      </div>
+
+      <div className={styles.statsGrid}>
           <div className={styles.statCard}>
             <div className={styles.statTitle}>Total Conversations</div>
             <div className={styles.statValue}>1,248</div>
@@ -70,7 +82,6 @@ export default function OverviewPage() {
             </div>
           </div>
         </section>
-      </div>
-    </DashboardLayout>
+    </div>
   );
 }

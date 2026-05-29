@@ -13,31 +13,31 @@ interface NavItem {
 
 const navItems: Record<string, NavItem[]> = {
   MAIN: [
-    { name: 'Overview', href: '/' },
-    { name: 'Chat', href: '/chat' },
-    { name: 'WebChat', href: '/webchat' },
-    { name: 'Email Assistance', href: '/email', badge: 'NEW' },
-    { name: 'Analytics', href: '/analytics' },
-    { name: 'Leads', href: '/leads' },
-    { name: 'WA Broadcast', href: '/broadcast' },
-    { name: 'WA Drip', href: '/drip', badge: 'IMPROVED' },
-    { name: 'AI Agent', href: '/ai-agent' },
-    { name: 'Forms', href: '/forms' },
+    { name: 'Overview', href: '/dashboard' },
+    { name: 'Chat', href: '/dashboard/chat' },
+    { name: 'WebChat', href: '/dashboard/webchat' },
+    { name: 'Email Assistance', href: '/dashboard/email', badge: 'NEW' },
+    { name: 'Analytics', href: '/dashboard/analytics' },
+    { name: 'Leads', href: '/dashboard/leads' },
+    { name: 'WA Broadcast', href: '/dashboard/broadcast' },
+    { name: 'WA Drip', href: '/dashboard/drip', badge: 'IMPROVED' },
+    { name: 'AI Agent', href: '/dashboard/ai-agent' },
+    { name: 'Forms', href: '/dashboard/forms' },
   ],
   SETUP: [
-    { name: 'Tutorials', href: '/tutorials' },
-    { name: 'Message Templates', href: '/templates' },
-    { name: 'Channels', href: '/channels' },
-    { name: 'Chat Widget', href: '/widget' },
-    { name: 'Integrations', href: '/integrations' },
+    { name: 'Tutorials', href: '/dashboard/tutorials' },
+    { name: 'Message Templates', href: '/dashboard/templates' },
+    { name: 'Channels', href: '/dashboard/channels' },
+    { name: 'Chat Widget', href: '/dashboard/widget' },
+    { name: 'Integrations', href: '/dashboard/integrations' },
   ],
   ACCOUNT: [
-    { name: 'Notifications', href: '/notifications', count: 1 },
-    { name: 'Settings', href: '/settings' },
-    { name: 'Refer & Earn', href: '/refer' },
-    { name: 'Partner Program', href: '/partner' },
-    { name: 'Plan', href: '/plan' },
-    { name: 'Upgrade', href: '/upgrade' },
+    { name: 'Notifications', href: '/dashboard/notifications', count: 1 },
+    { name: 'Settings', href: '/dashboard/settings' },
+    { name: 'Refer & Earn', href: '/dashboard/refer' },
+    { name: 'Partner Program', href: '/dashboard/partner' },
+    { name: 'Plan', href: '/dashboard/plan' },
+    { name: 'Upgrade', href: '/dashboard/upgrade' },
   ]
 };
 
@@ -47,10 +47,11 @@ export function Sidebar() {
   return (
     <aside className={styles.sidebar}>
       <div className={styles.header}>
-        <div style={{ background: 'var(--brand-primary)', color: 'white', padding: '4px', borderRadius: '8px' }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-        </div>
-        TryAmira
+        <img 
+          src="https://framerusercontent.com/assets/Wo30Sktse9esY3HXGesSUG8i0o.png" 
+          alt="Amira Logo" 
+          style={{ height: '26px', width: 'auto', display: 'block' }} 
+        />
       </div>
       
       <div className={styles.brandSelector}>
