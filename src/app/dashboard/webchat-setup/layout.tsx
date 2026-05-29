@@ -3,24 +3,23 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-export default function ChatLayout({ children }: { children: React.ReactNode }) {
+export default function WebchatSetupLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   const tabs = [
-    { name: 'Inbox', href: '/dashboard/chat/inbox' },
-    { name: 'WhatsApp', href: '/dashboard/chat/whatsapp' },
-    { name: 'Email Agent', href: '/dashboard/chat/email' },
+    { name: 'Webchat Hub', href: '/dashboard/webchat-setup/chat' },
+    { name: 'Widget Configuration', href: '/dashboard/webchat-setup/widget' },
   ];
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%', height: 'calc(100vh - 120px)', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ maxWidth: '1080px', margin: '0 auto', width: '100%' }}>
       
       {/* Top Header & Tab Navigation */}
       <div style={{ marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <div>
-            <h1 style={{ fontSize: '24px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0' }}>Omnichannel Hub</h1>
-            <p style={{ color: 'var(--stripe-body)', fontSize: '13px', margin: 0 }}>Manage all your conversational channels in one place.</p>
+            <h1 style={{ fontSize: '24px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0' }}>Webchat & Widget</h1>
+            <p style={{ color: 'var(--stripe-body)', fontSize: '13px', margin: 0 }}>Manage your website chat interactions and configure your floating widget.</p>
           </div>
         </div>
         
@@ -52,8 +51,8 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
         </div>
       </div>
 
-      {/* Render the specific channel page below */}
-      <div style={{ flex: 1, minHeight: 0 }}>
+      {/* Render the specific tab below */}
+      <div>
         {children}
       </div>
 

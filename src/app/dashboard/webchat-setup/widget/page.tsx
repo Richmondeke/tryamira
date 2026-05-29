@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Toast from '../../../components/ui/Toast';
+import Toast from '../../../../components/ui/Toast';
 
 export default function WidgetPage() {
   const [toast, setToast] = useState<string | null>(null);
