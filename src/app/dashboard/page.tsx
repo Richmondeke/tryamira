@@ -1,7 +1,69 @@
 'use client';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import { createClient } from '../../utils/supabase/client';
+
+// Helper to format timestamps to relative time (e.g. "10 mins ago")
+function getRelativeTime(timestamp: string) {
+  const diff = Date.now() - new Date(timestamp).getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return 'Just now';
+  if (minutes < 60) return `${minutes} min${minutes === 1 ? '' : 's'} ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+  const days = Math.floor(hours / 24);
+  return `${days} day${days === 1 ? '' : 's'} ago`;
+}
 
 export default function OverviewPage() {
+  const supabase = createClient();
+  const [activities, setActivities] = useState<any[]>([
+    // Fallback data while loading or if DB fails
+    { action_text: 'New lead captured', entity_name: 'John Doe', created_at: new Date(Date.now() - 600000).toISOString(), avatar_url: 'https://i.pravatar.cc/150?u=1' },
+    { action_text: 'Agent handled objection', entity_name: 'Sarah Smith', created_at: new Date(Date.now() - 3600000).toISOString(), avatar_url: 'https://i.pravatar.cc/150?u=2' },
+    { action_text: 'Knowledge base updated', entity_name: 'Pricing.pdf', created_at: new Date(Date.now() - 10800000).toISOString(), avatar_url: null },
+    { action_text: 'Campaign finished', entity_name: 'Q3 Promo Drip', created_at: new Date(Date.now() - 86400000).toISOString(), avatar_url: null }
+  ]);
+  const [stats, setStats] = useState({ leads: '1,248' });
+
+  useEffect(() => {
+    // 1. Fetch initial activities
+    const fetchActivities = async () => {
+      const { data, error } = await supabase
+        .from('activities')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5);
+      
+      if (!error && data && data.length > 0) {
+        setActivities(data);
+      }
+      
+      // Also fetch total leads count just as an example of wiring stats
+      const { count } = await supabase.from('leads').select('*', { count: 'exact', head: true });
+      if (count !== null) {
+        setStats({ leads: count.toString() });
+      }
+    };
+    fetchActivities();
+
+    // 2. Subscribe to realtime inserts
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activities' }, (payload) => {
+        setActivities(prev => [payload.new, ...prev].slice(0, 5)); // Keep top 5
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'leads' }, () => {
+        // Increment stat counter locally when a lead is captured
+        setStats(prev => ({ leads: (parseInt(prev.leads.replace(/,/g, '')) + 1).toLocaleString() }));
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   return (
     <div style={{ maxWidth: '1080px', margin: '0 auto', width: '100%' }}>
       <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -18,7 +80,7 @@ export default function OverviewPage() {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '1rem' }}>
         {[
-          { title: 'Total Leads', value: '1,248', trend: '+12%', positive: true, link: '/dashboard/leads' },
+          { title: 'Total Leads', value: stats.leads, trend: '+12%', positive: true, link: '/dashboard/leads' },
           { title: 'Active Conversations', value: '42', trend: '+5%', positive: true, link: '/dashboard/chat' },
           { title: 'Agent Deflection Rate', value: '89%', trend: '-2%', positive: false, link: '/dashboard/analytics' }
         ].map((stat, i) => (
@@ -49,25 +111,20 @@ export default function OverviewPage() {
       <div style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '1.25rem', boxShadow: 'var(--stripe-shadow-ambient)', minHeight: '400px' }}>
         <h3 style={{ fontSize: '12px', color: 'var(--stripe-navy)', margin: '0 0 1.5rem 0', fontWeight: 500, fontFeatureSettings: '"ss01"' }}>Recent Activity</h3>
         
-        {[
-          { action: 'New lead captured', entity: 'John Doe', time: '10 mins ago', avatar: 'https://i.pravatar.cc/150?u=1' },
-          { action: 'Agent handled objection', entity: 'Sarah Smith', time: '1 hour ago', avatar: 'https://i.pravatar.cc/150?u=2' },
-          { action: 'Knowledge base updated', entity: 'Pricing.pdf', time: '3 hours ago', avatar: null },
-          { action: 'Campaign finished', entity: 'Q3 Promo Drip', time: '1 day ago', avatar: null }
-        ].map((item, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', marginBottom: '1rem', paddingBottom: '1.5rem', borderBottom: i === 3 ? 'none' : '1px solid var(--stripe-border)' }}>
-            {item.avatar ? (
-                <img src={item.avatar} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+        {activities.map((item, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', marginBottom: '1rem', paddingBottom: '1.5rem', borderBottom: i === activities.length - 1 ? 'none' : '1px solid var(--stripe-border)' }}>
+            {item.avatar_url ? (
+                <img src={item.avatar_url} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
             ) : (
                 <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#f6f9fc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--stripe-purple)', flexShrink: 0 }}>
                 <span style={{ fontSize: '12px', lineHeight: 1 }}>•</span>
                 </div>
             )}
             <div style={{ flex: 1, fontFeatureSettings: '"ss01"' }}>
-              <div style={{ fontSize: '12px', color: 'var(--stripe-navy)', fontWeight: 500, marginBottom: '0.25rem' }}>{item.action}</div>
-              <div style={{ fontSize: '12px', color: 'var(--stripe-body)' }}>{item.entity}</div>
+              <div style={{ fontSize: '12px', color: 'var(--stripe-navy)', fontWeight: 500, marginBottom: '0.25rem' }}>{item.action_text}</div>
+              <div style={{ fontSize: '12px', color: 'var(--stripe-body)' }}>{item.entity_name}</div>
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--stripe-muted)', fontFeatureSettings: '"ss01"' }}>{item.time}</div>
+            <div style={{ fontSize: '12px', color: 'var(--stripe-muted)', fontFeatureSettings: '"ss01"' }}>{getRelativeTime(item.created_at)}</div>
           </div>
         ))}
       </div>

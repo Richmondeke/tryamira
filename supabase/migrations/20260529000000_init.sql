@@ -94,3 +94,50 @@ CREATE POLICY "Allow authenticated full access to conversations" ON public.conve
 CREATE POLICY "Allow authenticated full access to messages" ON public.messages FOR ALL USING (auth.role() = 'authenticated');
 CREATE POLICY "Allow authenticated full access to campaigns" ON public.campaigns FOR ALL USING (auth.role() = 'authenticated');
 CREATE POLICY "Allow authenticated full access to webchat_configs" ON public.webchat_configs FOR ALL USING (auth.role() = 'authenticated');
+
+-- Create activities table
+CREATE TABLE public.activities (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  workspace_id UUID REFERENCES public.workspaces ON DELETE CASCADE NOT NULL,
+  event_type TEXT NOT NULL,
+  action_text TEXT NOT NULL,
+  entity_name TEXT NOT NULL,
+  reference_id UUID,
+  avatar_url TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.activities ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow authenticated full access to activities" ON public.activities FOR ALL USING (auth.role() = 'authenticated');
+
+-- Create trigger function for new leads
+CREATE OR REPLACE FUNCTION log_new_lead_activity()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.activities (workspace_id, event_type, action_text, entity_name, reference_id)
+  VALUES (NEW.workspace_id, 'lead_captured', 'New lead captured', NEW.name, NEW.id);
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger on leads table
+CREATE TRIGGER on_lead_created
+  AFTER INSERT ON public.leads
+  FOR EACH ROW EXECUTE FUNCTION log_new_lead_activity();
+
+-- Create trigger function for campaigns
+CREATE OR REPLACE FUNCTION log_campaign_finished()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.status = 'Finished' AND OLD.status != 'Finished' THEN
+    INSERT INTO public.activities (workspace_id, event_type, action_text, entity_name, reference_id)
+    VALUES (NEW.workspace_id, 'campaign_finished', 'Campaign finished', NEW.name, NEW.id);
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger on campaigns table
+CREATE TRIGGER on_campaign_updated
+  AFTER UPDATE ON public.campaigns
+  FOR EACH ROW EXECUTE FUNCTION log_campaign_finished();
