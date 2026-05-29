@@ -101,7 +101,7 @@ export function Sidebar() {
               {!isCollapsed && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {items.map(item => {
-                    const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                    const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(`${item.href}/`));
                     let tourId = undefined;
                     if (item.name === 'Leads') tourId = 'tour-leads';
                     if (item.name === 'Chat') tourId = 'tour-chat';
