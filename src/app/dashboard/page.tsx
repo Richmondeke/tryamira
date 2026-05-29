@@ -18,14 +18,8 @@ function getRelativeTime(timestamp: string) {
 
 export default function OverviewPage() {
   const supabase = createClient();
-  const [activities, setActivities] = useState<any[]>([
-    // Fallback data while loading or if DB fails
-    { action_text: 'New lead captured', entity_name: 'John Doe', created_at: new Date(Date.now() - 600000).toISOString(), avatar_url: 'https://i.pravatar.cc/150?u=1' },
-    { action_text: 'Agent handled objection', entity_name: 'Sarah Smith', created_at: new Date(Date.now() - 3600000).toISOString(), avatar_url: 'https://i.pravatar.cc/150?u=2' },
-    { action_text: 'Knowledge base updated', entity_name: 'Pricing.pdf', created_at: new Date(Date.now() - 10800000).toISOString(), avatar_url: null },
-    { action_text: 'Campaign finished', entity_name: 'Q3 Promo Drip', created_at: new Date(Date.now() - 86400000).toISOString(), avatar_url: null }
-  ]);
-  const [stats, setStats] = useState({ leads: '1,248' });
+  const [activities, setActivities] = useState<any[]>([]);
+  const [stats, setStats] = useState({ leads: '0', conversations: '0', deflection: '0%' });
 
   useEffect(() => {
     // 1. Fetch initial activities
@@ -41,10 +35,14 @@ export default function OverviewPage() {
       }
       
       // Also fetch total leads count just as an example of wiring stats
-      const { count } = await supabase.from('leads').select('*', { count: 'exact', head: true });
-      if (count !== null) {
-        setStats({ leads: count.toString() });
-      }
+      const { count: leadsCount } = await supabase.from('leads').select('*', { count: 'exact', head: true });
+      const { count: convCount } = await supabase.from('conversations').select('*', { count: 'exact', head: true });
+      
+      setStats({ 
+        leads: leadsCount ? leadsCount.toString() : '0',
+        conversations: convCount ? convCount.toString() : '0',
+        deflection: '0%' 
+      });
     };
     fetchActivities();
 
@@ -90,9 +88,9 @@ export default function OverviewPage() {
 
       <div id="tour-overview" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '1rem' }}>
         {[
-          { title: 'Total Leads', value: stats.leads, trend: '+12%', positive: true, link: '/dashboard/leads' },
-          { title: 'Active Conversations', value: '42', trend: '+5%', positive: true, link: '/dashboard/chat' },
-          { title: 'Agent Deflection Rate', value: '89%', trend: '-2%', positive: false, link: '/dashboard/analytics' }
+          { title: 'Total Leads', value: stats.leads, trend: '+0%', positive: true, link: '/dashboard/leads' },
+          { title: 'Active Conversations', value: stats.conversations, trend: '+0%', positive: true, link: '/dashboard/chat' },
+          { title: 'Agent Deflection Rate', value: stats.deflection, trend: '0%', positive: true, link: '/dashboard/analytics' }
         ].map((stat, i) => (
           <Link href={stat.link} key={i} style={{ textDecoration: 'none' }}>
             <div style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '1.25rem', boxShadow: 'var(--stripe-shadow-ambient)', transition: 'transform 0.2s, box-shadow 0.2s', cursor: 'pointer' }}
@@ -121,22 +119,28 @@ export default function OverviewPage() {
       <div style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '1.25rem', boxShadow: 'var(--stripe-shadow-ambient)', minHeight: '400px' }}>
         <h3 style={{ fontSize: '12px', color: 'var(--stripe-navy)', margin: '0 0 1.5rem 0', fontWeight: 500, fontFeatureSettings: '"ss01"' }}>Recent Activity</h3>
         
-        {activities.map((item, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', marginBottom: '1rem', paddingBottom: '1.5rem', borderBottom: i === activities.length - 1 ? 'none' : '1px solid var(--stripe-border)' }}>
-            {item.avatar_url ? (
-                <img src={item.avatar_url} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-            ) : (
-                <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#f6f9fc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--stripe-purple)', flexShrink: 0 }}>
-                <span style={{ fontSize: '12px', lineHeight: 1 }}>•</span>
-                </div>
-            )}
-            <div style={{ flex: 1, fontFeatureSettings: '"ss01"' }}>
-              <div style={{ fontSize: '12px', color: 'var(--stripe-navy)', fontWeight: 500, marginBottom: '0.25rem' }}>{item.action_text}</div>
-              <div style={{ fontSize: '12px', color: 'var(--stripe-body)' }}>{item.entity_name}</div>
-            </div>
-            <div style={{ fontSize: '12px', color: 'var(--stripe-muted)', fontFeatureSettings: '"ss01"' }}>{getRelativeTime(item.created_at)}</div>
+        {activities.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--stripe-muted)', fontSize: '12px', fontFeatureSettings: '"ss01"' }}>
+            No recent activity to show. Once your A.I agent starts interacting, activities will appear here.
           </div>
-        ))}
+        ) : (
+          activities.map((item, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', marginBottom: '1rem', paddingBottom: '1.5rem', borderBottom: i === activities.length - 1 ? 'none' : '1px solid var(--stripe-border)' }}>
+              {item.avatar_url ? (
+                  <img src={item.avatar_url} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+              ) : (
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#f6f9fc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--stripe-purple)', flexShrink: 0 }}>
+                  <span style={{ fontSize: '12px', lineHeight: 1 }}>•</span>
+                  </div>
+              )}
+              <div style={{ flex: 1, fontFeatureSettings: '"ss01"' }}>
+                <div style={{ fontSize: '12px', color: 'var(--stripe-navy)', fontWeight: 500, marginBottom: '0.25rem' }}>{item.action_text}</div>
+                <div style={{ fontSize: '12px', color: 'var(--stripe-body)' }}>{item.entity_name}</div>
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--stripe-muted)', fontFeatureSettings: '"ss01"' }}>{getRelativeTime(item.created_at)}</div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

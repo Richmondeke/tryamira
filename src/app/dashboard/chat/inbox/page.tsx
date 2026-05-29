@@ -12,17 +12,6 @@ export default function ChatPage() {
   // Real data state
   const [conversations, setConversations] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
-  
-  // Fallback / Initial State
-  const fallbackChats = [
-    { id: '1', name: 'Sarah Smith', channel: 'WhatsApp', status: 'Active (AI)', avatar: 'https://i.pravatar.cc/150?u=a1' },
-    { id: '2', name: 'Michael Chen', channel: 'Webchat', status: 'Waiting', avatar: 'https://i.pravatar.cc/150?u=a2' },
-    { id: '3', name: 'Elena Rodriguez', channel: 'Instagram', status: 'Closed', avatar: 'https://i.pravatar.cc/150?u=a3' },
-  ];
-  const fallbackMessages = [
-    { content: 'Hi, I saw your ad on Facebook.', sender_type: 'lead' },
-    { content: 'Hello! Thanks for reaching out. Are you interested in our real estate CRM or our AI tools?', sender_type: 'ai' }
-  ];
 
   const [inputValue, setInputValue] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -43,10 +32,7 @@ export default function ChatPage() {
         `)
         .order('created_at', { ascending: false });
 
-      if (error || !data || data.length === 0) {
-        setConversations(fallbackChats);
-        setActiveChatId('1');
-      } else {
+      if (!error && data && data.length > 0) {
         const mappedData = data.map((conv: any) => ({
           id: conv.id,
           name: conv.leads?.name || 'Unknown Lead',
@@ -55,7 +41,10 @@ export default function ChatPage() {
           avatar: `https://i.pravatar.cc/150?u=${conv.id}`
         }));
         setConversations(mappedData);
-        if (mappedData.length > 0) setActiveChatId(mappedData[0].id);
+        setActiveChatId(mappedData[0].id);
+      } else {
+        setConversations([]);
+        setActiveChatId(null);
       }
     };
     fetchConversations();
@@ -66,12 +55,6 @@ export default function ChatPage() {
     if (!activeChatId) return;
 
     const fetchMessages = async () => {
-      // If we are using fallback mock data
-      if (activeChatId.length < 10) { 
-        setMessages(fallbackMessages);
-        return;
-      }
-
       const { data, error } = await supabase
         .from('messages')
         .select('*')
@@ -106,13 +89,6 @@ export default function ChatPage() {
     e.preventDefault();
     if (!inputValue.trim() || !activeChatId) return;
     
-    // Optimistic UI for fallback
-    if (activeChatId.length < 10) {
-      setMessages([...messages, { content: inputValue, sender_type: 'user' }]);
-      setInputValue('');
-      return;
-    }
-
     const { error } = await supabase
       .from('messages')
       .insert({
@@ -158,7 +134,7 @@ export default function ChatPage() {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <div>
-          <h1 style={{ fontSize: '20px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.25rem 0' }}>Live Inbox</h1>
+          <h1 style={{ fontSize: '20px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.25rem 0' }}>Here are your conversations...</h1>
           <p style={{ color: 'var(--stripe-body)', fontSize: '12px', margin: 0 }}>Monitor and jump into AI conversations.</p>
         </div>
       </div>
@@ -169,52 +145,72 @@ export default function ChatPage() {
             <input type="text" placeholder="Search conversations..." style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--stripe-border)', fontSize: '12px' }} />
           </div>
           <div style={{ overflowY: 'auto', flex: 1 }}>
-            {conversations.map((chat) => (
-              <div key={chat.id} onClick={() => setActiveChatId(chat.id)} style={{ padding: '1rem', borderBottom: '1px solid var(--stripe-border)', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', backgroundColor: activeChatId === chat.id ? '#f6f9fc' : '#ffffff' }}>
-                <img src={chat.avatar} style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
-                <div>
-                  <div style={{ fontSize: '12px', color: 'var(--stripe-navy)', fontWeight: 500, marginBottom: '0.25rem' }}>{chat.name}</div>
-                  <div style={{ fontSize: '12px', color: 'var(--stripe-muted)' }}>{chat.channel} • {chat.status}</div>
-                </div>
+            {conversations.length === 0 ? (
+              <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--stripe-muted)', fontSize: '12px' }}>
+                No active conversations.
               </div>
-            ))}
+            ) : (
+              conversations.map((chat) => (
+                <div key={chat.id} onClick={() => setActiveChatId(chat.id)} style={{ padding: '1rem', borderBottom: '1px solid var(--stripe-border)', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', backgroundColor: activeChatId === chat.id ? '#f6f9fc' : '#ffffff' }}>
+                  <img src={chat.avatar} style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
+                  <div>
+                    <div style={{ fontSize: '12px', color: 'var(--stripe-navy)', fontWeight: 500, marginBottom: '0.25rem' }}>{chat.name}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--stripe-muted)' }}>{chat.channel} • {chat.status}</div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
         
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--stripe-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              {activeChatData && <img src={activeChatData.avatar} style={{ width: '40px', height: '40px', borderRadius: '50%' }} />}
-              <div>
-                <div style={{ fontSize: '12px', color: 'var(--stripe-navy)', fontWeight: 500 }}>{activeChatData?.name || 'Loading...'}</div>
-                <div style={{ fontSize: '12px', color: 'var(--stripe-success-text)' }}>Online now</div>
-              </div>
+          {!activeChatId ? (
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--stripe-muted)', fontSize: '13px' }}>
+              Select a conversation to view messages, or wait for new leads to chat with your agent.
             </div>
-            <button onClick={() => setShowModal(true)} style={{ backgroundColor: '#ffffff', color: 'var(--stripe-navy)', border: '1px solid var(--stripe-border)', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '12px', fontWeight: 500, cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>Take Over Chat</button>
-          </div>
-          
-          <div style={{ flex: 1, backgroundColor: '#f6f9fc', padding: '1.25rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {messages.map((msg, i) => {
-              const isLead = msg.sender_type === 'lead';
-              return (
-                <div key={i} style={{ alignSelf: !isLead ? 'flex-end' : 'flex-start', maxWidth: '70%' }}>
-                  <div style={{ backgroundColor: !isLead ? 'var(--stripe-purple)' : '#ffffff', color: !isLead ? '#ffffff' : 'var(--stripe-navy)', padding: '0.75rem 1rem', borderRadius: '8px', borderBottomLeftRadius: !isLead ? '8px' : '0', borderBottomRightRadius: !isLead ? '0' : '8px', fontSize: '12px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', border: !isLead ? 'none' : '1px solid var(--stripe-border)' }}>
-                    {msg.content}
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--stripe-muted)', marginTop: '0.25rem', textAlign: !isLead ? 'right' : 'left' }}>
-                    {msg.sender_type === 'ai' ? 'Amira AI' : msg.sender_type === 'user' ? 'You' : activeChatData?.name}
+          ) : (
+            <>
+              <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--stripe-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  {activeChatData && <img src={activeChatData.avatar} style={{ width: '40px', height: '40px', borderRadius: '50%' }} />}
+                  <div>
+                    <div style={{ fontSize: '12px', color: 'var(--stripe-navy)', fontWeight: 500 }}>{activeChatData?.name || 'Loading...'}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--stripe-success-text)' }}>Online now</div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
+                <button onClick={() => setShowModal(true)} style={{ backgroundColor: '#ffffff', color: 'var(--stripe-navy)', border: '1px solid var(--stripe-border)', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '12px', fontWeight: 500, cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>Take Over Chat</button>
+              </div>
+              
+              <div style={{ flex: 1, backgroundColor: '#f6f9fc', padding: '1.25rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {messages.length === 0 ? (
+                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--stripe-muted)', fontSize: '12px' }}>
+                    No messages yet.
+                  </div>
+                ) : (
+                  messages.map((msg, i) => {
+                    const isLead = msg.sender_type === 'lead';
+                    return (
+                      <div key={i} style={{ alignSelf: !isLead ? 'flex-end' : 'flex-start', maxWidth: '70%' }}>
+                        <div style={{ backgroundColor: !isLead ? 'var(--stripe-purple)' : '#ffffff', color: !isLead ? '#ffffff' : 'var(--stripe-navy)', padding: '0.75rem 1rem', borderRadius: '8px', borderBottomLeftRadius: !isLead ? '8px' : '0', borderBottomRightRadius: !isLead ? '0' : '8px', fontSize: '12px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', border: !isLead ? 'none' : '1px solid var(--stripe-border)' }}>
+                          {msg.content}
+                        </div>
+                        <div style={{ fontSize: '11px', color: 'var(--stripe-muted)', marginTop: '0.25rem', textAlign: !isLead ? 'right' : 'left' }}>
+                          {msg.sender_type === 'ai' ? 'Amira AI' : msg.sender_type === 'user' ? 'You' : activeChatData?.name}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
 
-          <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid var(--stripe-border)', backgroundColor: '#ffffff' }}>
-            <form onSubmit={handleSend} style={{ display: 'flex', gap: '1rem' }}>
-              <input type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)} placeholder="Type a message..." style={{ flex: 1, padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--stripe-border)', fontSize: '12px', outline: 'none' }} />
-              <button type="submit" style={{ backgroundColor: 'var(--stripe-purple)', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0 1.5rem', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}>Send</button>
-            </form>
-          </div>
+              <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid var(--stripe-border)', backgroundColor: '#ffffff' }}>
+                <form onSubmit={handleSend} style={{ display: 'flex', gap: '1rem' }}>
+                  <input type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)} placeholder="Type a message..." style={{ flex: 1, padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--stripe-border)', fontSize: '12px', outline: 'none' }} />
+                  <button type="submit" style={{ backgroundColor: 'var(--stripe-purple)', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0 1.5rem', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}>Send</button>
+                </form>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
