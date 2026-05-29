@@ -4,7 +4,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import styles from './Sidebar.module.css';
 
-const navItems = {
+interface NavItem {
+  name: string;
+  href: string;
+  badge?: string;
+  count?: number;
+}
+
+const navItems: Record<string, NavItem[]> = {
   MAIN: [
     { name: 'Overview', href: '/' },
     { name: 'Chat', href: '/chat' },
