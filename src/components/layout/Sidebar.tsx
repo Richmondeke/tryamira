@@ -60,7 +60,7 @@ export function Sidebar() {
     }}>
       {/* Logo Section */}
       <div style={{ 
-        height: '96px', // Increased height to fit larger logo
+        height: '120px', 
         display: 'flex', 
         alignItems: 'center', 
         padding: '0 1.5rem',
@@ -70,7 +70,7 @@ export function Sidebar() {
           <img 
             src="https://framerusercontent.com/assets/Wo30Sktse9esY3HXGesSUG8i0o.png" 
             alt="Amira Logo" 
-            style={{ width: '64px', height: '64px', objectFit: 'contain' }} // Logo is 2x larger
+            style={{ width: '96px', height: '96px', objectFit: 'contain' }} 
           />
         </Link>
       </div>
