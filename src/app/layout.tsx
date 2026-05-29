@@ -1,20 +1,38 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Paytone_One, Poppins, Inter, Quantico } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const paytoneOne = Paytone_One({
+  weight: "400",
   subsets: ["latin"],
+  variable: "--font-paytone",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const poppins = Poppins({
+  weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
+  variable: "--font-poppins",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
+
+const quantico = Quantico({
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  variable: "--font-quantico",
 });
 
 export const metadata: Metadata = {
-  title: "TryAmira - Messaging Command Center",
-  description: "Unified messaging and CRM platform.",
+  title: "Amira | Your A.I Powered Call Center",
+  description: "Amira does the work of 1000 Call Center Agents, answering calls like a real human. Streamline customer interactions, reduce operational costs, and boost productivity with smart, scalable, and seamless solutions.",
+  icons: {
+    icon: "/images/amira-logo.png",
+    shortcut: "/images/amira-logo.png",
+    apple: "/images/amira-logo.png",
+  }
 };
 
 export default function RootLayout({
@@ -23,8 +41,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="en" className={`${paytoneOne.variable} ${poppins.variable} ${inter.variable} ${quantico.variable}`}>
       <body>{children}</body>
     </html>
   );
 }
+
