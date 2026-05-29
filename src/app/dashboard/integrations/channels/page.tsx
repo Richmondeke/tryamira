@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import Modal from '../../../components/ui/Modal';
-import Toast from '../../../components/ui/Toast';
+import Modal from '../../../../components/ui/Modal';
+import Toast from '../../../../components/ui/Toast';
 
 export default function ChannelsPage() {
   const [toast, setToast] = useState<string | null>(null);

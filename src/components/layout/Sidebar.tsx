@@ -23,9 +23,8 @@ const navItems: Record<string, NavItem[]> = {
   SETUP: [
     { name: 'Tutorials', href: '/dashboard/tutorials' },
     { name: 'Message Templates', href: '/dashboard/templates' },
-    { name: 'Channels', href: '/dashboard/channels' },
     { name: 'Chat Widget', href: '/dashboard/widget' },
-    { name: 'Integrations', href: '/dashboard/integrations' },
+    { name: 'Integrations & Channels', href: '/dashboard/integrations' },
   ],
   ACCOUNT: [
     { name: 'Notifications', href: '/dashboard/notifications', count: 1 },
