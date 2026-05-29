@@ -1,36 +1,147 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Modal from '../../../../components/ui/Modal';
 import Toast from '../../../../components/ui/Toast';
+import { createClient } from '../../../../utils/supabase/client';
 
 export default function ChatPage() {
-  const [activeChat, setActiveChat] = useState(0);
-  const [messages, setMessages] = useState([
-    { text: 'Hi, I saw your ad on Facebook.', isBot: false },
-    { text: 'Hello! Thanks for reaching out. Are you interested in our real estate CRM or our AI tools?', isBot: true }
-  ]);
+  const supabase = createClient();
+  const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  
+  // Real data state
+  const [conversations, setConversations] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
+  
+  // Fallback / Initial State
+  const fallbackChats = [
+    { id: '1', name: 'Sarah Smith', channel: 'WhatsApp', status: 'Active (AI)', avatar: 'https://i.pravatar.cc/150?u=a1' },
+    { id: '2', name: 'Michael Chen', channel: 'Webchat', status: 'Waiting', avatar: 'https://i.pravatar.cc/150?u=a2' },
+    { id: '3', name: 'Elena Rodriguez', channel: 'Instagram', status: 'Closed', avatar: 'https://i.pravatar.cc/150?u=a3' },
+  ];
+  const fallbackMessages = [
+    { content: 'Hi, I saw your ad on Facebook.', sender_type: 'lead' },
+    { content: 'Hello! Thanks for reaching out. Are you interested in our real estate CRM or our AI tools?', sender_type: 'ai' }
+  ];
+
   const [inputValue, setInputValue] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
-  const chats = [
-    { name: 'Sarah Smith', platform: 'WhatsApp', status: 'Active (AI)', avatar: 'https://i.pravatar.cc/150?u=a1' },
-    { name: 'Michael Chen', platform: 'Webchat', status: 'Waiting', avatar: 'https://i.pravatar.cc/150?u=a2' },
-    { name: 'Elena Rodriguez', platform: 'Instagram', status: 'Closed', avatar: 'https://i.pravatar.cc/150?u=a3' },
-  ];
+  // Fetch Conversations on Mount
+  useEffect(() => {
+    const fetchConversations = async () => {
+      const { data, error } = await supabase
+        .from('conversations')
+        .select(`
+          id,
+          channel,
+          status,
+          leads (
+            name
+          )
+        `)
+        .order('created_at', { ascending: false });
 
-  const handleSend = (e: React.FormEvent) => {
+      if (error || !data || data.length === 0) {
+        setConversations(fallbackChats);
+        setActiveChatId('1');
+      } else {
+        const mappedData = data.map((conv: any) => ({
+          id: conv.id,
+          name: conv.leads?.name || 'Unknown Lead',
+          channel: conv.channel,
+          status: conv.status,
+          avatar: `https://i.pravatar.cc/150?u=${conv.id}`
+        }));
+        setConversations(mappedData);
+        if (mappedData.length > 0) setActiveChatId(mappedData[0].id);
+      }
+    };
+    fetchConversations();
+  }, []);
+
+  // Fetch Messages when Active Chat Changes
+  useEffect(() => {
+    if (!activeChatId) return;
+
+    const fetchMessages = async () => {
+      // If we are using fallback mock data
+      if (activeChatId.length < 10) { 
+        setMessages(fallbackMessages);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('conversation_id', activeChatId)
+        .order('created_at', { ascending: true });
+        
+      if (!error && data) {
+        setMessages(data);
+      }
+    };
+    fetchMessages();
+
+    // Subscribe to new messages for this conversation
+    const channel = supabase
+      .channel(`messages-${activeChatId}`)
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'messages',
+        filter: `conversation_id=eq.${activeChatId}`
+      }, (payload) => {
+        setMessages(prev => [...prev, payload.new]);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [activeChatId]);
+
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputValue.trim()) return;
-    setMessages([...messages, { text: inputValue, isBot: false }]);
-    setInputValue('');
+    if (!inputValue.trim() || !activeChatId) return;
+    
+    // Optimistic UI for fallback
+    if (activeChatId.length < 10) {
+      setMessages([...messages, { content: inputValue, sender_type: 'user' }]);
+      setInputValue('');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('messages')
+      .insert({
+        conversation_id: activeChatId,
+        sender_type: 'user', // Human takeover
+        content: inputValue
+      });
+
+    if (!error) {
+      setInputValue('');
+      // Subscription handles the UI append
+    } else {
+      setToast('Error sending message');
+    }
   };
 
-  const handleTakeover = () => {
+  const handleTakeover = async () => {
     setShowModal(false);
+    
+    if (activeChatId && activeChatId.length > 10) {
+      await supabase.from('conversations').update({ status: 'Manual' }).eq('id', activeChatId);
+      // Update local state
+      setConversations(prev => prev.map(c => c.id === activeChatId ? { ...c, status: 'Manual' } : c));
+    }
+
     setToast('You have successfully taken over the chat.');
   };
+
+  const activeChatData = conversations.find(c => c.id === activeChatId) || conversations[0];
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%', height: 'calc(100vh - 120px)' }}>
@@ -58,12 +169,12 @@ export default function ChatPage() {
             <input type="text" placeholder="Search conversations..." style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--stripe-border)', fontSize: '12px' }} />
           </div>
           <div style={{ overflowY: 'auto', flex: 1 }}>
-            {chats.map((chat, i) => (
-              <div key={i} onClick={() => setActiveChat(i)} style={{ padding: '1rem', borderBottom: '1px solid var(--stripe-border)', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', backgroundColor: activeChat === i ? '#f6f9fc' : '#ffffff' }}>
+            {conversations.map((chat) => (
+              <div key={chat.id} onClick={() => setActiveChatId(chat.id)} style={{ padding: '1rem', borderBottom: '1px solid var(--stripe-border)', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', backgroundColor: activeChatId === chat.id ? '#f6f9fc' : '#ffffff' }}>
                 <img src={chat.avatar} style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
                 <div>
                   <div style={{ fontSize: '12px', color: 'var(--stripe-navy)', fontWeight: 500, marginBottom: '0.25rem' }}>{chat.name}</div>
-                  <div style={{ fontSize: '12px', color: 'var(--stripe-muted)' }}>{chat.platform} • {chat.status}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--stripe-muted)' }}>{chat.channel} • {chat.status}</div>
                 </div>
               </div>
             ))}
@@ -73,9 +184,9 @@ export default function ChatPage() {
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--stripe-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <img src={chats[activeChat].avatar} style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
+              {activeChatData && <img src={activeChatData.avatar} style={{ width: '40px', height: '40px', borderRadius: '50%' }} />}
               <div>
-                <div style={{ fontSize: '12px', color: 'var(--stripe-navy)', fontWeight: 500 }}>{chats[activeChat].name}</div>
+                <div style={{ fontSize: '12px', color: 'var(--stripe-navy)', fontWeight: 500 }}>{activeChatData?.name || 'Loading...'}</div>
                 <div style={{ fontSize: '12px', color: 'var(--stripe-success-text)' }}>Online now</div>
               </div>
             </div>
@@ -83,16 +194,19 @@ export default function ChatPage() {
           </div>
           
           <div style={{ flex: 1, backgroundColor: '#f6f9fc', padding: '1.25rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {messages.map((msg, i) => (
-              <div key={i} style={{ alignSelf: msg.isBot ? 'flex-start' : 'flex-end', maxWidth: '70%' }}>
-                <div style={{ backgroundColor: msg.isBot ? '#ffffff' : 'var(--stripe-purple)', color: msg.isBot ? 'var(--stripe-navy)' : '#ffffff', padding: '0.75rem 1rem', borderRadius: '8px', borderBottomLeftRadius: msg.isBot ? '0' : '8px', borderBottomRightRadius: msg.isBot ? '8px' : '0', fontSize: '12px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', border: msg.isBot ? '1px solid var(--stripe-border)' : 'none' }}>
-                  {msg.text}
+            {messages.map((msg, i) => {
+              const isLead = msg.sender_type === 'lead';
+              return (
+                <div key={i} style={{ alignSelf: !isLead ? 'flex-end' : 'flex-start', maxWidth: '70%' }}>
+                  <div style={{ backgroundColor: !isLead ? 'var(--stripe-purple)' : '#ffffff', color: !isLead ? '#ffffff' : 'var(--stripe-navy)', padding: '0.75rem 1rem', borderRadius: '8px', borderBottomLeftRadius: !isLead ? '8px' : '0', borderBottomRightRadius: !isLead ? '0' : '8px', fontSize: '12px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', border: !isLead ? 'none' : '1px solid var(--stripe-border)' }}>
+                    {msg.content}
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'var(--stripe-muted)', marginTop: '0.25rem', textAlign: !isLead ? 'right' : 'left' }}>
+                    {msg.sender_type === 'ai' ? 'Amira AI' : msg.sender_type === 'user' ? 'You' : activeChatData?.name}
+                  </div>
                 </div>
-                <div style={{ fontSize: '11px', color: 'var(--stripe-muted)', marginTop: '0.25rem', textAlign: msg.isBot ? 'left' : 'right' }}>
-                  {msg.isBot ? 'Amira AI' : chats[activeChat].name} • Just now
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid var(--stripe-border)', backgroundColor: '#ffffff' }}>
@@ -106,3 +220,4 @@ export default function ChatPage() {
     </div>
   );
 }
+

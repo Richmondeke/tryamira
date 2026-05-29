@@ -78,7 +78,7 @@ export default function OverviewPage() {
         />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '1rem' }}>
+      <div id="tour-overview" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '1rem' }}>
         {[
           { title: 'Total Leads', value: stats.leads, trend: '+12%', positive: true, link: '/dashboard/leads' },
           { title: 'Active Conversations', value: '42', trend: '+5%', positive: true, link: '/dashboard/chat' },

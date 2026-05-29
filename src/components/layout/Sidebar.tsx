@@ -102,10 +102,16 @@ export function Sidebar() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {items.map(item => {
                     const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                    let tourId = undefined;
+                    if (item.name === 'Leads') tourId = 'tour-leads';
+                    if (item.name === 'Chat') tourId = 'tour-chat';
+                    if (item.name === 'Webchat & Widget') tourId = 'tour-setup';
+
                     return (
                       <Link 
                         key={item.name} 
                         href={item.href} 
+                        id={tourId}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -131,28 +137,6 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* User Profile Section */}
-      <div style={{ padding: '1.5rem 1rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div style={{ 
-            width: '32px', 
-            height: '32px', 
-            borderRadius: '6px', 
-            background: 'var(--stripe-purple)', 
-            color: 'white', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            fontWeight: 'bold' 
-          }}>
-            AO
-          </div>
-          <div>
-            <div style={{ fontSize: '12px', fontWeight: 600, color: '#ffffff' }}>Ashley Okoye</div>
-            <div style={{ fontSize: '11px', color: '#94a3b8' }}>Free Plan</div>
-          </div>
-        </div>
-      </div>
     </aside>
   );
 }
