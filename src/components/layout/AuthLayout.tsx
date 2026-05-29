@@ -6,8 +6,11 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
     <div className={styles.container}>
       <div className={styles.leftPanel}>
         <div className={styles.logo}>
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-          TryAmira
+          <img 
+            src="https://framerusercontent.com/assets/Wo30Sktse9esY3HXGesSUG8i0o.png" 
+            alt="Amira Logo" 
+            style={{ height: '96px', objectFit: 'contain', marginLeft: '-16px' }}
+          />
         </div>
         <div className={styles.marketingCopy}>
           <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.2)', padding: '4px 12px', borderRadius: '16px', fontSize: '12px', marginBottom: '16px' }}>
