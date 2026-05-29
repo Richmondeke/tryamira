@@ -4,17 +4,29 @@ import { createClient } from '@/utils/supabase/server';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function getAgents() {
-  const supabase = createClient();
+  const supabase = await createClient();
   
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
     return { success: true, data: [] };
   }
 
   try {
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData?.user) throw new Error('Not authenticated');
+
+    const { data: memberData } = await supabase
+        .from('workspace_members')
+        .select('workspace_id')
+        .eq('user_id', userData.user.id)
+        .limit(1)
+        .single();
+
+    if (!memberData) throw new Error('No workspace found');
+
     const { data, error } = await supabase
       .from('workspace_agents')
       .select('*')
-      .eq('workspace_id', 1)
+      .eq('workspace_id', memberData.workspace_id)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -30,7 +42,7 @@ export async function getAgents() {
 }
 
 export async function createAgent(name: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const id = uuidv4();
   
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
@@ -38,11 +50,23 @@ export async function createAgent(name: string) {
   }
 
   try {
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData?.user) throw new Error('Not authenticated');
+
+    const { data: memberData } = await supabase
+        .from('workspace_members')
+        .select('workspace_id')
+        .eq('user_id', userData.user.id)
+        .limit(1)
+        .single();
+
+    if (!memberData) throw new Error('No workspace found');
+
     const { error } = await supabase
       .from('workspace_agents')
       .insert({ 
         id,
-        workspace_id: 1, 
+        workspace_id: memberData.workspace_id, 
         name,
         config: { agentName: name, voice: '11labs-josh', systemPrompt: 'You are a helpful assistant.', attachedWorkflows: [] },
         created_at: new Date().toISOString(),
@@ -62,7 +86,7 @@ export async function createAgent(name: string) {
 }
 
 export async function getAgentById(id: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
     return { success: true, data: null };
@@ -88,7 +112,7 @@ export async function getAgentById(id: string) {
 }
 
 export async function updateAgent(id: string, config: any) {
-  const supabase = createClient();
+  const supabase = await createClient();
   
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
     return { success: true };

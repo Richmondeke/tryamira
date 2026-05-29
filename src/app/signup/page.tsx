@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 import styles from '../login/page.module.css';
+import { signup } from '../actions/auth';
 
 export default function SignupPage() {
   return (
@@ -11,16 +12,16 @@ export default function SignupPage() {
         <h2 className={styles.title}>Create your account</h2>
         <p className={styles.subtitle}>Free forever. Upgrade when you&apos;re ready.</p>
       </div>
-      <form className={styles.form}>
+      <form action={signup} className={styles.form}>
         <div style={{ display: 'flex', gap: '1rem' }}>
-          <Input label="First Name" placeholder="Ashley" required />
-          <Input label="Last Name" placeholder="Okoye" required />
+          <Input label="First Name" name="firstName" placeholder="Ashley" required />
+          <Input label="Last Name" name="lastName" placeholder="Okoye" required />
         </div>
-        <Input label="Company Name" placeholder="TryAmira" required />
-        <Input label="Email" type="email" placeholder="you@example.com" required />
-        <Input label="Phone Number" type="tel" placeholder="902076453" required />
-        <Input label="Password" type="password" placeholder="••••••••" required />
-        <Input label="Referral Code (optional)" placeholder="E.G. ABC123" />
+        <Input label="Company Name" name="companyName" placeholder="TryAmira" required />
+        <Input label="Email" name="email" type="email" placeholder="you@example.com" required />
+        <Input label="Phone Number" name="phone" type="tel" placeholder="902076453" required />
+        <Input label="Password" name="password" type="password" placeholder="••••••••" required />
+        <Input label="Referral Code (optional)" name="referral" placeholder="E.G. ABC123" />
         
         <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <input type="checkbox" id="terms" required />

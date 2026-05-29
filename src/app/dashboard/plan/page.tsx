@@ -1,4 +1,19 @@
+'use client';
+
+import { useState } from 'react';
+
 export default function Page() {
+  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+
+  const handleCheckout = () => {
+    setIsCheckoutLoading(true);
+    // Simulate Korapay checkout initialization
+    setTimeout(() => {
+      setIsCheckoutLoading(false);
+      alert('Korapay checkout would open here.');
+    }, 1500);
+  };
+
   return (
     <div style={{ maxWidth: '1080px', margin: '0 auto', width: '100%' }}>
       <div style={{ marginBottom: '1rem' }}>
@@ -12,13 +27,19 @@ export default function Page() {
             <div>
               <div style={{ fontSize: '12px', color: 'var(--stripe-label)', fontWeight: 500, marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Current Plan</div>
               <div style={{ fontSize: '20px', color: 'var(--stripe-navy)', fontWeight: 300, letterSpacing: '-0.48px', marginBottom: '0.5rem' }}>Pro Tier</div>
-              <div style={{ fontSize: '12px', color: 'var(--stripe-body)' }}>$99.00 / month</div>
+              <div style={{ fontSize: '12px', color: 'var(--stripe-body)' }}>₦45,000 / month</div>
             </div>
             <span style={{ backgroundColor: 'rgba(21,190,83,0.1)', color: 'var(--stripe-success-text)', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500 }}>Active</span>
           </div>
           
-          <button style={{ width: '100%', backgroundColor: '#ffffff', color: 'var(--stripe-navy)', border: '1px solid var(--stripe-border)', borderRadius: '4px', padding: '0.5rem', fontSize: '12px', fontWeight: 500, cursor: 'pointer', marginBottom: '1rem' }}>Manage Billing (Stripe)</button>
-          <button style={{ width: '100%', backgroundColor: 'var(--stripe-purple)', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.5rem', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}>Upgrade Plan</button>
+          <button style={{ width: '100%', backgroundColor: '#ffffff', color: 'var(--stripe-navy)', border: '1px solid var(--stripe-border)', borderRadius: '4px', padding: '0.5rem', fontSize: '12px', fontWeight: 500, cursor: 'pointer', marginBottom: '1rem' }}>Manage Billing (Korapay)</button>
+          <button 
+            onClick={handleCheckout}
+            disabled={isCheckoutLoading}
+            style={{ width: '100%', backgroundColor: 'var(--stripe-purple)', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.5rem', fontSize: '12px', fontWeight: 500, cursor: isCheckoutLoading ? 'wait' : 'pointer', opacity: isCheckoutLoading ? 0.7 : 1 }}
+          >
+            {isCheckoutLoading ? 'Connecting to Korapay...' : 'Upgrade Plan'}
+          </button>
         </div>
 
         <div style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '1.25rem', boxShadow: 'var(--stripe-shadow-ambient)' }}>

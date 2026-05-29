@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Modal from '../../../../components/ui/Modal';
 import Toast from '../../../../components/ui/Toast';
+import { getAgents } from '@/app/actions/agent';
 
 type CustomField = {
   id: string;
@@ -30,7 +31,20 @@ export default function FormBuilderPage({ params }: { params: { id: string } }) 
     },
     customFields: [] as CustomField[],
     successMessage: 'Thank you for your inquiry! We will be in touch soon.',
+    agentTriggerId: '',
   });
+
+  const [agents, setAgents] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function fetchAgents() {
+      const res = await getAgents();
+      if (res.success && res.data) {
+        setAgents(res.data);
+      }
+    }
+    fetchAgents();
+  }, []);
 
   const [showShareModal, setShowShareModal] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -252,6 +266,30 @@ export default function FormBuilderPage({ params }: { params: { id: string } }) 
               </div>
             </div>
           </div>
+
+          <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: 0 }} />
+
+          {/* Automations */}
+          <div>
+            <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#334155', margin: '0 0 1rem 0' }}>Automations</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', color: '#475569', fontWeight: 500, marginBottom: '4px' }}>Trigger Agent on Submit</label>
+                <p style={{ fontSize: '11px', color: '#64748b', marginBottom: '8px' }}>Select an AI agent to automatically reach out to leads when they submit this form.</p>
+                <select 
+                  value={formConfig.agentTriggerId} 
+                  onChange={(e) => setFormConfig({ ...formConfig, agentTriggerId: e.target.value })} 
+                  style={{ width: '100%', padding: '0.6rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px', backgroundColor: '#fff' }}
+                >
+                  <option value="">None (Just collect lead)</option>
+                  {agents.map(agent => (
+                    <option key={agent.id} value={agent.id}>{agent.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 

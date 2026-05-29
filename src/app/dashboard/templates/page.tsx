@@ -147,6 +147,8 @@ export default function Page() {
               boxShadow: 'var(--stripe-shadow-ambient)',
               display: 'flex',
               flexDirection: 'column',
+              height: '100%',
+              minHeight: '450px',
             }}
           >
             {/* Card Header */}
