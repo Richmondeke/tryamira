@@ -1,10 +1,45 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { completeOnboarding } from '../actions/onboarding';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import Toast from '@/components/ui/Toast';
 
 export default function OnboardingPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setToast(null);
+
+    const formData = new FormData(e.currentTarget);
+    const result = await completeOnboarding(formData);
+
+    if (result?.error) {
+      setToast({ message: result.error, type: 'error' });
+      setLoading(false);
+    } else {
+      setToast({ message: 'Workspace setup complete!', type: 'success' });
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 1000);
+    }
+  };
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc', padding: '2rem' }}>
+      {toast && (
+        <Toast 
+          message={toast.message} 
+          type={toast.type} 
+          onClose={() => setToast(null)} 
+        />
+      )}
       <div style={{ maxWidth: '480px', width: '100%', backgroundColor: '#ffffff', borderRadius: '12px', padding: '3rem', boxShadow: '0 10px 25px rgba(0,0,0,0.05)' }}>
         
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
@@ -12,10 +47,10 @@ export default function OnboardingPage() {
             🚀
           </div>
           <h1 style={{ fontSize: '24px', fontWeight: 600, color: '#0f172a', margin: '0 0 0.5rem 0' }}>Welcome to Amira</h1>
-          <p style={{ color: '#64748b', fontSize: '14px', margin: 0, lineHeight: 1.5 }}>Let's get your AI workspace set up. This only takes a minute.</p>
+          <p style={{ color: '#64748b', fontSize: '14px', margin: 0, lineHeight: 1.5 }}>Let&apos;s get your AI workspace set up. This only takes a minute.</p>
         </div>
 
-        <form action={completeOnboarding} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <Input label="Company Name" name="companyName" placeholder="Acme Inc." required />
           
           <div>
@@ -43,7 +78,9 @@ export default function OnboardingPage() {
           </div>
 
           <div style={{ marginTop: '1rem' }}>
-            <Button type="submit" fullWidth size="lg">Complete Setup →</Button>
+            <Button type="submit" fullWidth size="lg" disabled={loading}>
+              {loading ? 'Setting up...' : 'Complete Setup →'}
+            </Button>
           </div>
         </form>
 

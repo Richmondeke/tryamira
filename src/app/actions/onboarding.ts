@@ -1,7 +1,6 @@
 'use server';
 
 import { createClient } from '@/utils/supabase/server';
-import { redirect } from 'next/navigation';
 
 export async function completeOnboarding(formData: FormData) {
   const supabase = await createClient();
@@ -36,5 +35,5 @@ export async function completeOnboarding(formData: FormData) {
         .eq('id', memberData.workspace_id);
   }
 
-  redirect('/dashboard');
+  return { success: true };
 }
