@@ -1,25 +1,48 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Modal from '../../../components/ui/Modal';
 import Toast from '../../../components/ui/Toast';
+import { createClient } from '../../../utils/supabase/client';
 
 export default function LeadsPage() {
   const [search, setSearch] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+  
+  // Real Data State
+  const [allLeads, setAllLeads] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const supabase = createClient();
 
-  const allLeads = [
-    { name: 'Sarah Smith', email: 'sarah.s@example.com', phone: '+1 (555) 0123', status: 'Hot', score: '98' },
-    { name: 'Michael Chen', email: 'michael.c@example.com', phone: '+1 (555) 0124', status: 'Warm', score: '74' },
-    { name: 'Elena Rodriguez', email: 'elena.r@example.com', phone: '+1 (555) 0125', status: 'Cold', score: '32' },
-    { name: 'James Wilson', email: 'j.wilson@example.com', phone: '+1 (555) 0126', status: 'Warm', score: '65' }
-  ];
+  useEffect(() => {
+    fetchLeads();
+  }, []);
+
+  const fetchLeads = async () => {
+    setIsLoading(true);
+    // Assuming workspace_id is handled, we'll fetch all leads for now
+    const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching leads:', error);
+      // Fallback to mock data if no keys are provided
+      setAllLeads([
+        { name: 'Sarah Smith', email: 'sarah.s@example.com', phone: '+1 (555) 0123', status: 'hot', score: 98 },
+        { name: 'Michael Chen', email: 'michael.c@example.com', phone: '+1 (555) 0124', status: 'warm', score: 74 },
+        { name: 'Elena Rodriguez', email: 'elena.r@example.com', phone: '+1 (555) 0125', status: 'cold', score: 32 },
+        { name: 'James Wilson', email: 'j.wilson@example.com', phone: '+1 (555) 0126', status: 'warm', score: 65 }
+      ]);
+    } else {
+      setAllLeads(data || []);
+    }
+    setIsLoading(false);
+  };
 
   const filteredLeads = allLeads.filter(lead => 
-    lead.name.toLowerCase().includes(search.toLowerCase()) || 
-    lead.email.toLowerCase().includes(search.toLowerCase())
+    lead.name?.toLowerCase().includes(search.toLowerCase()) || 
+    lead.email?.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleExport = () => {
@@ -30,10 +53,32 @@ export default function LeadsPage() {
     }, 1500);
   };
 
-  const handleAddLead = (e: React.FormEvent) => {
+  const handleAddLead = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setShowAddModal(false);
-    setToast({ message: 'New lead added successfully.', type: 'success' });
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get('name') as string;
+    const email = formData.get('email') as string;
+
+    const { error } = await supabase.from('leads').insert({
+      workspace_id: '11111111-1111-1111-1111-111111111111', // Dummy ID for now, usually fetched from context
+      name,
+      email,
+      phone: '',
+      status: 'new',
+      source: 'manual',
+      score: 50
+    });
+
+    if (error) {
+      setToast({ message: 'Error adding lead. Check Supabase keys.', type: 'error' });
+      // For demo purposes if keys aren't set, just append locally
+      setAllLeads(prev => [{ name, email, phone: '', status: 'new', score: 50 }, ...prev]);
+      setShowAddModal(false);
+    } else {
+      setToast({ message: 'New lead added successfully to Supabase.', type: 'success' });
+      setShowAddModal(false);
+      fetchLeads(); // Refresh from DB
+    }
   };
 
   return (
@@ -44,11 +89,11 @@ export default function LeadsPage() {
         <form onSubmit={handleAddLead} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div>
             <label style={{ display: 'block', fontSize: '12px', color: 'var(--stripe-label)', marginBottom: '4px' }}>Full Name</label>
-            <input type="text" required style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px' }} />
+            <input name="name" type="text" required style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px' }} />
           </div>
           <div>
             <label style={{ display: 'block', fontSize: '12px', color: 'var(--stripe-label)', marginBottom: '4px' }}>Email Address</label>
-            <input type="email" required style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px' }} />
+            <input name="email" type="email" required style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px' }} />
           </div>
           <button type="submit" style={{ marginTop: '1rem', padding: '0.75rem', backgroundColor: 'var(--stripe-purple)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>Save Lead</button>
         </form>
@@ -90,24 +135,30 @@ export default function LeadsPage() {
             </tr>
           </thead>
           <tbody>
-            {filteredLeads.map((lead, i) => (
+            {isLoading ? (
+              <tr>
+                <td colSpan={5} style={{ padding: '2rem', textAlign: 'center', color: 'var(--stripe-muted)', fontSize: '12px' }}>
+                  Loading leads from database...
+                </td>
+              </tr>
+            ) : filteredLeads.map((lead, i) => (
               <tr key={i} style={{ borderBottom: '1px solid var(--stripe-border)' }}>
                 <td style={{ padding: '1rem 1.5rem', fontSize: '12px', color: 'var(--stripe-navy)', fontWeight: 500 }}>{lead.name}</td>
                 <td style={{ padding: '1rem 1.5rem', fontSize: '12px', color: 'var(--stripe-body)' }}>{lead.email}</td>
-                <td style={{ padding: '1rem 1.5rem', fontSize: '12px', color: 'var(--stripe-body)' }}>{lead.phone}</td>
+                <td style={{ padding: '1rem 1.5rem', fontSize: '12px', color: 'var(--stripe-body)' }}>{lead.phone || '-'}</td>
                 <td style={{ padding: '1rem 1.5rem' }}>
                   <span style={{ 
-                    backgroundColor: lead.status === 'Hot' ? 'rgba(217,45,32,0.1)' : lead.status === 'Warm' ? 'rgba(247,144,9,0.1)' : '#f6f9fc',
-                    color: lead.status === 'Hot' ? '#d92d20' : lead.status === 'Warm' ? '#b54708' : 'var(--stripe-muted)',
-                    padding: '2px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 500 
+                    backgroundColor: lead.status?.toLowerCase() === 'hot' ? 'rgba(217,45,32,0.1)' : lead.status?.toLowerCase() === 'warm' ? 'rgba(247,144,9,0.1)' : '#f6f9fc',
+                    color: lead.status?.toLowerCase() === 'hot' ? '#d92d20' : lead.status?.toLowerCase() === 'warm' ? '#b54708' : 'var(--stripe-muted)',
+                    padding: '2px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 500, textTransform: 'capitalize'
                   }}>
                     {lead.status}
                   </span>
                 </td>
-                <td style={{ padding: '1rem 1.5rem', fontSize: '12px', color: 'var(--stripe-navy)' }}>{lead.score}</td>
+                <td style={{ padding: '1rem 1.5rem', fontSize: '12px', color: 'var(--stripe-navy)' }}>{lead.score || 0}</td>
               </tr>
             ))}
-            {filteredLeads.length === 0 && (
+            {!isLoading && filteredLeads.length === 0 && (
               <tr>
                 <td colSpan={5} style={{ padding: '1.25rem', textAlign: 'center', color: 'var(--stripe-muted)' }}>No leads found.</td>
               </tr>
