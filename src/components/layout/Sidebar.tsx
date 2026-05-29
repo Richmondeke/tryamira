@@ -15,11 +15,8 @@ const navItems: Record<string, NavItem[]> = {
   MAIN: [
     { name: 'Overview', href: '/dashboard' },
     { name: 'Chat', href: '/dashboard/chat' },
-    { name: 'WebChat', href: '/dashboard/webchat' },
-    { name: 'Email Assistance', href: '/dashboard/email', badge: 'NEW' },
     { name: 'Analytics', href: '/dashboard/analytics' },
     { name: 'Leads', href: '/dashboard/leads' },
-    { name: 'WhatsApp', href: '/dashboard/whatsapp', badge: 'IMPROVED' },
     { name: 'AI Agent', href: '/dashboard/ai-agent' },
     { name: 'Forms', href: '/dashboard/forms' },
   ],
