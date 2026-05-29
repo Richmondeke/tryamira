@@ -1,45 +1,77 @@
-export default function Page() {
+'use client';
+
+import { useState } from 'react';
+import Modal from '../../../components/ui/Modal';
+import Toast from '../../../components/ui/Toast';
+
+export default function BroadcastPage() {
+  const [showModal, setShowModal] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+
+  const handleSend = (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowModal(false);
+    setToast('Broadcast successfully scheduled for dispatch!');
+  };
+
   return (
     <div style={{ maxWidth: '1080px', margin: '0 auto', width: '100%' }}>
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '32px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', letterSpacing: '-0.64px', fontFeatureSettings: '"ss01"' }}>Broadcast Campaigns</h1>
-        <p style={{ color: 'var(--stripe-body)', fontSize: '16px', margin: 0, fontWeight: 300, fontFeatureSettings: '"ss01"' }}>Send mass messages to your leads via WhatsApp and SMS.</p>
-      </div>
+      {toast && <Toast message={toast} onClose={() => setToast(null)} />}
       
-      <div style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '2rem', boxShadow: 'var(--stripe-shadow-ambient)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-          <h3 style={{ fontSize: '16px', color: 'var(--stripe-navy)', margin: 0, fontWeight: 500 }}>Recent Campaigns</h3>
-          <button style={{ backgroundColor: 'var(--stripe-purple)', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}>New Broadcast</button>
-        </div>
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Create Broadcast">
+        <form onSubmit={handleSend} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '13px', color: 'var(--stripe-label)', marginBottom: '4px' }}>Audience Segment</label>
+            <select style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px' }}>
+              <option>All Leads (1,248)</option>
+              <option>Hot Leads (240)</option>
+              <option>Cold Leads (1,008)</option>
+            </select>
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '13px', color: 'var(--stripe-label)', marginBottom: '4px' }}>Channel</label>
+            <select style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px' }}>
+              <option>Email</option>
+              <option>SMS</option>
+              <option>WhatsApp</option>
+            </select>
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '13px', color: 'var(--stripe-label)', marginBottom: '4px' }}>Message Body</label>
+            <textarea required rows={4} style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px', resize: 'vertical' }} placeholder="Hi {{first_name}}, check out our new listings!"></textarea>
+          </div>
+          <button type="submit" style={{ marginTop: '0.5rem', padding: '0.75rem', backgroundColor: 'var(--stripe-purple)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>Schedule Send</button>
+        </form>
+      </Modal>
 
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontFeatureSettings: '"tnum", "ss01"' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div>
+          <h1 style={{ fontSize: '24px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.25rem 0' }}>Broadcasts</h1>
+          <p style={{ color: 'var(--stripe-body)', fontSize: '14px', margin: 0 }}>Send one-off messages to your leads.</p>
+        </div>
+        <button onClick={() => setShowModal(true)} style={{ backgroundColor: 'var(--stripe-purple)', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '14px', fontWeight: 500, cursor: 'pointer', boxShadow: 'var(--stripe-shadow-action)' }}>New Broadcast</button>
+      </div>
+
+      <div style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', boxShadow: 'var(--stripe-shadow-ambient)', overflow: 'hidden' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
-            <tr style={{ borderBottom: '1px solid var(--stripe-border)', textAlign: 'left' }}>
-              <th style={{ padding: '0.75rem 0', fontSize: '12px', color: 'var(--stripe-label)', fontWeight: 500 }}>CAMPAIGN NAME</th>
-              <th style={{ padding: '0.75rem 0', fontSize: '12px', color: 'var(--stripe-label)', fontWeight: 500 }}>DATE SENT</th>
-              <th style={{ padding: '0.75rem 0', fontSize: '12px', color: 'var(--stripe-label)', fontWeight: 500 }}>AUDIENCE</th>
-              <th style={{ padding: '0.75rem 0', fontSize: '12px', color: 'var(--stripe-label)', fontWeight: 500 }}>OPEN RATE</th>
-              <th style={{ padding: '0.75rem 0', fontSize: '12px', color: 'var(--stripe-label)', fontWeight: 500 }}>STATUS</th>
+            <tr style={{ backgroundColor: '#f6f9fc', borderBottom: '1px solid var(--stripe-border)' }}>
+              <th style={{ padding: '1rem 1.5rem', fontSize: '11px', color: 'var(--stripe-label)', fontWeight: 600, letterSpacing: '0.5px' }}>CAMPAIGN NAME</th>
+              <th style={{ padding: '1rem 1.5rem', fontSize: '11px', color: 'var(--stripe-label)', fontWeight: 600, letterSpacing: '0.5px' }}>AUDIENCE</th>
+              <th style={{ padding: '1rem 1.5rem', fontSize: '11px', color: 'var(--stripe-label)', fontWeight: 600, letterSpacing: '0.5px' }}>SENT</th>
+              <th style={{ padding: '1rem 1.5rem', fontSize: '11px', color: 'var(--stripe-label)', fontWeight: 600, letterSpacing: '0.5px' }}>OPEN RATE</th>
             </tr>
           </thead>
           <tbody>
-            {[
-              { name: 'Q3 Promo Deal', date: 'Oct 12, 2026', audience: '1,240', rate: '68%', status: 'Completed', color: 'var(--stripe-success-text)', bg: 'rgba(21,190,83,0.1)' },
-              { name: 'Feature Announcement', date: 'Oct 05, 2026', audience: '3,410', rate: '45%', status: 'Completed', color: 'var(--stripe-success-text)', bg: 'rgba(21,190,83,0.1)' },
-              { name: 'Webinar Invite', date: 'Sep 28, 2026', audience: '850', rate: '--', status: 'Draft', color: 'var(--stripe-muted)', bg: '#f6f9fc' }
-            ].map((row, i) => (
-              <tr key={i} style={{ borderBottom: i === 2 ? 'none' : '1px solid var(--stripe-border)' }}>
-                <td style={{ padding: '1rem 0', fontSize: '14px', color: 'var(--stripe-navy)', fontWeight: 500 }}>{row.name}</td>
-                <td style={{ padding: '1rem 0', fontSize: '14px', color: 'var(--stripe-body)' }}>{row.date}</td>
-                <td style={{ padding: '1rem 0', fontSize: '14px', color: 'var(--stripe-body)' }}>{row.audience}</td>
-                <td style={{ padding: '1rem 0', fontSize: '14px', color: 'var(--stripe-body)' }}>{row.rate}</td>
-                <td style={{ padding: '1rem 0' }}><span style={{ backgroundColor: row.bg, color: row.color, padding: '2px 6px', borderRadius: '4px', fontSize: '12px', fontWeight: 500 }}>{row.status}</span></td>
-              </tr>
-            ))}
+            <tr style={{ borderBottom: '1px solid var(--stripe-border)' }}>
+              <td style={{ padding: '1rem 1.5rem', fontSize: '14px', color: 'var(--stripe-navy)', fontWeight: 500 }}>Q3 Promotion</td>
+              <td style={{ padding: '1rem 1.5rem', fontSize: '14px', color: 'var(--stripe-body)' }}>All Leads</td>
+              <td style={{ padding: '1rem 1.5rem', fontSize: '14px', color: 'var(--stripe-body)' }}>Aug 12, 2024</td>
+              <td style={{ padding: '1rem 1.5rem', fontSize: '14px', color: 'var(--stripe-success-text)' }}>42%</td>
+            </tr>
           </tbody>
         </table>
       </div>
-
     </div>
   );
 }

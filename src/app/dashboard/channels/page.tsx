@@ -1,43 +1,86 @@
-export default function Page() {
+'use client';
+
+import { useState } from 'react';
+import Modal from '../../../components/ui/Modal';
+import Toast from '../../../components/ui/Toast';
+
+export default function ChannelsPage() {
+  const [toast, setToast] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [connectingChannel, setConnectingChannel] = useState<string | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
+
+  const channels = [
+    { name: 'Instagram DM', status: 'Connected', icon: '📱' },
+    { name: 'WhatsApp Business', status: 'Not Connected', icon: '💬' },
+    { name: 'Facebook Messenger', status: 'Not Connected', icon: '🔵' },
+    { name: 'SMS (Twilio)', status: 'Not Connected', icon: '📱' }
+  ];
+
+  const handleConnectClick = (channelName: string) => {
+    setConnectingChannel(channelName);
+    setShowModal(true);
+  };
+
+  const performConnection = () => {
+    setIsConnecting(true);
+    setTimeout(() => {
+      setIsConnecting(false);
+      setShowModal(false);
+      setToast(`${connectingChannel} connected successfully!`);
+    }, 1500);
+  };
+
   return (
     <div style={{ maxWidth: '1080px', margin: '0 auto', width: '100%' }}>
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '32px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', letterSpacing: '-0.64px', fontFeatureSettings: '"ss01"' }}>Omni-Channel Connect</h1>
-        <p style={{ color: 'var(--stripe-body)', fontSize: '16px', margin: 0, fontWeight: 300, fontFeatureSettings: '"ss01"' }}>Deploy your AI agent across multiple messaging platforms.</p>
-      </div>
+      {toast && <Toast message={toast} onClose={() => setToast(null)} />}
       
+      <Modal isOpen={showModal} onClose={() => !isConnecting && setShowModal(false)} title={`Connect ${connectingChannel}`}>
+        {isConnecting ? (
+          <div style={{ textAlign: 'center', padding: '2rem 0' }}>
+            <div style={{ color: 'var(--stripe-purple)', fontSize: '18px', fontWeight: 500 }}>Connecting securely...</div>
+            <p style={{ color: 'var(--stripe-muted)', fontSize: '14px', marginTop: '0.5rem' }}>Please wait while we establish the OAuth connection.</p>
+          </div>
+        ) : (
+          <div>
+            <p style={{ color: 'var(--stripe-body)', fontSize: '14px', marginBottom: '1.5rem' }}>
+              You will be redirected to authenticate with {connectingChannel}. Amira will request permission to read and reply to messages on your behalf.
+            </p>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+              <button onClick={() => setShowModal(false)} style={{ padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid var(--stripe-border)', backgroundColor: '#fff', color: 'var(--stripe-navy)', cursor: 'pointer' }}>Cancel</button>
+              <button onClick={performConnection} style={{ padding: '0.5rem 1rem', borderRadius: '4px', border: 'none', backgroundColor: 'var(--stripe-purple)', color: '#fff', cursor: 'pointer' }}>Authenticate</button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div>
+          <h1 style={{ fontSize: '24px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.25rem 0' }}>Social Channels</h1>
+          <p style={{ color: 'var(--stripe-body)', fontSize: '14px', margin: 0 }}>Connect your messaging platforms to the AI agent.</p>
+        </div>
+      </div>
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem' }}>
-        {[
-          { name: 'WhatsApp Business', status: 'Connected', desc: 'Connect via official Cloud API.', active: true },
-          { name: 'Facebook Messenger', status: 'Disconnected', desc: 'Reply to page messages automatically.', active: false },
-          { name: 'Instagram Direct', status: 'Disconnected', desc: 'Engage with IG followers and story replies.', active: false },
-          { name: 'SMS / Twilio', status: 'Disconnected', desc: 'Send text messages via Twilio.', active: false }
-        ].map((channel, i) => (
-          <div key={i} style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '1.5rem', boxShadow: 'var(--stripe-shadow-ambient)', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '8px', backgroundColor: '#f6f9fc', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <div style={{ width: '24px', height: '24px', backgroundColor: 'var(--stripe-purple)', borderRadius: '50%' }}></div>
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
-                <div style={{ fontSize: '16px', color: 'var(--stripe-navy)', fontWeight: 500 }}>{channel.name}</div>
-                <div style={{ 
-                  fontSize: '11px', 
-                  fontWeight: 500, 
-                  color: channel.active ? 'var(--stripe-success-text)' : 'var(--stripe-muted)',
-                  backgroundColor: channel.active ? 'rgba(21,190,83,0.1)' : '#f6f9fc',
-                  padding: '2px 6px',
-                  borderRadius: '4px'
-                }}>{channel.status}</div>
+        {channels.map((channel, i) => (
+          <div key={i} style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '1.5rem', boxShadow: 'var(--stripe-shadow-ambient)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '8px', backgroundColor: '#f6f9fc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>
+                {channel.icon}
               </div>
-              <div style={{ fontSize: '14px', color: 'var(--stripe-body)', marginBottom: '1rem' }}>{channel.desc}</div>
-              <button style={{ backgroundColor: channel.active ? '#ffffff' : 'var(--stripe-purple)', color: channel.active ? 'var(--stripe-purple)' : '#ffffff', border: channel.active ? '1px solid var(--stripe-border)' : 'none', borderRadius: '4px', padding: '0.35rem 0.75rem', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
-                {channel.active ? 'Configure' : 'Connect'}
-              </button>
+              <div>
+                <div style={{ fontSize: '16px', color: 'var(--stripe-navy)', fontWeight: 500 }}>{channel.name}</div>
+                <div style={{ fontSize: '13px', color: channel.status === 'Connected' ? 'var(--stripe-success-text)' : 'var(--stripe-muted)' }}>{channel.status}</div>
+              </div>
             </div>
+            {channel.status === 'Connected' ? (
+              <button style={{ backgroundColor: '#ffffff', color: '#d92d20', border: '1px solid #d92d20', borderRadius: '4px', padding: '0.35rem 0.75rem', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}>Disconnect</button>
+            ) : (
+              <button onClick={() => handleConnectClick(channel.name)} style={{ backgroundColor: 'var(--stripe-purple)', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.35rem 0.75rem', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}>Connect</button>
+            )}
           </div>
         ))}
       </div>
-
     </div>
   );
 }

@@ -1,48 +1,75 @@
-export default function Page() {
+'use client';
+
+import { useState } from 'react';
+import Toast from '../../../components/ui/Toast';
+
+export default function WebchatPage() {
+  const [toast, setToast] = useState<string | null>(null);
+  const [primaryColor, setPrimaryColor] = useState('#533AFD');
+  const [greeting, setGreeting] = useState('Hi there! How can I help you today?');
+
+  const handleSave = () => {
+    setToast('Webchat settings saved successfully!');
+  };
+
   return (
     <div style={{ maxWidth: '1080px', margin: '0 auto', width: '100%' }}>
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '32px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', letterSpacing: '-0.64px', fontFeatureSettings: '"ss01"' }}>Webchat Appearance</h1>
-        <p style={{ color: 'var(--stripe-body)', fontSize: '16px', margin: 0, fontWeight: 300, fontFeatureSettings: '"ss01"' }}>Customize how the AI widget looks on your website.</p>
-      </div>
+      {toast && <Toast message={toast} onClose={() => setToast(null)} />}
       
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div>
+          <h1 style={{ fontSize: '24px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.25rem 0' }}>Webchat Customization</h1>
+          <p style={{ color: 'var(--stripe-body)', fontSize: '14px', margin: 0 }}>Design how the widget appears on your website.</p>
+        </div>
+        <button onClick={handleSave} style={{ backgroundColor: 'var(--stripe-purple)', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '14px', fontWeight: 500, cursor: 'pointer', boxShadow: 'var(--stripe-shadow-action)' }}>Save Settings</button>
+      </div>
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
         <div style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '2rem', boxShadow: 'var(--stripe-shadow-ambient)' }}>
-          <h3 style={{ fontSize: '16px', color: 'var(--stripe-navy)', margin: '0 0 1.5rem 0', fontWeight: 500 }}>Widget Settings</h3>
+          <h3 style={{ fontSize: '16px', color: 'var(--stripe-navy)', margin: '0 0 1.5rem 0', fontWeight: 500 }}>Appearance</h3>
           
           <div style={{ marginBottom: '1.5rem' }}>
             <label style={{ display: 'block', fontSize: '14px', color: 'var(--stripe-label)', marginBottom: '0.5rem', fontWeight: 500 }}>Brand Color</label>
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '4px', backgroundColor: '#533afd', border: '1px solid var(--stripe-border)' }}></div>
-              <input type="text" value="#533afd" readOnly style={{ padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px', fontSize: '14px', color: 'var(--stripe-navy)' }} />
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+              <input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} style={{ width: '40px', height: '40px', padding: 0, border: 'none', borderRadius: '4px', cursor: 'pointer' }} />
+              <input type="text" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} style={{ flex: 1, padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px', fontSize: '14px' }} />
             </div>
           </div>
 
           <div style={{ marginBottom: '1.5rem' }}>
             <label style={{ display: 'block', fontSize: '14px', color: 'var(--stripe-label)', marginBottom: '0.5rem', fontWeight: 500 }}>Initial Greeting</label>
-            <input type="text" defaultValue="Hi there! How can I help you today?" style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px', fontSize: '14px', color: 'var(--stripe-navy)' }} />
+            <input type="text" value={greeting} onChange={(e) => setGreeting(e.target.value)} style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px', fontSize: '14px' }} />
           </div>
-
-          <button style={{ backgroundColor: 'var(--stripe-purple)', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '14px', fontWeight: 500, cursor: 'pointer', boxShadow: 'var(--stripe-shadow-action)' }}>Save Changes</button>
+          
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{ display: 'block', fontSize: '14px', color: 'var(--stripe-label)', marginBottom: '0.5rem', fontWeight: 500 }}>Widget Position</label>
+            <select style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px', fontSize: '14px', color: 'var(--stripe-navy)' }}>
+              <option>Bottom Right</option>
+              <option>Bottom Left</option>
+            </select>
+          </div>
         </div>
 
-        <div style={{ backgroundColor: '#f6f9fc', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '2rem', display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end', minHeight: '400px' }}>
-          <div style={{ width: '300px', backgroundColor: '#ffffff', borderRadius: '12px', boxShadow: 'var(--stripe-shadow-ambient)', overflow: 'hidden' }}>
-            <div style={{ backgroundColor: '#533afd', padding: '1rem', color: '#ffffff', fontWeight: 500 }}>
-              Amira AI Support
+        <div style={{ backgroundColor: '#f6f9fc', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px', position: 'relative' }}>
+          
+          {/* Mock Widget Preview */}
+          <div style={{ width: '320px', backgroundColor: '#ffffff', borderRadius: '12px', boxShadow: '0 12px 24px rgba(0,0,0,0.1)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ backgroundColor: primaryColor, padding: '1.5rem', color: '#ffffff', textAlign: 'center' }}>
+              <div style={{ fontWeight: 600, fontSize: '16px', marginBottom: '0.25rem' }}>Amira Assistant</div>
+              <div style={{ fontSize: '12px', opacity: 0.9 }}>Typically replies instantly</div>
             </div>
-            <div style={{ padding: '1rem', height: '200px', backgroundColor: '#f9f9f9' }}>
-              <div style={{ backgroundColor: '#ffffff', padding: '0.75rem', borderRadius: '8px', borderBottomLeftRadius: '0', fontSize: '14px', color: 'var(--stripe-navy)', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', display: 'inline-block' }}>
-                Hi there! How can I help you today?
+            <div style={{ padding: '1.5rem', backgroundColor: '#f9fafb', height: '200px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ backgroundColor: '#ffffff', padding: '1rem', borderRadius: '8px', borderBottomLeftRadius: '0', fontSize: '13px', color: 'var(--stripe-navy)', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', alignSelf: 'flex-start', maxWidth: '85%' }}>
+                {greeting}
               </div>
             </div>
-            <div style={{ padding: '0.75rem', borderTop: '1px solid var(--stripe-border)', display: 'flex', gap: '0.5rem' }}>
-              <input type="text" placeholder="Type a message..." style={{ flex: 1, border: 'none', outline: 'none', fontSize: '14px' }} />
+            <div style={{ padding: '1rem', borderTop: '1px solid var(--stripe-border)', backgroundColor: '#ffffff' }}>
+              <div style={{ backgroundColor: '#f6f9fc', borderRadius: '20px', padding: '0.5rem 1rem', fontSize: '13px', color: 'var(--stripe-muted)' }}>Type a message...</div>
             </div>
           </div>
+          
         </div>
       </div>
-
     </div>
   );
 }
