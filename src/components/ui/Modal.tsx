@@ -59,19 +59,19 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
         overflow: 'hidden'
       }}>
         <div style={{
-          padding: '1.5rem',
+          padding: '1.25rem',
           borderBottom: '1px solid var(--stripe-border)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center'
         }}>
-          <h2 style={{ margin: 0, fontSize: '18px', color: 'var(--stripe-navy)', fontWeight: 500 }}>{title}</h2>
+          <h2 style={{ margin: 0, fontSize: '12px', color: 'var(--stripe-navy)', fontWeight: 500 }}>{title}</h2>
           <button 
             onClick={onClose}
             style={{ 
               background: 'none', 
               border: 'none', 
-              fontSize: '24px', 
+              fontSize: '20px', 
               color: 'var(--stripe-muted)', 
               cursor: 'pointer',
               lineHeight: 1
@@ -80,7 +80,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
             &times;
           </button>
         </div>
-        <div style={{ padding: '1.5rem' }}>
+        <div style={{ padding: '1.25rem' }}>
           {children}
         </div>
       </div>

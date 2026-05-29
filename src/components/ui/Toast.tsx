@@ -32,7 +32,7 @@ export default function Toast({ message, type = 'success', onClose }: ToastProps
       display: 'flex',
       alignItems: 'center',
       gap: '8px',
-      fontSize: '14px',
+      fontSize: '12px',
       fontWeight: 500,
       opacity: visible ? 1 : 0,
       transform: visible ? 'translateY(0)' : 'translateY(10px)',

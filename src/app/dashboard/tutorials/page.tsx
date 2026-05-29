@@ -1,9 +1,9 @@
 export default function Page() {
   return (
     <div style={{ maxWidth: '1080px', margin: '0 auto', width: '100%' }}>
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '32px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', letterSpacing: '-0.64px', fontFeatureSettings: '"ss01"' }}>Tutorials & Guides</h1>
-        <p style={{ color: 'var(--stripe-body)', fontSize: '16px', margin: 0, fontWeight: 300, fontFeatureSettings: '"ss01"' }}>Learn how to get the most out of your Amira agent.</p>
+      <div style={{ marginBottom: '1rem' }}>
+        <h1 style={{ fontSize: '20px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', letterSpacing: '-0.64px', fontFeatureSettings: '"ss01"' }}>Tutorials & Guides</h1>
+        <p style={{ color: 'var(--stripe-body)', fontSize: '12px', margin: 0, fontWeight: 300, fontFeatureSettings: '"ss01"' }}>Learn how to get the most out of your Amira agent.</p>
       </div>
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
@@ -23,7 +23,7 @@ export default function Page() {
               <div style={{ position: 'absolute', bottom: '8px', right: '8px', backgroundColor: 'rgba(0,0,0,0.7)', color: '#ffffff', fontSize: '11px', padding: '2px 6px', borderRadius: '4px', fontFeatureSettings: '"tnum"' }}>{tut.duration}</div>
             </div>
             <div style={{ padding: '1rem' }}>
-              <div style={{ fontSize: '14px', color: 'var(--stripe-navy)', fontWeight: 500 }}>{tut.title}</div>
+              <div style={{ fontSize: '12px', color: 'var(--stripe-navy)', fontWeight: 500 }}>{tut.title}</div>
             </div>
           </div>
         ))}

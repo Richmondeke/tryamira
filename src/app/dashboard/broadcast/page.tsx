@@ -21,7 +21,7 @@ export default function BroadcastPage() {
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Create Broadcast">
         <form onSubmit={handleSend} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '13px', color: 'var(--stripe-label)', marginBottom: '4px' }}>Audience Segment</label>
+            <label style={{ display: 'block', fontSize: '12px', color: 'var(--stripe-label)', marginBottom: '4px' }}>Audience Segment</label>
             <select style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px' }}>
               <option>All Leads (1,248)</option>
               <option>Hot Leads (240)</option>
@@ -29,7 +29,7 @@ export default function BroadcastPage() {
             </select>
           </div>
           <div>
-            <label style={{ display: 'block', fontSize: '13px', color: 'var(--stripe-label)', marginBottom: '4px' }}>Channel</label>
+            <label style={{ display: 'block', fontSize: '12px', color: 'var(--stripe-label)', marginBottom: '4px' }}>Channel</label>
             <select style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px' }}>
               <option>Email</option>
               <option>SMS</option>
@@ -37,19 +37,19 @@ export default function BroadcastPage() {
             </select>
           </div>
           <div>
-            <label style={{ display: 'block', fontSize: '13px', color: 'var(--stripe-label)', marginBottom: '4px' }}>Message Body</label>
+            <label style={{ display: 'block', fontSize: '12px', color: 'var(--stripe-label)', marginBottom: '4px' }}>Message Body</label>
             <textarea required rows={4} style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px', resize: 'vertical' }} placeholder="Hi {{first_name}}, check out our new listings!"></textarea>
           </div>
           <button type="submit" style={{ marginTop: '0.5rem', padding: '0.75rem', backgroundColor: 'var(--stripe-purple)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>Schedule Send</button>
         </form>
       </Modal>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <div>
-          <h1 style={{ fontSize: '24px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.25rem 0' }}>Broadcasts</h1>
-          <p style={{ color: 'var(--stripe-body)', fontSize: '14px', margin: 0 }}>Send one-off messages to your leads.</p>
+          <h1 style={{ fontSize: '20px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.25rem 0' }}>Broadcasts</h1>
+          <p style={{ color: 'var(--stripe-body)', fontSize: '12px', margin: 0 }}>Send one-off messages to your leads.</p>
         </div>
-        <button onClick={() => setShowModal(true)} style={{ backgroundColor: 'var(--stripe-purple)', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '14px', fontWeight: 500, cursor: 'pointer', boxShadow: 'var(--stripe-shadow-action)' }}>New Broadcast</button>
+        <button onClick={() => setShowModal(true)} style={{ backgroundColor: 'var(--stripe-purple)', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '12px', fontWeight: 500, cursor: 'pointer', boxShadow: 'var(--stripe-shadow-action)' }}>New Broadcast</button>
       </div>
 
       <div style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', boxShadow: 'var(--stripe-shadow-ambient)', overflow: 'hidden' }}>
@@ -64,10 +64,10 @@ export default function BroadcastPage() {
           </thead>
           <tbody>
             <tr style={{ borderBottom: '1px solid var(--stripe-border)' }}>
-              <td style={{ padding: '1rem 1.5rem', fontSize: '14px', color: 'var(--stripe-navy)', fontWeight: 500 }}>Q3 Promotion</td>
-              <td style={{ padding: '1rem 1.5rem', fontSize: '14px', color: 'var(--stripe-body)' }}>All Leads</td>
-              <td style={{ padding: '1rem 1.5rem', fontSize: '14px', color: 'var(--stripe-body)' }}>Aug 12, 2024</td>
-              <td style={{ padding: '1rem 1.5rem', fontSize: '14px', color: 'var(--stripe-success-text)' }}>42%</td>
+              <td style={{ padding: '1rem 1.5rem', fontSize: '12px', color: 'var(--stripe-navy)', fontWeight: 500 }}>Q3 Promotion</td>
+              <td style={{ padding: '1rem 1.5rem', fontSize: '12px', color: 'var(--stripe-body)' }}>All Leads</td>
+              <td style={{ padding: '1rem 1.5rem', fontSize: '12px', color: 'var(--stripe-body)' }}>Aug 12, 2024</td>
+              <td style={{ padding: '1rem 1.5rem', fontSize: '12px', color: 'var(--stripe-success-text)' }}>42%</td>
             </tr>
           </tbody>
         </table>

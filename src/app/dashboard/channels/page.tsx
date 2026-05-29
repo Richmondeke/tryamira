@@ -38,12 +38,12 @@ export default function ChannelsPage() {
       <Modal isOpen={showModal} onClose={() => !isConnecting && setShowModal(false)} title={`Connect ${connectingChannel}`}>
         {isConnecting ? (
           <div style={{ textAlign: 'center', padding: '2rem 0' }}>
-            <div style={{ color: 'var(--stripe-purple)', fontSize: '18px', fontWeight: 500 }}>Connecting securely...</div>
-            <p style={{ color: 'var(--stripe-muted)', fontSize: '14px', marginTop: '0.5rem' }}>Please wait while we establish the OAuth connection.</p>
+            <div style={{ color: 'var(--stripe-purple)', fontSize: '12px', fontWeight: 500 }}>Connecting securely...</div>
+            <p style={{ color: 'var(--stripe-muted)', fontSize: '12px', marginTop: '0.5rem' }}>Please wait while we establish the OAuth connection.</p>
           </div>
         ) : (
           <div>
-            <p style={{ color: 'var(--stripe-body)', fontSize: '14px', marginBottom: '1.5rem' }}>
+            <p style={{ color: 'var(--stripe-body)', fontSize: '12px', marginBottom: '1rem' }}>
               You will be redirected to authenticate with {connectingChannel}. Amira will request permission to read and reply to messages on your behalf.
             </p>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
@@ -54,23 +54,23 @@ export default function ChannelsPage() {
         )}
       </Modal>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <div>
-          <h1 style={{ fontSize: '24px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.25rem 0' }}>Social Channels</h1>
-          <p style={{ color: 'var(--stripe-body)', fontSize: '14px', margin: 0 }}>Connect your messaging platforms to the AI agent.</p>
+          <h1 style={{ fontSize: '20px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.25rem 0' }}>Social Channels</h1>
+          <p style={{ color: 'var(--stripe-body)', fontSize: '12px', margin: 0 }}>Connect your messaging platforms to the AI agent.</p>
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem' }}>
         {channels.map((channel, i) => (
-          <div key={i} style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '1.5rem', boxShadow: 'var(--stripe-shadow-ambient)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div key={i} style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '1.25rem', boxShadow: 'var(--stripe-shadow-ambient)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '8px', backgroundColor: '#f6f9fc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '8px', backgroundColor: '#f6f9fc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
                 {channel.icon}
               </div>
               <div>
-                <div style={{ fontSize: '16px', color: 'var(--stripe-navy)', fontWeight: 500 }}>{channel.name}</div>
-                <div style={{ fontSize: '13px', color: channel.status === 'Connected' ? 'var(--stripe-success-text)' : 'var(--stripe-muted)' }}>{channel.status}</div>
+                <div style={{ fontSize: '12px', color: 'var(--stripe-navy)', fontWeight: 500 }}>{channel.name}</div>
+                <div style={{ fontSize: '12px', color: channel.status === 'Connected' ? 'var(--stripe-success-text)' : 'var(--stripe-muted)' }}>{channel.status}</div>
               </div>
             </div>
             {channel.status === 'Connected' ? (

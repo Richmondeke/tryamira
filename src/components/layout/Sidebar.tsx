@@ -74,7 +74,7 @@ export function Sidebar() {
       {/* Navigation */}
       <nav style={{ flex: 1, overflowY: 'auto', padding: '1rem' }}>
         {Object.entries(navItems).map(([section, items]) => (
-          <div key={section} style={{ marginBottom: '1.5rem' }}>
+          <div key={section} style={{ marginBottom: '1rem' }}>
             <div style={{ padding: '0 0.75rem 0.5rem', fontSize: '12px', color: 'var(--stripe-muted)', fontWeight: 600 }}>{section}</div>
             {items.map(item => (
               <Link 
@@ -87,7 +87,7 @@ export function Sidebar() {
                   padding: '0.5rem 0.75rem',
                   color: pathname === item.href ? 'var(--stripe-purple)' : 'var(--stripe-label)',
                   textDecoration: 'none',
-                  fontSize: '14px',
+                  fontSize: '12px',
                   fontWeight: 500,
                   borderRadius: '6px',
                   backgroundColor: pathname === item.href ? 'var(--stripe-bg)' : 'transparent'
@@ -104,7 +104,7 @@ export function Sidebar() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: 'var(--stripe-purple)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>AO</div>
           <div>
-            <div style={{ fontSize: '13px', fontWeight: 600 }}>Ashley Okoye</div>
+            <div style={{ fontSize: '12px', fontWeight: 600 }}>Ashley Okoye</div>
             <div style={{ fontSize: '11px', color: 'var(--stripe-muted)' }}>Free Plan</div>
           </div>
         </div>

@@ -38,12 +38,12 @@ export default function IntegrationsPage() {
       <Modal isOpen={showModal} onClose={() => !isConnecting && setShowModal(false)} title={`Install ${connectingApp}`}>
         {isConnecting ? (
           <div style={{ textAlign: 'center', padding: '2rem 0' }}>
-            <div style={{ color: 'var(--stripe-purple)', fontSize: '18px', fontWeight: 500 }}>Authorizing...</div>
-            <p style={{ color: 'var(--stripe-muted)', fontSize: '14px', marginTop: '0.5rem' }}>Securely connecting Amira to {connectingApp}.</p>
+            <div style={{ color: 'var(--stripe-purple)', fontSize: '12px', fontWeight: 500 }}>Authorizing...</div>
+            <p style={{ color: 'var(--stripe-muted)', fontSize: '12px', marginTop: '0.5rem' }}>Securely connecting Amira to {connectingApp}.</p>
           </div>
         ) : (
           <div>
-            <p style={{ color: 'var(--stripe-body)', fontSize: '14px', marginBottom: '1.5rem' }}>
+            <p style={{ color: 'var(--stripe-body)', fontSize: '12px', marginBottom: '1rem' }}>
               Amira will request permission to read and write data to your {connectingApp} account to ensure seamless synchronization.
             </p>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
@@ -54,18 +54,18 @@ export default function IntegrationsPage() {
         )}
       </Modal>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <div>
-          <h1 style={{ fontSize: '24px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.25rem 0' }}>App Integrations</h1>
-          <p style={{ color: 'var(--stripe-body)', fontSize: '14px', margin: 0 }}>Connect Amira with your existing software stack.</p>
+          <h1 style={{ fontSize: '20px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.25rem 0' }}>App Integrations</h1>
+          <p style={{ color: 'var(--stripe-body)', fontSize: '12px', margin: 0 }}>Connect Amira with your existing software stack.</p>
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem' }}>
         {integrations.map((app, i) => (
-          <div key={i} style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '1.5rem', boxShadow: 'var(--stripe-shadow-ambient)' }}>
+          <div key={i} style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '1.25rem', boxShadow: 'var(--stripe-shadow-ambient)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '8px', backgroundColor: '#f6f9fc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '8px', backgroundColor: '#f6f9fc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
                 {app.icon}
               </div>
               {app.status === 'Installed' ? (
@@ -74,8 +74,8 @@ export default function IntegrationsPage() {
                 <button onClick={() => handleInstallClick(app.name)} style={{ backgroundColor: '#ffffff', color: 'var(--stripe-navy)', border: '1px solid var(--stripe-border)', borderRadius: '4px', padding: '0.35rem 0.75rem', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}>Install</button>
               )}
             </div>
-            <h3 style={{ fontSize: '16px', color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', fontWeight: 500 }}>{app.name}</h3>
-            <p style={{ fontSize: '14px', color: 'var(--stripe-body)', margin: 0 }}>{app.desc}</p>
+            <h3 style={{ fontSize: '12px', color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', fontWeight: 500 }}>{app.name}</h3>
+            <p style={{ fontSize: '12px', color: 'var(--stripe-body)', margin: 0 }}>{app.desc}</p>
           </div>
         ))}
       </div>

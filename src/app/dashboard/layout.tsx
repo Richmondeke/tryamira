@@ -19,7 +19,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           zIndex: 10
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <span style={{ color: 'var(--stripe-navy)', fontSize: '14px', fontWeight: 500, fontFeatureSettings: '"ss01"' }}>ashley@amira.com</span>
+            <span style={{ color: 'var(--stripe-navy)', fontSize: '12px', fontWeight: 500, fontFeatureSettings: '"ss01"' }}>ashley@amira.com</span>
             <div style={{ 
               width: '32px', 
               height: '32px', 
@@ -30,7 +30,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               justifyContent: 'center',
               color: 'white',
               fontWeight: 'bold',
-              fontSize: '14px'
+              fontSize: '12px'
             }}>
               A
             </div>
@@ -38,7 +38,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Main Content */}
-        <main style={{ flex: 1, padding: '2rem', overflowY: 'auto', backgroundColor: 'var(--stripe-bg)', color: 'var(--stripe-body)', fontFeatureSettings: '"ss01"' }}>
+        <main style={{ flex: 1, padding: '1.25rem', overflowY: 'auto', backgroundColor: 'var(--stripe-bg)', color: 'var(--stripe-body)', fontFeatureSettings: '"ss01"' }}>
           {children}
         </main>
       </div>
