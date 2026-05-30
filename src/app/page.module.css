@@ -1411,67 +1411,129 @@
   line-height: 1.6;
 }
 
-/* --- FOOTER CTA BANNER --- */
+/* --- FOOTER CTA BANNER CUSTOM REDESIGN --- */
 .footerCtaBanner {
-  padding: 8rem 2rem;
+  padding: 6rem 2rem;
   background: #0d0d0d;
-  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
   position: relative;
   overflow: hidden;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.footerCtaGlow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 700px;
-  height: 450px;
-  background: radial-gradient(ellipse, rgba(0, 82, 204, 0.12) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-.footerCtaContent {
+.footerCtaContainer {
+  max-width: 1100px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 3rem;
+  align-items: center;
+  background: #090909; /* Premium dark black-gray mockup card background */
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 4rem 3.5rem;
   position: relative;
-  z-index: 2;
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+}
+
+.footerCtaLeft {
+  position: relative;
+  z-index: 5;
+  text-align: left;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  justify-content: center;
 }
 
 .footerCtaTitle {
   font-family: var(--font-poppins), sans-serif;
-  font-weight: 600;
-  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 500;
+  font-size: clamp(2rem, 3vw, 2.75rem);
   color: #ffffff;
-  margin: 0 0 1.25rem;
+  margin: 0 0 1rem 0;
   line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 .footerCtaDesc {
-  font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.45);
-  margin: 0 auto 2.5rem;
-  max-width: 520px;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+  max-width: 460px;
   line-height: 1.6;
 }
 
-.btnCtaMain {
-  background: #0052cc;
-  color: #ffffff;
-  padding: 1rem 2.5rem;
-  border-radius: 100px;
-  font-size: 1.05rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: 0 8px 24px rgba(0, 82, 204, 0.35);
+.footerCtaRight {
+  position: relative;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
 }
 
-.btnCtaMain:hover {
-  background: #0065ff;
-  transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(0, 82, 204, 0.5);
+/* Burst Container centered around the button */
+.stripesBurst {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Single Angled Rectangular Bar radiating around */
+.stripeBar {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: 0% 50%;
+  border-radius: 4px;
+  opacity: 0.85;
+  transition: transform 0.3s ease;
+}
+
+/* Beveled Octagon button matching the custom clip-path in white */
+.beveledCtaBtn {
+  position: relative;
+  z-index: 10;
+  background-color: #f1f1f1;
+  color: #0c0c0c;
+  padding: 0.8rem 2.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 190px;
+  white-space: nowrap;
+  
+  /* Octagonal beveled look matching the screenshot perfectly */
+  clip-path: polygon(
+    10px 0, 
+    calc(100% - 10px) 0, 
+    100% 10px, 
+    100% calc(100% - 10px), 
+    calc(100% - 10px) 100%, 
+    10px 100%, 
+    0 calc(100% - 10px), 
+    0 10px
+  );
+  
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+}
+
+.beveledCtaBtn:hover {
+  background-color: #ffffff;
+  transform: scale(1.03);
 }
 
 /* --- FOOTER --- */

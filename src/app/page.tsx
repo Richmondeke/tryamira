@@ -884,13 +884,33 @@ export default function LandingPage() {
 
       {/* FOOTER CTA BANNER */}
       <section className={styles.footerCtaBanner}>
-        <div className={styles.footerCtaGlow} />
-        <div className={styles.footerCtaContent}>
-          <h2 className={styles.footerCtaTitle}>Your customers are calling right now.<br />Who's replying?</h2>
-          <p className={styles.footerCtaDesc}>
-            Every unanswered call is a lead walking out the door. Set up your Voice AI Agent today.
-          </p>
-          <a href="#" className={styles.btnCtaMain}>Start Free Trial</a>
+        <div className={styles.footerCtaContainer}>
+          <div className={styles.footerCtaLeft}>
+            <h2 className={styles.footerCtaTitle}>Like what you see?</h2>
+            <p className={styles.footerCtaDesc}>
+              Join our early stage Limited Beta and help form the future of AI voice employees.
+            </p>
+          </div>
+          <div className={styles.footerCtaRight}>
+            {/* Abstract radiating burst of thick angled stripes in our electric blue/indigo theme */}
+            <div className={styles.stripesBurst}>
+              <div className={styles.stripeBar} style={{ transform: 'rotate(12deg) translate(80px, -20px)', width: '130px', height: '24px', backgroundColor: 'rgba(83, 58, 253, 0.9)' }}></div>
+              <div className={styles.stripeBar} style={{ transform: 'rotate(38deg) translate(90px, 10px)', width: '150px', height: '28px', backgroundColor: 'rgba(0, 101, 255, 0.9)' }}></div>
+              <div className={styles.stripeBar} style={{ transform: 'rotate(72deg) translate(100px, 30px)', width: '115px', height: '22px', backgroundColor: 'rgba(83, 58, 253, 0.9)' }}></div>
+              <div className={styles.stripeBar} style={{ transform: 'rotate(108deg) translate(95px, 20px)', width: '140px', height: '26px', backgroundColor: 'rgba(0, 101, 255, 0.9)' }}></div>
+              <div className={styles.stripeBar} style={{ transform: 'rotate(148deg) translate(80px, 0px)', width: '120px', height: '24px', backgroundColor: 'rgba(83, 58, 253, 0.9)' }}></div>
+              <div className={styles.stripeBar} style={{ transform: 'rotate(185deg) translate(95px, -15px)', width: '160px', height: '28px', backgroundColor: 'rgba(0, 101, 255, 0.9)' }}></div>
+              <div className={styles.stripeBar} style={{ transform: 'rotate(232deg) translate(90px, 10px)', width: '110px', height: '22px', backgroundColor: 'rgba(83, 58, 253, 0.9)' }}></div>
+              <div className={styles.stripeBar} style={{ transform: 'rotate(268deg) translate(100px, -5px)', width: '130px', height: '26px', backgroundColor: 'rgba(0, 101, 255, 0.9)' }}></div>
+              <div className={styles.stripeBar} style={{ transform: 'rotate(308deg) translate(85px, -20px)', width: '140px', height: '24px', backgroundColor: 'rgba(83, 58, 253, 0.9)' }}></div>
+              <div className={styles.stripeBar} style={{ transform: 'rotate(342deg) translate(90px, -10px)', width: '150px', height: '28px', backgroundColor: 'rgba(0, 101, 255, 0.9)' }}></div>
+            </div>
+            
+            {/* Slanted Beveled Octagon button in white */}
+            <a href="/dashboard" className={styles.beveledCtaBtn}>
+              Join limited Beta
+            </a>
+          </div>
         </div>
       </section>
 

@@ -38,6 +38,15 @@ function MiniBarChart({ data, color }: { data: number[]; color: string }) {
 export default function OverviewPage() {
   const supabase = createClient();
   const [activities, setActivities] = useState<any[]>([]);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [checklistStates, setChecklistStates] = useState({
+    channelConnected: false,
+    agentConfigured: false,
+    trainingAdded: false,
+    leadCaptured: false,
+    messageReceived: false,
+    trialStarted: false
+  });
   const [metrics, setMetrics] = useState({
     totalLeads: 0,
     leadsThisMonth: 0,
@@ -59,6 +68,17 @@ export default function OverviewPage() {
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
       const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
       const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0).toISOString();
+
+      // Get user information
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single();
+          setCurrentUser({ id: user.id, full_name: profile?.full_name || user.email?.split('@')[0] || 'Nick' });
+        }
+      } catch (e) {
+        console.error("Error fetching user session:", e);
+      }
 
       // Total leads
       const { count: totalLeads } = await supabase.from('leads').select('*', { count: 'exact', head: true });
@@ -91,14 +111,35 @@ export default function OverviewPage() {
         if (daysAgo < 7) convsByDay[6 - daysAgo]++;
       });
 
+      // Onboarding checklist dynamic checks
+      let hasChannel = false;
+      let hasAgent = false;
+      let hasTraining = false;
+      try {
+        const { count: inboxCount } = await supabase.from('email_inboxes').select('*', { count: 'exact', head: true });
+        const { count: webchatCount } = await supabase.from('webchat_configs').select('*', { count: 'exact', head: true });
+        hasChannel = (inboxCount || 0) > 0 || (webchatCount || 0) > 0;
+      } catch (e) {
+        console.error("Failed to query integrations:", e);
+      }
+
+      try {
+        const { count: agentCount } = await supabase.from('workspace_agents').select('*', { count: 'exact', head: true });
+        hasAgent = (agentCount || 0) > 0;
+        hasTraining = hasAgent; // Done if agent is configured
+      } catch (e) {
+        console.error("Failed to query workspace agents:", e);
+      }
+
       const tLeads = totalLeads || 0;
       const tConverted = convertedLeads || 0;
+      const tConv = totalConv || 0;
 
       setMetrics({
         totalLeads: tLeads,
         leadsThisMonth: leadsThisMonth || 0,
         leadsLastMonth: leadsLastMonth || 0,
-        totalConversations: totalConv || 0,
+        totalConversations: tConv,
         convThisMonth: convThisMonth || 0,
         openConversations: openConv || 0,
         resolvedConversations: resolvedConv || 0,
@@ -106,6 +147,15 @@ export default function OverviewPage() {
       });
       setLeadTrend(leadsByDay);
       setConvTrend(convsByDay);
+
+      setChecklistStates({
+        channelConnected: hasChannel,
+        agentConfigured: hasAgent,
+        trainingAdded: hasTraining,
+        leadCaptured: tLeads > 0,
+        messageReceived: tConv > 0,
+        trialStarted: false
+      });
 
       // Activities
       const { data: actData } = await supabase.from('activities').select('*').order('created_at', { ascending: false }).limit(6);
@@ -186,46 +236,257 @@ export default function OverviewPage() {
 
       <AdCarousel />
 
-      {/* Onboarding Checklist */}
-      <div style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '12px', padding: '1.5rem', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', marginBottom: '2rem', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: 0, right: 0, width: '150px', height: '150px', background: 'radial-gradient(circle at top right, rgba(21,190,83,0.05), transparent 70%)', pointerEvents: 'none' }} />
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+      {/* Welcome Header inspired by Measured mockup */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        marginTop: '0.5rem',
+        marginBottom: '0.25rem',
+        width: '100%'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          {/* Stylized Starburst / Sun Badge Icon */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '28px',
+            height: '28px',
+            borderRadius: '8px',
+            backgroundColor: '#fffbeb',
+            border: '1px solid #fef3c7',
+            boxShadow: '0 2px 4px rgba(251, 191, 36, 0.08)'
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+              <circle cx="12" cy="12" r="4" fill="#f59e0b" />
+            </svg>
+          </div>
+          <h1 style={{ 
+            fontSize: '24px', 
+            fontWeight: 700, 
+            color: '#0f172a', 
+            margin: 0, 
+            fontFamily: 'Outfit, Inter, system-ui, sans-serif',
+            letterSpacing: '-0.5px' 
+          }}>
+            Welcome, {currentUser?.full_name ? currentUser.full_name.split(' ')[0] : 'Nick'}
+          </h1>
+        </div>
+        
+        {/* Need Help Button */}
+        <button style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          padding: '0.45rem 0.9rem',
+          borderRadius: '9999px',
+          border: '1.2px solid #e2e8f0',
+          backgroundColor: '#ffffff',
+          color: '#0f172a',
+          fontSize: '12px',
+          fontWeight: 600,
+          cursor: 'pointer',
+          boxShadow: '0 1px 2px rgba(0, 0, 0, 0.04)',
+          transition: 'all 0.15s ease',
+          fontFamily: 'Inter, system-ui, sans-serif'
+        }}
+        onMouseOver={(e) => {
+          e.currentTarget.style.borderColor = '#cbd5e1';
+          e.currentTarget.style.backgroundColor = '#f8fafc';
+        }}
+        onMouseOut={(e) => {
+          e.currentTarget.style.borderColor = '#e2e8f0';
+          e.currentTarget.style.backgroundColor = '#ffffff';
+        }}
+        >
+          <span style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '16px',
+            height: '16px',
+            borderRadius: '50%',
+            backgroundColor: '#0f172a',
+            color: '#ffffff',
+            fontSize: '10px',
+            fontWeight: 800,
+            lineHeight: 1
+          }}>?</span>
+          Need help?
+        </button>
+      </div>
+
+      <p style={{ 
+        color: '#64748b', 
+        fontSize: '14px', 
+        margin: '0 0 1.75rem 0', 
+        fontWeight: 400,
+        fontFamily: 'Inter, system-ui, sans-serif' 
+      }}>
+        We're very excited to get started with you!
+      </p>
+
+      {/* Onboarding Checklist in Measured sky-blue glass style */}
+      <div style={{ 
+        background: 'linear-gradient(135deg, rgba(235, 245, 255, 0.95) 0%, rgba(208, 230, 255, 0.95) 100%)', 
+        border: '1px solid rgba(255, 255, 255, 0.65)', 
+        borderRadius: '16px', 
+        padding: '2.25rem 1.75rem', 
+        boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.03)', 
+        marginBottom: '2.5rem', 
+        position: 'relative', 
+        overflow: 'hidden' 
+      }}>
+        {/* Sky-blue diagonal reflection highlight */}
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 60%)', pointerEvents: 'none' }} />
+        
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', position: 'relative', zIndex: 2 }}>
           <div>
-            <h3 style={{ fontSize: '15px', color: 'var(--stripe-navy)', margin: '0 0 0.35rem 0', fontWeight: 600 }}>Get Started</h3>
-            <p style={{ color: 'var(--stripe-body)', fontSize: '13px', margin: 0 }}>1 of 6 complete</p>
+            <h3 style={{ fontSize: '18px', color: '#0d233a', margin: '0 0 0.4rem 0', fontWeight: 700, fontFamily: 'Inter, system-ui, sans-serif' }}>Finish Onboarding</h3>
+            <p style={{ color: '#2a4365', fontSize: '13.5px', margin: 0, fontWeight: 500, opacity: 0.9, fontFamily: 'Inter, system-ui, sans-serif' }}>
+              Please ensure the following items are complete so that your Amira AI Employee can start qualifying leads:
+            </p>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '4px', marginBottom: '1.75rem' }}>
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} style={{ height: '5px', flex: 1, backgroundColor: i === 0 ? '#15be53' : '#e3e8ee', borderRadius: '3px', boxShadow: i === 0 ? '0 0 8px rgba(21,190,83,0.4)' : 'none' }} />
-          ))}
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+
+        {/* Checklist sub-cards */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', position: 'relative', zIndex: 2 }}>
           {[
-            { label: 'Connect a messaging channel', done: true, href: '/dashboard/integrations/channels' },
-            { label: 'Configure your AI agent', done: false, href: '/dashboard/ai-agent' },
-            { label: 'Add training data (FAQs, products...)', done: false, href: '/dashboard/ai-agent' },
-            { label: 'Capture your first lead', done: false, href: '/dashboard/leads' },
-            { label: 'Receive your first message', done: false, href: '/dashboard/chat' },
-            { label: 'Start your 14-day free trial — no credit card required', done: false, href: '/dashboard/upgrade', isAction: true },
-          ].map((item, i) => (
-            <Link key={i} href={item.href} style={{ textDecoration: 'none' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', padding: '0.5rem 0.75rem', borderRadius: '8px', margin: '0 -0.75rem', cursor: 'pointer' }}>
-                <div style={{ width: '18px', height: '18px', borderRadius: '5px', backgroundColor: item.done ? '#15be53' : '#fff', border: item.done ? '1px solid #15be53' : '1.5px solid #d1d5db', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  {item.done && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4.5L3.5 7L9 1" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+            { label: 'Connect a messaging channel', done: checklistStates.channelConnected, icon: (color: string) => (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 16V9a4 4 0 0 0-4-4H6M6 9l-3 3 3 3M18 15l3 3-3 3" />
+              </svg>
+            ), href: '/dashboard/integrations/channels' },
+            { label: 'Configure your AI agent', done: checklistStates.agentConfigured, icon: (color: string) => (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="10" rx="2" />
+                <circle cx="12" cy="5" r="2" />
+                <path d="M12 7v4M8 16h.01M16 16h.01" />
+              </svg>
+            ), href: '/dashboard/ai-agent' },
+            { label: 'Add training data (FAQs, products...)', done: checklistStates.trainingAdded, icon: (color: string) => (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44 2.5 2.5 0 0 1 0-3.12 3 3 0 0 1 0-4.88 2.5 2.5 0 0 1 0-3.12A2.5 2.5 0 0 1 9.5 2Z" />
+                <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44 2.5 2.5 0 0 0 0-3.12 3 3 0 0 0 0-4.88 2.5 2.5 0 0 0 0-3.12A2.5 2.5 0 0 0 14.5 2Z" />
+              </svg>
+            ), href: '/dashboard/ai-agent' },
+            { label: 'Capture your first lead', done: checklistStates.leadCaptured, icon: (color: string) => (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <polyline points="16 11 18 13 22 9" />
+              </svg>
+            ), href: '/dashboard/leads' },
+            { label: 'Receive your first message', done: checklistStates.messageReceived, icon: (color: string) => (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+            ), href: '/dashboard/chat' },
+            { label: 'Start your 14-day free trial — no credit card required', done: checklistStates.trialStarted, icon: (color: string) => (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </svg>
+            ), href: '/dashboard/upgrade', isAction: true },
+          ].map((item, i) => {
+            const activeColor = item.isAction ? '#533afd' : '#0f172a';
+            const displayColor = item.done ? '#94a3b8' : activeColor;
+            return (
+              <Link key={i} href={item.href} style={{ textDecoration: 'none' }}>
+                <div 
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '0.85rem', 
+                    padding: '1rem 1.25rem', 
+                    borderRadius: '12px', 
+                    backgroundColor: '#ffffff',
+                    border: '1px solid rgba(255, 255, 255, 0.7)',
+                    boxShadow: '0 2px 6px rgba(0, 101, 255, 0.015)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 101, 255, 0.05)';
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 1)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 2px 6px rgba(0, 101, 255, 0.015)';
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.7)';
+                  }}
+                >
+                  {/* Circle Checkbox */}
+                  {item.done ? (
+                    <div style={{ 
+                      width: '20px', 
+                      height: '20px', 
+                      borderRadius: '50%', 
+                      backgroundColor: '#64748b', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      flexShrink: 0 
+                    }}>
+                      <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                        <path d="M1 4.5L3.5 7L9 1" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                  ) : (
+                    <div style={{ 
+                      width: '20px', 
+                      height: '20px', 
+                      borderRadius: '50%', 
+                      border: '1.8px solid #cbd5e1', 
+                      backgroundColor: '#ffffff',
+                      flexShrink: 0,
+                      transition: 'border-color 0.2s'
+                    }} />
+                  )}
+
+                  {/* Task Icon SVG */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    {item.icon(displayColor)}
+                  </div>
+
+                  {/* Task Label */}
+                  <span style={{ 
+                    fontSize: '13.5px', 
+                    color: item.isAction && !item.done ? '#533afd' : item.done ? '#94a3b8' : '#0f172a', 
+                    textDecoration: item.done ? 'line-through' : 'none', 
+                    fontWeight: item.done ? 450 : 600,
+                    fontFamily: 'Inter, system-ui, sans-serif'
+                  }}>
+                    {item.label}
+                  </span>
+
+                  {/* Chevron Right */}
+                  <svg 
+                    width="14" 
+                    height="14" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke={displayColor} 
+                    strokeWidth="2.5" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    style={{ marginLeft: 'auto', opacity: item.done ? 0.4 : 0.8 }}
+                  >
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
                 </div>
-                <span style={{ fontSize: '13px', color: item.isAction ? '#533afd' : item.done ? '#9ca3af' : '#1f2937', textDecoration: item.done ? 'line-through' : 'none', fontWeight: item.done ? 400 : 500 }}>{item.label}</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={item.isAction ? '#533afd' : '#9ca3af'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto', opacity: 0.5 }}><polyline points="9 18 15 12 9 6" /></svg>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       </div>
 
-      {/* Welcome */}
+      {/* Metrics Section Header */}
       <div style={{ marginBottom: '1.5rem' }}>
-        <h1 style={{ fontSize: '22px', fontWeight: 400, color: 'var(--stripe-navy)', margin: '0 0 0.25rem 0', letterSpacing: '-0.5px' }}>Is your business growing?</h1>
-        <p style={{ color: '#6b7280', fontSize: '13px', margin: 0 }}>Real-time data from your leads, conversations, and AI agent activity.</p>
+        <h2 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--stripe-navy)', margin: '0 0 0.25rem 0', letterSpacing: '-0.2px' }}>Is your business growing?</h2>
+        <p style={{ color: '#6b7280', fontSize: '12.5px', margin: 0 }}>Real-time data from your leads, conversations, and AI agent activity.</p>
       </div>
 
       {/* Metric Cards with Sparklines */}
