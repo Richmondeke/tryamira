@@ -16,8 +16,24 @@ export default function IntegrationsPage() {
   const [showModal, setShowModal] = useState(false);
   const [connectingApp, setConnectingApp] = useState<any | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [integrations, setIntegrations] = useState<any[]>([]);
+  const [integrations, setIntegrations] = useState<any[]>(() => {
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem('amira_cached_integrations');
+      if (cached) {
+        try {
+          return JSON.parse(cached);
+        } catch (e) {}
+      }
+    }
+    return [];
+  });
+  const [loading, setLoading] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem('amira_cached_integrations');
+      return !cached;
+    }
+    return true;
+  });
 
   // Function to load all integrations dynamically
   const loadIntegrations = async () => {
@@ -36,6 +52,11 @@ export default function IntegrationsPage() {
         }));
 
         setIntegrations(mapped);
+        
+        // Cache the mapped results locally
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('amira_cached_integrations', JSON.stringify(mapped));
+        }
       }
     } catch (err) {
       console.error('Failed to load integrations:', err);
@@ -85,7 +106,13 @@ export default function IntegrationsPage() {
     e.stopPropagation();
     const res = await removeComposioIntegration(appId);
     if (res.success) {
-      setIntegrations(prev => prev.map(a => a.id === appId ? { ...a, status: 'Not Installed' } : a));
+      setIntegrations(prev => {
+        const updated = prev.map(a => a.id === appId ? { ...a, status: 'Not Installed' } : a);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('amira_cached_integrations', JSON.stringify(updated));
+        }
+        return updated;
+      });
       setToast(`${appName} disconnected successfully.`);
     } else {
       setToast(`Failed to disconnect ${appName}.`);
