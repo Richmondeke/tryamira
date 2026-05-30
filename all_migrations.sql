@@ -262,3 +262,39 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- Alter lead_capture_forms table to support detailed config
+ALTER TABLE public.lead_capture_forms 
+ADD COLUMN IF NOT EXISTS config JSONB DEFAULT '{}'::jsonb NOT NULL;
+
+-- Create form_submissions table
+CREATE TABLE IF NOT EXISTS public.form_submissions (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  form_id UUID REFERENCES public.lead_capture_forms ON DELETE CASCADE NOT NULL,
+  answers JSONB NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Enable RLS on form_submissions
+ALTER TABLE public.form_submissions ENABLE ROW LEVEL SECURITY;
+
+-- Create RLS Policies
+CREATE POLICY "Allow public inserts into form_submissions" 
+ON public.form_submissions FOR INSERT 
+WITH CHECK (true);
+
+CREATE POLICY "Allow authenticated select of form_submissions" 
+ON public.form_submissions FOR SELECT 
+USING (
+  form_id IN (
+    SELECT id FROM public.lead_capture_forms 
+    WHERE workspace_id IN (
+      SELECT workspace_id FROM public.workspace_members WHERE user_id = auth.uid()
+    )
+  )
+);
+
+CREATE POLICY "Allow public select of lead_capture_forms" 
+ON public.lead_capture_forms FOR SELECT 
+USING (true);
+

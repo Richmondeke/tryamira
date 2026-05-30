@@ -1,41 +1,79 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Modal from '../../../components/ui/Modal';
 import Toast from '../../../components/ui/Toast';
+import { getForms, createForm, getFormSubmissions } from '@/app/actions/forms';
 
 export default function Page() {
   const router = useRouter();
   
-  const [forms, setForms] = useState([
-    { id: 1, name: 'Real Estate Inquiry', views: 4521, submissions: 892, conversion: '19.7%' },
-    { id: 2, name: 'Contact Us Support', views: 1204, submissions: 154, conversion: '12.8%' }
-  ]);
-  
+  const [forms, setForms] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showResultsModal, setShowResultsModal] = useState(false);
   const [selectedForm, setSelectedForm] = useState<any>(null);
-  const [toast, setToast] = useState<string | null>(null);
+  
+  // Results details states
+  const [submissions, setSubmissions] = useState<any[]>([]);
+  const [loadingSubmissions, setLoadingSubmissions] = useState(false);
 
-  const handleCreateForm = (e: React.FormEvent<HTMLFormElement>) => {
+  const [toast, setToast] = useState<string | null>(null);
+  const [originUrl, setOriginUrl] = useState('https://heyamira.com');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setOriginUrl(window.location.origin);
+    }
+    
+    async function loadForms() {
+      const res = await getForms();
+      if (res.success && res.data) {
+        setForms(res.data);
+      } else {
+        setToast('Failed to fetch forms from database.');
+      }
+      setLoading(false);
+    }
+    loadForms();
+  }, []);
+
+  const handleCreateForm = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const name = formData.get('name') as string;
-    const newId = Date.now();
     
-    setForms([
-      { id: newId, name, views: 0, submissions: 0, conversion: '0%' },
-      ...forms
-    ]);
+    setLoading(true);
+    const res = await createForm(name);
+    setLoading(false);
     
-    setShowModal(false);
-    router.push(`/dashboard/forms/${newId}`);
+    if (res.success && res.data) {
+      setShowModal(false);
+      router.push(`/dashboard/forms/${res.data.id}`);
+    } else {
+      setToast('Failed to create form in live database.');
+    }
   };
 
   const openShareModal = (form: any) => {
     setSelectedForm(form);
     setShowShareModal(true);
+  };
+
+  const openResultsModal = async (form: any) => {
+    setSelectedForm(form);
+    setShowResultsModal(true);
+    setLoadingSubmissions(true);
+    
+    const res = await getFormSubmissions(form.id);
+    if (res.success && res.data) {
+      setSubmissions(res.data);
+    } else {
+      setToast('Failed to query submissions.');
+    }
+    setLoadingSubmissions(false);
   };
 
   const copyToClipboard = (text: string) => {
@@ -44,9 +82,10 @@ export default function Page() {
   };
 
   return (
-    <div style={{ maxWidth: '1080px', margin: '0 auto', width: '100%' }}>
+    <div style={{ maxWidth: '1080px', margin: '0 auto', width: '100%', fontFamily: 'Inter, system-ui, sans-serif' }}>
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}
       
+      {/* Create Form Modal */}
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Create Form">
         <form onSubmit={handleCreateForm} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div>
@@ -55,7 +94,7 @@ export default function Page() {
           </div>
           <div>
             <label style={{ display: 'block', fontSize: '13px', color: 'var(--stripe-navy)', fontWeight: 500, marginBottom: '6px' }}>Template</label>
-            <select style={{ width: '100%', padding: '0.65rem', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '13px' }}>
+            <select style={{ width: '100%', padding: '0.65rem', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '13px', backgroundColor: '#fff' }}>
               <option value="standard">Standard Lead Capture</option>
               <option value="real_estate">Real Estate Qualification</option>
               <option value="booking">Meeting Booking</option>
@@ -69,14 +108,15 @@ export default function Page() {
         </form>
       </Modal>
 
+      {/* Share Link Modal */}
       <Modal isOpen={showShareModal} onClose={() => setShowShareModal(false)} title={`Share "${selectedForm?.name}"`}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <div>
             <label style={{ display: 'block', fontSize: '13px', color: 'var(--stripe-navy)', fontWeight: 500, marginBottom: '6px' }}>Direct Link</label>
             <p style={{ fontSize: '12px', color: 'var(--stripe-body)', marginBottom: '8px' }}>Share this link directly with your customers.</p>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <input readOnly type="text" value={`https://heyamira.com/f/${selectedForm?.id || 'demo'}`} style={{ flex: 1, padding: '0.65rem', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '12px', backgroundColor: '#f9fafb', color: '#4b5563' }} />
-              <button type="button" onClick={() => copyToClipboard(`https://heyamira.com/f/${selectedForm?.id || 'demo'}`)} style={{ padding: '0 1rem', backgroundColor: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500, transition: 'background 0.2s' }}
+              <input readOnly type="text" value={`${originUrl}/f/${selectedForm?.id || 'demo'}`} style={{ flex: 1, padding: '0.65rem', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '12px', backgroundColor: '#f9fafb', color: '#4b5563' }} />
+              <button type="button" onClick={() => copyToClipboard(`${originUrl}/f/${selectedForm?.id || 'demo'}`)} style={{ padding: '0 1rem', backgroundColor: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500, transition: 'background 0.2s' }}
                       onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e5e7eb'}
                       onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}>
                 Copy
@@ -87,14 +127,74 @@ export default function Page() {
             <label style={{ display: 'block', fontSize: '13px', color: 'var(--stripe-navy)', fontWeight: 500, marginBottom: '6px' }}>Embed Code</label>
             <p style={{ fontSize: '12px', color: 'var(--stripe-body)', marginBottom: '8px' }}>Paste this iframe snippet into your website's HTML.</p>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-              <textarea readOnly value={`<iframe src="https://heyamira.com/f/${selectedForm?.id || 'demo'}?embed=true" width="100%" height="500px" frameborder="0"></iframe>`} style={{ flex: 1, padding: '0.65rem', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '12px', backgroundColor: '#f9fafb', color: '#4b5563', resize: 'none', height: '80px', fontFamily: 'monospace' }} />
-              <button type="button" onClick={() => copyToClipboard(`<iframe src="https://heyamira.com/f/${selectedForm?.id || 'demo'}?embed=true" width="100%" height="500px" frameborder="0"></iframe>`)} style={{ padding: '0.65rem 1rem', backgroundColor: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500, transition: 'background 0.2s' }}
+              <textarea readOnly value={`<iframe src="${originUrl}/f/${selectedForm?.id || 'demo'}?embed=true" width="100%" height="500px" frameborder="0"></iframe>`} style={{ flex: 1, padding: '0.65rem', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '12px', backgroundColor: '#f9fafb', color: '#4b5563', resize: 'none', height: '80px', fontFamily: 'monospace' }} />
+              <button type="button" onClick={() => copyToClipboard(`<iframe src="${originUrl}/f/${selectedForm?.id || 'demo'}?embed=true" width="100%" height="500px" frameborder="0"></iframe>`)} style={{ padding: '0.65rem 1rem', backgroundColor: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500, transition: 'background 0.2s' }}
                       onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e5e7eb'}
                       onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}>
                 Copy
               </button>
             </div>
           </div>
+        </div>
+      </Modal>
+
+      {/* Results Inspector Modal */}
+      <Modal isOpen={showResultsModal} onClose={() => setShowResultsModal(false)} title={`Submissions: "${selectedForm?.name}"`}>
+        <div style={{ minWidth: '480px', maxHeight: '500px', overflowY: 'auto' }}>
+          {loadingSubmissions ? (
+            <div style={{ textAlign: 'center', padding: '3rem 0' }}>
+              <div style={{ display: 'inline-block', width: '24px', height: '24px', border: '2px solid #6366f1', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '10px' }} />
+              <div style={{ fontSize: '12px', color: '#64748b' }}>Loading submissions...</div>
+            </div>
+          ) : submissions.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '3rem 1.5rem', color: '#94a3b8' }}>
+              <span style={{ fontSize: '28px', display: 'block', marginBottom: '8px' }}>📋</span>
+              <div style={{ fontSize: '13px', fontWeight: 500, color: '#475569' }}>No responses captured yet</div>
+              <p style={{ fontSize: '12px', color: '#64748b', margin: '4px 0 16px 0', lineHeight: 1.4 }}>Share your public link to start automatically capturing leads.</p>
+              <button onClick={() => { setShowResultsModal(false); openShareModal(selectedForm); }} style={{ backgroundColor: '#6366f1', color: '#fff', border: 'none', borderRadius: '4px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>Get Share Link</button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '0.5rem' }}>
+                Captured **{submissions.length}** active customer submissions:
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {submissions.map((sub, i) => {
+                  const answers = sub.answers || {};
+                  const dateStr = new Date(sub.created_at).toLocaleString();
+                  return (
+                    <div key={sub.id || i} style={{ border: '1px solid #e2e8f0', borderRadius: '6px', padding: '1rem', backgroundColor: '#f8fafc' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 600, color: '#1e293b' }}>Response #{submissions.length - i}</span>
+                        <span style={{ fontSize: '10.5px', color: '#64748b' }}>{dateStr}</span>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem 1rem' }}>
+                        {Object.entries(answers).map(([key, val]: any) => {
+                          let label = key;
+                          if (key === 'firstName') label = 'First Name';
+                          else if (key === 'lastName') label = 'Last Name';
+                          else if (key === 'email') label = 'Email';
+                          else if (key === 'phone') label = 'Phone';
+                          else if (key === 'company') label = 'Company';
+                          
+                          let renderVal = val;
+                          if (Array.isArray(val)) renderVal = val.join(', ');
+                          else if (typeof val === 'object') renderVal = JSON.stringify(val);
+
+                          return (
+                            <div key={key} style={{ fontSize: '11.5px' }}>
+                              <span style={{ fontWeight: 600, color: '#475569', marginRight: '4px' }}>{label}:</span>
+                              <span style={{ color: '#0f172a' }}>{renderVal?.toString()}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </Modal>
 
@@ -113,44 +213,56 @@ export default function Page() {
       <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '1.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
         <h3 style={{ fontSize: '14px', color: '#334155', margin: '0 0 1.5rem 0', fontWeight: 500 }}>Active Forms</h3>
 
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontFeatureSettings: '"tnum"' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid #e2e8f0', textAlign: 'left' }}>
-                <th style={{ padding: '0 0 1rem 0', fontSize: '12px', color: '#64748b', fontWeight: 600, letterSpacing: '0.5px' }}>FORM NAME</th>
-                <th style={{ padding: '0 0 1rem 0', fontSize: '12px', color: '#64748b', fontWeight: 600, letterSpacing: '0.5px' }}>VIEWS</th>
-                <th style={{ padding: '0 0 1rem 0', fontSize: '12px', color: '#64748b', fontWeight: 600, letterSpacing: '0.5px' }}>SUBMISSIONS</th>
-                <th style={{ padding: '0 0 1rem 0', fontSize: '12px', color: '#64748b', fontWeight: 600, letterSpacing: '0.5px' }}>CONVERSION</th>
-                <th style={{ padding: '0 0 1rem 0', fontSize: '12px', color: '#64748b', fontWeight: 600, letterSpacing: '0.5px' }}>ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody>
-              {forms.length === 0 ? (
-                <tr>
-                  <td colSpan={5} style={{ padding: '3rem 0', textAlign: 'center', color: '#94a3b8', fontSize: '13px' }}>
-                    No forms created yet. Build your first form to capture more leads.
-                  </td>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '4rem 0' }}>
+            <div style={{ display: 'inline-block', width: '28px', height: '28px', border: '3px solid #6366f1', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '12px' }} />
+            <div style={{ color: '#64748b', fontSize: '13px' }}>Loading forms database...</div>
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontFeatureSettings: '"tnum"' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid #e2e8f0', textAlign: 'left' }}>
+                  <th style={{ padding: '0 0 1rem 0', fontSize: '12px', color: '#64748b', fontWeight: 600, letterSpacing: '0.5px' }}>FORM NAME</th>
+                  <th style={{ padding: '0 0 1rem 0', fontSize: '12px', color: '#64748b', fontWeight: 600, letterSpacing: '0.5px' }}>VIEWS</th>
+                  <th style={{ padding: '0 0 1rem 0', fontSize: '12px', color: '#64748b', fontWeight: 600, letterSpacing: '0.5px' }}>SUBMISSIONS</th>
+                  <th style={{ padding: '0 0 1rem 0', fontSize: '12px', color: '#64748b', fontWeight: 600, letterSpacing: '0.5px' }}>CONVERSION</th>
+                  <th style={{ padding: '0 0 1rem 0', fontSize: '12px', color: '#64748b', fontWeight: 600, letterSpacing: '0.5px' }}>ACTIONS</th>
                 </tr>
-              ) : (
-                forms.map((form) => (
-                  <tr key={form.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={{ padding: '1.25rem 0', fontSize: '13px', color: '#0f172a', fontWeight: 500 }}>{form.name}</td>
-                    <td style={{ padding: '1.25rem 0', fontSize: '13px', color: '#64748b' }}>{form.views.toLocaleString()}</td>
-                    <td style={{ padding: '1.25rem 0', fontSize: '13px', color: '#64748b' }}>{form.submissions.toLocaleString()}</td>
-                    <td style={{ padding: '1.25rem 0', fontSize: '13px', color: '#15be53' }}>{form.conversion}</td>
-                    <td style={{ padding: '1.25rem 0', fontSize: '13px' }}>
-                      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                        <span style={{ color: '#6366f1', cursor: 'pointer', fontWeight: 500, transition: 'color 0.2s' }} onClick={() => router.push(`/dashboard/forms/${form.id}`)} onMouseOver={(e) => e.currentTarget.style.color = '#4f46e5'} onMouseOut={(e) => e.currentTarget.style.color = '#6366f1'}>Edit</span>
-                        <span style={{ color: '#6366f1', cursor: 'pointer', fontWeight: 500, transition: 'color 0.2s' }} onClick={() => openShareModal(form)} onMouseOver={(e) => e.currentTarget.style.color = '#4f46e5'} onMouseOut={(e) => e.currentTarget.style.color = '#6366f1'}>Share</span>
-                        <span style={{ color: '#6366f1', cursor: 'pointer', fontWeight: 500, transition: 'color 0.2s' }} onClick={() => setToast(`Viewing ${form.submissions} submissions for ${form.name}`)} onMouseOver={(e) => e.currentTarget.style.color = '#4f46e5'} onMouseOut={(e) => e.currentTarget.style.color = '#6366f1'}>Results</span>
-                      </div>
+              </thead>
+              <tbody>
+                {forms.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} style={{ padding: '3rem 0', textAlign: 'center', color: '#94a3b8', fontSize: '13px' }}>
+                      No forms created yet. Build your first form to capture more leads.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  forms.map((form) => {
+                    const views = form.views || 0;
+                    const subCount = form.submissions || 0;
+                    const convRate = form.conversion_rate !== undefined ? `${form.conversion_rate}%` : (views > 0 ? `${((subCount / views) * 100).toFixed(1)}%` : '0%');
+                    return (
+                      <tr key={form.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                        <td style={{ padding: '1.25rem 0', fontSize: '13px', color: '#0f172a', fontWeight: 500 }}>{form.name}</td>
+                        <td style={{ padding: '1.25rem 0', fontSize: '13px', color: '#64748b' }}>{views.toLocaleString()}</td>
+                        <td style={{ padding: '1.25rem 0', fontSize: '13px', color: '#64748b' }}>{subCount.toLocaleString()}</td>
+                        <td style={{ padding: '1.25rem 0', fontSize: '13px', color: '#15be53', fontWeight: 500 }}>{convRate}</td>
+                        <td style={{ padding: '1.25rem 0', fontSize: '13px' }}>
+                          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                            <span style={{ color: '#6366f1', cursor: 'pointer', fontWeight: 500, transition: 'color 0.2s' }} onClick={() => router.push(`/dashboard/forms/${form.id}`)} onMouseOver={(e) => e.currentTarget.style.color = '#4f46e5'} onMouseOut={(e) => e.currentTarget.style.color = '#6366f1'}>Edit</span>
+                            <span style={{ color: '#6366f1', cursor: 'pointer', fontWeight: 500, transition: 'color 0.2s' }} onClick={() => openShareModal(form)} onMouseOver={(e) => e.currentTarget.style.color = '#4f46e5'} onMouseOut={(e) => e.currentTarget.style.color = '#6366f1'}>Share</span>
+                            <span style={{ color: '#6366f1', cursor: 'pointer', fontWeight: 500, transition: 'color 0.2s' }} onClick={() => openResultsModal(form)} onMouseOver={(e) => e.currentTarget.style.color = '#4f46e5'} onMouseOut={(e) => e.currentTarget.style.color = '#6366f1'}>Results</span>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Modal from '../../../../components/ui/Modal';
 import Toast from '../../../../components/ui/Toast';
 import { getAgents } from '@/app/actions/agent';
+import { getFormById, saveForm } from '@/app/actions/forms';
 
 type CustomField = {
   id: string;
@@ -16,6 +17,11 @@ type CustomField = {
 
 export default function FormBuilderPage({ params }: { params: { id: string } }) {
   const router = useRouter();
+  
+  const [formName, setFormName] = useState('Contact Us');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [originUrl, setOriginUrl] = useState('https://heyamira.com');
   
   const [formConfig, setFormConfig] = useState({
     title: 'Contact Us',
@@ -37,14 +43,39 @@ export default function FormBuilderPage({ params }: { params: { id: string } }) 
   const [agents, setAgents] = useState<any[]>([]);
 
   useEffect(() => {
-    async function fetchAgents() {
-      const res = await getAgents();
-      if (res.success && res.data) {
-        setAgents(res.data);
+    if (typeof window !== 'undefined') {
+      setOriginUrl(window.location.origin);
+    }
+    
+    async function loadData() {
+      try {
+        const [formRes, agentsRes] = await Promise.all([
+          getFormById(params.id),
+          getAgents()
+        ]);
+        
+        if (formRes.success && formRes.data) {
+          setFormName(formRes.data.name);
+          if (formRes.data.config) {
+            setFormConfig(prev => ({
+              ...prev,
+              ...formRes.data.config
+            }));
+          }
+        }
+        
+        if (agentsRes.success && agentsRes.data) {
+          setAgents(agentsRes.data);
+        }
+      } catch (err) {
+        console.error('Failed to load builder data:', err);
+      } finally {
+        setIsLoading(false);
       }
     }
-    fetchAgents();
-  }, []);
+    
+    loadData();
+  }, [params.id]);
 
   const [showShareModal, setShowShareModal] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -92,14 +123,43 @@ export default function FormBuilderPage({ params }: { params: { id: string } }) 
     });
   };
 
-  const handleSave = () => {
-    setShowShareModal(true);
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const res = await saveForm(params.id, formName, formConfig);
+      if (res.success) {
+        setToast('Form saved and published successfully!');
+        setShowShareModal(true);
+      } else {
+        setToast(res.error || 'Failed to save form config.');
+      }
+    } catch (err: any) {
+      setToast('Connection error occurred.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     setToast('Copied to clipboard!');
   };
+
+  if (isLoading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 'calc(100vh - 64px)', width: '100%', backgroundColor: '#f8fafc', fontFamily: 'Inter, system-ui, sans-serif' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ display: 'inline-block', width: '32px', height: '32px', border: '3px solid #6366f1', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+          <div style={{ color: '#475569', fontSize: '14px', fontWeight: 500, marginTop: '12px' }}>Loading form builder...</div>
+        </div>
+        <style jsx global>{`
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', height: 'calc(100vh - 64px)', margin: '-2rem', overflow: 'hidden' }}>
@@ -112,16 +172,16 @@ export default function FormBuilderPage({ params }: { params: { id: string } }) 
             <label style={{ display: 'block', fontSize: '13px', color: 'var(--stripe-navy)', fontWeight: 500, marginBottom: '6px' }}>Direct Link</label>
             <p style={{ fontSize: '12px', color: 'var(--stripe-body)', marginBottom: '8px' }}>Share this link directly with your customers.</p>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <input readOnly type="text" value={`https://heyamira.com/f/${params.id}`} style={{ flex: 1, padding: '0.65rem', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '12px', backgroundColor: '#f9fafb', color: '#4b5563' }} />
-              <button type="button" onClick={() => copyToClipboard(`https://heyamira.com/f/${params.id}`)} style={{ padding: '0 1rem', backgroundColor: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>Copy</button>
+              <input readOnly type="text" value={`${originUrl}/f/${params.id}`} style={{ flex: 1, padding: '0.65rem', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '12px', backgroundColor: '#f9fafb', color: '#4b5563' }} />
+              <button type="button" onClick={() => copyToClipboard(`${originUrl}/f/${params.id}`)} style={{ padding: '0 1rem', backgroundColor: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>Copy</button>
             </div>
           </div>
           <div>
             <label style={{ display: 'block', fontSize: '13px', color: 'var(--stripe-navy)', fontWeight: 500, marginBottom: '6px' }}>Embed Code</label>
             <p style={{ fontSize: '12px', color: 'var(--stripe-body)', marginBottom: '8px' }}>Paste this iframe snippet into your website's HTML.</p>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-              <textarea readOnly value={`<iframe src="https://heyamira.com/f/${params.id}?embed=true" width="100%" height="500px" frameborder="0"></iframe>`} style={{ flex: 1, padding: '0.65rem', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '12px', backgroundColor: '#f9fafb', color: '#4b5563', resize: 'none', height: '80px', fontFamily: 'monospace' }} />
-              <button type="button" onClick={() => copyToClipboard(`<iframe src="https://heyamira.com/f/${params.id}?embed=true" width="100%" height="500px" frameborder="0"></iframe>`)} style={{ padding: '0.65rem 1rem', backgroundColor: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>Copy</button>
+              <textarea readOnly value={`<iframe src="${originUrl}/f/${params.id}?embed=true" width="100%" height="500px" frameborder="0"></iframe>`} style={{ flex: 1, padding: '0.65rem', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '12px', backgroundColor: '#f9fafb', color: '#4b5563', resize: 'none', height: '80px', fontFamily: 'monospace' }} />
+              <button type="button" onClick={() => copyToClipboard(`<iframe src="${originUrl}/f/${params.id}?embed=true" width="100%" height="500px" frameborder="0"></iframe>`)} style={{ padding: '0.65rem 1rem', backgroundColor: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>Copy</button>
             </div>
           </div>
         </div>
@@ -142,6 +202,10 @@ export default function FormBuilderPage({ params }: { params: { id: string } }) 
           <div>
             <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#334155', margin: '0 0 1rem 0' }}>General</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', color: '#475569', fontWeight: 500, marginBottom: '4px' }}>Internal Form Name</label>
+                <input type="text" value={formName} onChange={(e) => setFormName(e.target.value)} style={{ width: '100%', padding: '0.6rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px' }} placeholder="e.g. Real Estate Inquiry" />
+              </div>
               <div>
                 <label style={{ display: 'block', fontSize: '12px', color: '#475569', fontWeight: 500, marginBottom: '4px' }}>Form Title</label>
                 <input type="text" value={formConfig.title} onChange={(e) => setFormConfig({ ...formConfig, title: e.target.value })} style={{ width: '100%', padding: '0.6rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px' }} />
@@ -297,8 +361,8 @@ export default function FormBuilderPage({ params }: { params: { id: string } }) 
       <div style={{ flex: 1, backgroundColor: '#f8fafc', position: 'relative', display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: '1rem 2rem', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#ffffff' }}>
           <span style={{ fontSize: '13px', fontWeight: 500, color: '#64748b' }}>Live Preview</span>
-          <button onClick={handleSave} style={{ backgroundColor: '#6366f1', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.6rem 1.25rem', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
-            Save & Publish
+          <button onClick={handleSave} disabled={isSaving} style={{ backgroundColor: '#6366f1', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.6rem 1.25rem', fontSize: '13px', fontWeight: 500, cursor: isSaving ? 'wait' : 'pointer', opacity: isSaving ? 0.75 : 1 }}>
+            {isSaving ? 'Saving...' : 'Save & Publish'}
           </button>
         </div>
 
