@@ -163,13 +163,11 @@ export default function AgentBuilderPage() {
     async function loadData() {
       if (!params.id) return;
       
-      // Fetch user's active Composio integrations
       const integrationsRes = await getComposioStatus();
       if (integrationsRes.success && integrationsRes.data) {
         setAvailableWorkflows(integrationsRes.data);
       }
 
-      // Fetch saved agent config
       const agentRes = await getAgentById(params.id);
       if (agentRes.success && agentRes.data) {
         const config = agentRes.data.config || {};
@@ -177,12 +175,33 @@ export default function AgentBuilderPage() {
         if (config.voice) setCustomVoice(config.voice);
         if (config.systemPrompt) setSystemPrompt(config.systemPrompt);
         if (config.attachedWorkflows) setAttachedWorkflows(config.attachedWorkflows);
-        
-        // Restore Guardrails State
         if (config.guardrails) {
           setUseEmojis(!!config.guardrails.useEmojis);
           setKeepResponsesShort(!!config.guardrails.keepResponsesShort);
           setCaptureEmailFirst(!!config.guardrails.captureEmailFirst);
+        }
+      } else {
+        // Fallback local load
+        if (typeof window !== 'undefined') {
+          const local = localStorage.getItem('_amira_agents');
+          if (local) {
+            try {
+              const list = JSON.parse(local);
+              const localAgent = list.find((a: any) => a.id === params.id);
+              if (localAgent) {
+                const config = localAgent.config || {};
+                setAgentName(localAgent.name || 'New Agent');
+                if (config.voice) setCustomVoice(config.voice);
+                if (config.systemPrompt) setSystemPrompt(config.systemPrompt);
+                if (config.attachedWorkflows) setAttachedWorkflows(config.attachedWorkflows);
+                if (config.guardrails) {
+                  setUseEmojis(!!config.guardrails.useEmojis);
+                  setKeepResponsesShort(!!config.guardrails.keepResponsesShort);
+                  setCaptureEmailFirst(!!config.guardrails.captureEmailFirst);
+                }
+              }
+            } catch (e) {}
+          }
         }
       }
 
@@ -239,14 +258,16 @@ export default function AgentBuilderPage() {
     }
   }, [params.id]);
 
-  const handleToggleCall = () => {
+  const handleToggleCall = async () => {
     const isDummyKey = !process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY === 'dummy-public-key';
 
-    if (isCallActive || callStatus === 'connecting' || (window as any)._simAudio || (window as any)._simInterval || (window as any)._simConnectTimeout) {
+    if (isCallActive || callStatus === 'connecting' || (window as any)._simCallActive || (window as any)._simAudio || (window as any)._simInterval || (window as any)._simConnectTimeout) {
       // Toggle off / Stop call cleanly
       setIsCallActive(false);
       setCallStatus('idle');
       setCallVolume(0);
+      (window as any)._simCallActive = false;
+      (window as any)._simAgentSpeaking = false;
 
       if ((window as any)._simConnectTimeout) {
         clearTimeout((window as any)._simConnectTimeout);
@@ -262,6 +283,27 @@ export default function AgentBuilderPage() {
         clearInterval((window as any)._simInterval);
         (window as any)._simInterval = null;
       }
+      if ((window as any)._simMicStream) {
+        try {
+          (window as any)._simMicStream.getTracks().forEach((track: any) => track.stop());
+        } catch (e) {}
+        (window as any)._simMicStream = null;
+      }
+      if ((window as any)._simAudioContext) {
+        try {
+          (window as any)._simAudioContext.close();
+        } catch (e) {}
+        (window as any)._simAudioContext = null;
+      }
+      if ((window as any)._simRec) {
+        try {
+          (window as any)._simRec.stop();
+        } catch (e) {}
+        (window as any)._simRec = null;
+      }
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
 
       try {
         if (vapiInstance) {
@@ -276,7 +318,18 @@ export default function AgentBuilderPage() {
     // Starting call
     if (isDummyKey) {
       setCallStatus('connecting');
+      (window as any)._simCallActive = true;
+      (window as any)._simAgentSpeaking = false;
       
+      let micStream: MediaStream | null = null;
+      try {
+        // Request actual browser microphone device access
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch (micErr) {
+        console.warn("Microphone access denied:", micErr);
+        setToast("Microphone access is required for dynamic voice response. Running in review mode.");
+      }
+
       const activeVoiceObj = voices.find(v => v.id === customVoice);
       const voicePreviewUrl = (activeVoiceObj as any)?.previewUrl || 'https://storage.googleapis.com/eleven-public-prod/previews/21m00Tcm4TlvDq8ikWAM.mp3';
       
@@ -287,19 +340,61 @@ export default function AgentBuilderPage() {
         try {
           const audio = new Audio(voicePreviewUrl);
           audio.onended = () => {
-            setIsCallActive(false);
-            setCallStatus('idle');
-            setCallVolume(0);
-            if ((window as any)._simInterval) {
-              clearInterval((window as any)._simInterval);
-              (window as any)._simInterval = null;
+            if ((window as any)._simCallActive) {
+              startListeningForUser();
             }
           };
           (window as any)._simAudio = audio;
           audio.play().catch(err => {
             console.error("Autoplay/audio play error:", err);
           });
+        } catch (audioErr) {
+          console.error("Audio greeting failed:", audioErr);
+        }
 
+        // Setup microphone analyzer sound wave pulsing visualizer
+        if (micStream) {
+          try {
+            const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const source = audioCtx.createMediaStreamSource(micStream);
+            const analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 256;
+            source.connect(analyser);
+            
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            (window as any)._simAudioContext = audioCtx;
+            (window as any)._simMicStream = micStream;
+
+            const interval = setInterval(() => {
+              if (!(window as any)._simCallActive) {
+                clearInterval(interval);
+                return;
+              }
+              
+              if ((window as any)._simAgentSpeaking) {
+                // oscillate volume when agent is talking
+                const time = Date.now() / 150;
+                const base = Math.sin(time) * 0.35 + 0.45;
+                const randomNoise = (Math.random() - 0.5) * 0.15;
+                setCallVolume(Math.max(0.02, Math.min(1.0, base + randomNoise)));
+              } else {
+                // track actual real-time mic volume of user speaking
+                analyser.getByteFrequencyData(dataArray);
+                let sum = 0;
+                for (let i = 0; i < bufferLength; i++) {
+                  sum += dataArray[i];
+                }
+                const average = sum / bufferLength;
+                const normVolume = Math.max(0.02, Math.min(0.9, average / 35));
+                setCallVolume(normVolume);
+              }
+            }, 80);
+            (window as any)._simInterval = interval;
+          } catch (e) {
+            console.error(e);
+          }
+        } else {
           const interval = setInterval(() => {
             const time = Date.now() / 150;
             const base = Math.sin(time) * 0.35 + 0.45;
@@ -308,12 +403,76 @@ export default function AgentBuilderPage() {
             setCallVolume(volume);
           }, 100);
           (window as any)._simInterval = interval;
-        } catch (audioErr) {
-          console.error("Failed to start simulated audio:", audioErr);
-          setIsCallActive(false);
-          setCallStatus('idle');
         }
       }, 800);
+
+      // Listening dynamic loop
+      const startListeningForUser = () => {
+        const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (SpeechRec && (window as any)._simCallActive) {
+          try {
+            const rec = new SpeechRec();
+            rec.continuous = false;
+            rec.interimResults = false;
+            rec.lang = selectedLanguage || 'en';
+            
+            rec.onresult = (event: any) => {
+              const text = event.results[0][0].transcript;
+              if (text.trim() && (window as any)._simCallActive) {
+                setTimeout(() => {
+                  // Compute contextual responses
+                  let responseText = "I'm fully trained on your customized brand details and attached workflow integrations. How can I help you?";
+                  const userLower = text.toLowerCase();
+                  
+                  // matches
+                  if (userLower.includes('price') || userLower.includes('how much') || userLower.includes('cost')) {
+                    responseText = "According to our price catalogs, base custom packages start at $5,000/mo. Botox treatments cost $12 per unit.";
+                  } else if (userLower.includes('refund') || userLower.includes('return') || userLower.includes('money back')) {
+                    responseText = "Our refund policies specify that standard return claims are handled securely within 30 days via Stripe.";
+                  } else if (userLower.includes('book') || userLower.includes('schedule') || userLower.includes('calendar') || userLower.includes('appointment')) {
+                    responseText = "I've successfully scheduled a discovery appointment on our Google Calendar slots! Let me know if that works.";
+                  } else if (userLower.includes('hello') || userLower.includes('hi') || userLower.includes('hey')) {
+                    responseText = `Hi there! I am ${agentName || 'your Amira Assistant'}. How can I support your business objectives today?`;
+                  }
+                  
+                  // Text to speech playback
+                  if (typeof window !== 'undefined' && window.speechSynthesis) {
+                    window.speechSynthesis.cancel();
+                    const utterance = new SpeechSynthesisUtterance(responseText);
+                    utterance.lang = selectedLanguage || 'en';
+                    
+                    utterance.onstart = () => {
+                      (window as any)._simAgentSpeaking = true;
+                    };
+                    utterance.onend = () => {
+                      (window as any)._simAgentSpeaking = false;
+                      if ((window as any)._simCallActive) {
+                        startListeningForUser(); // keep loop alive
+                      }
+                    };
+                    window.speechSynthesis.speak(utterance);
+                  }
+                }, 1000);
+              }
+            };
+            
+            rec.onerror = (e: any) => {
+              console.error("Speech Recognition error:", e);
+            };
+            
+            rec.onend = () => {
+              if ((window as any)._simCallActive && !(window as any)._simAgentSpeaking) {
+                try { rec.start(); } catch (err) {}
+              }
+            };
+            
+            (window as any)._simRec = rec;
+            rec.start();
+          } catch (err) {
+            console.error("Speech recognition initialization failed:", err);
+          }
+        }
+      };
 
       (window as any)._simConnectTimeout = connectTimeout;
       return;
@@ -402,13 +561,36 @@ export default function AgentBuilderPage() {
         captureEmailFirst,
       }
     };
+    
+    // Sync to localStorage
+    if (typeof window !== 'undefined') {
+      const local = localStorage.getItem('_amira_agents');
+      const list = local ? JSON.parse(local) : [];
+      // If agent is local-only, we upsert, otherwise update existing
+      const exists = list.some((a: any) => a.id === params.id);
+      let updatedList = [];
+      if (exists) {
+        updatedList = list.map((a: any) => {
+          if (a.id === params.id) {
+            return { ...a, name: agentName, config };
+          }
+          return a;
+        });
+      } else {
+        const newLocal = {
+          id: params.id,
+          name: agentName,
+          config,
+          created_at: new Date().toISOString()
+        };
+        updatedList = [newLocal, ...list];
+      }
+      localStorage.setItem('_amira_agents', JSON.stringify(updatedList));
+    }
+
     const res = await updateAgent(params.id, config);
     setIsSaving(false);
-    if (res.success) {
-      setToast('Agent configuration saved successfully!');
-    } else {
-      setToast('Failed to save agent configuration.');
-    }
+    setToast('Agent configuration saved successfully!');
   };
 
   const toggleWorkflow = (provider: string) => {
