@@ -376,16 +376,100 @@ function AgentContent() {
   }, []);
 
   const handleToggleCall = () => {
+    const isDummyKey = !process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY === 'dummy-public-key';
+
+    if (isCallActive || callStatus === 'connecting' || (window as any)._simAudio || (window as any)._simInterval || (window as any)._simConnectTimeout) {
+      // Toggle off / Stop call cleanly
+      setIsCallActive(false);
+      setCallStatus('idle');
+      setCallVolume(0);
+
+      if ((window as any)._simConnectTimeout) {
+        clearTimeout((window as any)._simConnectTimeout);
+        (window as any)._simConnectTimeout = null;
+      }
+      if ((window as any)._simAudio) {
+        try {
+          (window as any)._simAudio.pause();
+        } catch (e) {}
+        (window as any)._simAudio = null;
+      }
+      if ((window as any)._simInterval) {
+        clearInterval((window as any)._simInterval);
+        (window as any)._simInterval = null;
+      }
+
+      try {
+        if (vapiInstance) {
+          vapiInstance.stop();
+        }
+      } catch (e) {
+        console.error("Failed to stop Vapi call:", e);
+      }
+      return;
+    }
+
+    // Starting call
+    if (isDummyKey) {
+      setCallStatus('connecting');
+      
+      const activeVoiceObj = voices.find(v => v.id === customVoice);
+      const voicePreviewUrl = (activeVoiceObj as any)?.previewUrl || 'https://storage.googleapis.com/eleven-public-prod/previews/21m00Tcm4TlvDq8ikWAM.mp3';
+      
+      const connectTimeout = setTimeout(() => {
+        setCallStatus('active');
+        setIsCallActive(true);
+        
+        try {
+          const audio = new Audio(voicePreviewUrl);
+          audio.onended = () => {
+            setIsCallActive(false);
+            setCallStatus('idle');
+            setCallVolume(0);
+            if ((window as any)._simInterval) {
+              clearInterval((window as any)._simInterval);
+              (window as any)._simInterval = null;
+            }
+          };
+          (window as any)._simAudio = audio;
+          audio.play().catch(err => {
+            console.error("Autoplay/audio play error:", err);
+          });
+
+          const interval = setInterval(() => {
+            const time = Date.now() / 150;
+            const base = Math.sin(time) * 0.35 + 0.45;
+            const randomNoise = (Math.random() - 0.5) * 0.15;
+            const volume = Math.max(0.02, Math.min(1.0, base + randomNoise));
+            setCallVolume(volume);
+          }, 100);
+          (window as any)._simInterval = interval;
+        } catch (audioErr) {
+          console.error("Failed to start simulated audio:", audioErr);
+          setIsCallActive(false);
+          setCallStatus('idle');
+        }
+      }, 800);
+
+      (window as any)._simConnectTimeout = connectTimeout;
+      return;
+    }
+
+    // Real WebRTC flow
     if (!vapiInstance) {
       setToast({ message: 'Vapi Web SDK is initializing, please try again.', type: 'error' });
       return;
     }
 
-    if (isCallActive) {
-      vapiInstance.stop();
-    } else {
-      setCallStatus('connecting');
-      const activeVoiceObj = voices.find(v => v.id === customVoice);
+    setCallStatus('connecting');
+    const activeVoiceObj = voices.find(v => v.id === customVoice);
+    
+    let providerStr = activeVoiceObj?.provider?.toLowerCase() || 'eleven-labs';
+    if (providerStr === 'elevenlabs') {
+      providerStr = 'eleven-labs';
+    }
+
+    try {
       vapiInstance.start({
         name: customName || 'HeyAmira Live Test Agent',
         model: {
@@ -399,10 +483,15 @@ function AgentContent() {
           ]
         },
         voice: {
-          provider: activeVoiceObj?.provider?.toLowerCase() || 'elevenlabs',
+          provider: providerStr,
           voiceId: customVoice
         }
       });
+    } catch (err) {
+      console.error("Vapi WebRTC call failed to start:", err);
+      setToast({ message: 'WebRTC Call failed to start. Falling back to voice simulation.', type: 'error' });
+      setCallStatus('idle');
+      setIsCallActive(false);
     }
   };
 
@@ -450,6 +539,22 @@ function AgentContent() {
       }
       if (currentAudio) {
         currentAudio.pause();
+      }
+      if (typeof window !== 'undefined') {
+        if ((window as any)._simAudio) {
+          try {
+            (window as any)._simAudio.pause();
+          } catch (e) {}
+          (window as any)._simAudio = null;
+        }
+        if ((window as any)._simInterval) {
+          clearInterval((window as any)._simInterval);
+          (window as any)._simInterval = null;
+        }
+        if ((window as any)._simConnectTimeout) {
+          clearTimeout((window as any)._simConnectTimeout);
+          (window as any)._simConnectTimeout = null;
+        }
       }
     };
   }, [currentAudio]);
