@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { getAgents, createAgent } from '@/app/actions/agent';
 import Toast from '../../../components/ui/Toast';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import Modal from '../../../../components/ui/Modal';
 
 const templatesData = [
   {
@@ -21,7 +23,6 @@ const templatesData = [
     ],
     requiredIntegrations: [
       { name: 'Zendesk', icon: '🎫', reason: 'Create & update support tickets' },
-      { name: 'Gmail', icon: '📧', reason: 'Send follow-up emails to customers' },
       { name: 'Slack', icon: '💬', reason: 'Notify your team of escalations' },
     ],
     voice: 'rachel',
@@ -76,7 +77,6 @@ If they qualify:
     requiredIntegrations: [
       { name: 'Google Calendar', icon: '📅', reason: 'Schedule property showings' },
       { name: 'HubSpot', icon: '🟠', reason: 'Log lead details and call notes' },
-      { name: 'Gmail', icon: '📧', reason: 'Send confirmation to the buyer' },
     ],
     voice: 'rachel',
     callsHandled: '~120 calls/mo',
@@ -127,7 +127,6 @@ Your main goals:
     ],
     requiredIntegrations: [
       { name: 'Google Calendar', icon: '📅', reason: 'Find available technician slots' },
-      { name: 'Twilio', icon: '📱', reason: 'SMS job details to the on-call tech' },
       { name: 'Stripe', icon: '💳', reason: 'Collect emergency dispatch fee upfront' },
     ],
     voice: 'josh',
@@ -152,7 +151,6 @@ Your job is to triage emergency situations (e.g. active leaks, heating outages) 
     ],
     requiredIntegrations: [
       { name: 'Google Calendar', icon: '📅', reason: 'Book and reschedule appointments' },
-      { name: 'Gmail', icon: '📧', reason: 'Send pre-appointment instructions' },
       { name: 'Notion', icon: '📝', reason: 'Log patient intake information' },
     ],
     voice: 'rachel',
@@ -166,15 +164,34 @@ You are warm, inviting, and highly organized.
   }
 ];
 
-const voicesList = [
-  { id: 'rachel', name: 'Rachel', provider: 'ElevenLabs', gender: 'Female', accent: 'US Friendly', tag: 'Best for Support', text: "Hi! I'm Rachel. I speak with a warm, empathetic, and professional tone. Perfect for customer support and patient care." },
-  { id: 'josh', name: 'Josh', provider: 'ElevenLabs', gender: 'Male', accent: 'US Professional', tag: 'Best for Sales', text: "Hello! I'm Josh. My voice is deep, confident, and persuasive. Excellent for outbound lead generation and sales calls." },
-  { id: 'nova', name: 'Nova', provider: 'OpenAI', gender: 'Female', accent: 'US Energetic', tag: 'Best for Retail', text: "Hi there! I'm Nova. I have a bright, energetic, and highly engaging voice. Great for e-commerce and retail assistance." },
-  { id: 'alloy', name: 'Alloy', provider: 'OpenAI', gender: 'Male', accent: 'US Neutral', tag: 'Best for FAQs', text: "Hello, I'm Alloy. I offer a clear, calm, and neutral voice. Best for automated dispatching and FAQ triaging." },
-  { id: 'fin', name: 'Fin', provider: 'ElevenLabs', gender: 'Male', accent: 'British Warm', tag: 'Best for Consulting', text: "Cheers! I'm Fin. My British accent brings a warm, refined, and trustworthy tone. Ideal for B2B consulting." },
-  { id: 'bella', name: 'Bella', provider: 'ElevenLabs', gender: 'Female', accent: 'US Soft', tag: 'Best for Wellness', text: "Hi, I'm Bella. I have a gentle, soothing, and attentive voice. Suited for wellness clinics and hospitality." },
-  { id: 'thomas', name: 'Thomas', provider: 'PlayHT', gender: 'Male', accent: 'Aussie Friendly', tag: 'Best for Trades', text: "G'day! I'm Thomas. My Australian voice is friendly, down-to-earth, and relatable. Great for local trades and dispatch." },
-  { id: 'serena', name: 'Serena', provider: 'ElevenLabs', gender: 'Female', accent: 'US Conversational', tag: 'Best for Marketing', text: "Hey! I'm Serena. I have an upbeat, natural, and highly conversational voice. Superb for marketing campaigns." }
+const allIntegrations = [
+  { id: 'hubspot', name: 'HubSpot', desc: 'Sync leads to your HubSpot CRM.', icon: '🟠' },
+  { id: 'salesforce', name: 'Salesforce', desc: 'Two-way sync for Salesforce records.', icon: '☁️' },
+  { id: 'zapier', name: 'Zapier', desc: 'Connect Amira to 5,000+ apps.', icon: '⚡' },
+  { id: 'stripe', name: 'Stripe', desc: 'Capture payments directly in chat.', icon: '💳' },
+  { id: 'slack', name: 'Slack', desc: 'Send notifications to Slack channels.', icon: '💬' },
+  { id: 'googlecalendar', name: 'Google Calendar', desc: 'Book meetings directly on your calendar.', icon: '📅' },
+  { id: 'zendesk', name: 'Zendesk', desc: 'Create and manage support tickets.', icon: '🎧' },
+  { id: 'mailchimp', name: 'Mailchimp', desc: 'Sync email subscribers automatically.', icon: '✉️' },
+  { id: 'shopify', name: 'Shopify', desc: 'Manage e-commerce orders and customers.', icon: '🛍️' },
+  { id: 'notion', name: 'Notion', desc: 'Sync data to Notion databases.', icon: '📝' },
+];
+
+const initialVoicesList = [
+  { id: 'rachel', name: 'Rachel', provider: 'ElevenLabs', gender: 'Female', accent: 'US Friendly', tag: 'Best for Support', text: "Hi! I'm Rachel. I speak with a warm, empathetic, and professional tone. Perfect for customer support and patient care.", lang: 'en' },
+  { id: 'josh', name: 'Josh', provider: 'ElevenLabs', gender: 'Male', accent: 'US Professional', tag: 'Best for Sales', text: "Hello! I'm Josh. My voice is deep, confident, and persuasive. Excellent for outbound lead generation and sales calls.", lang: 'en' },
+  { id: 'kemi', name: 'Kemi', provider: 'ElevenLabs', gender: 'Female', accent: 'Nigerian (West Africa)', tag: 'Premium Local', text: "Kedu! I am Kemi. I speak with a clear and professional Nigerian English accent. Excellent for West African customer service.", lang: 'en' },
+  { id: 'chinedu', name: 'Chinedu', provider: 'ElevenLabs', gender: 'Male', accent: 'Nigerian (West Africa)', tag: 'Premium Local', text: "Hello! I am Chinedu. My voice is warm, relatable, and trustworthy, with a classic Nigerian accent. Perfect for local outbound services.", lang: 'en' },
+  { id: 'nova', name: 'Nova', provider: 'OpenAI', gender: 'Female', accent: 'US Energetic', tag: 'Best for Retail', text: "Hi there! I'm Nova. I have a bright, energetic, and highly engaging voice. Great for e-commerce and retail assistance.", lang: 'en' },
+  { id: 'alloy', name: 'Alloy', provider: 'OpenAI', gender: 'Male', accent: 'US Neutral', tag: 'Best for FAQs', text: "Hello, I'm Alloy. I offer a clear, calm, and neutral voice. Best for automated dispatching and FAQ triaging.", lang: 'en' },
+  { id: 'fin', name: 'Fin', provider: 'ElevenLabs', gender: 'Male', accent: 'British Warm', tag: 'Best for Consulting', text: "Cheers! I'm Fin. My British accent brings a warm, refined, and trustworthy tone. Ideal for B2B consulting.", lang: 'en' },
+  { id: 'bella', name: 'Bella', provider: 'ElevenLabs', gender: 'Female', accent: 'US Soft', tag: 'Best for Wellness', text: "Hi, I'm Bella. I have a gentle, soothing, and attentive voice. Suited for wellness clinics and hospitality.", lang: 'en' },
+  { id: 'thomas', name: 'Thomas', provider: 'PlayHT', gender: 'Male', accent: 'Aussie Friendly', tag: 'Best for Trades', text: "G'day! I'm Thomas. My Australian voice is friendly, down-to-earth, and relatable. Great for local trades and dispatch.", lang: 'en' },
+  { id: 'serena', name: 'Serena', provider: 'ElevenLabs', gender: 'Female', accent: 'US Conversational', tag: 'Best for Marketing', text: "Hey! I'm Serena. I have an upbeat, natural, and highly conversational voice. Superb for marketing campaigns.", lang: 'en' },
+  { id: 'mwangi', name: 'Mwangi', provider: 'PlayHT', gender: 'Male', accent: 'Kenyan (East Africa)', tag: 'Warm Support', text: "Jambo! I am Mwangi. I offer a warm, articulate Kenyan English voice profile.", lang: 'en' },
+  { id: 'ambrose', name: 'Ambrose', provider: 'ElevenLabs', gender: 'Male', accent: 'Yoruba Dialect', tag: 'Native Voice', text: "E nle o! I am Ambrose. I speak fluent Yoruba and English, bridging traditional communications for your customer database.", lang: 'yo' },
+  { id: 'chioma', name: 'Chioma', provider: 'ElevenLabs', gender: 'Female', accent: 'Igbo Dialect', tag: 'Native Voice', text: "Nnoo! I am Chioma. I speak fluent Igbo and English, providing warm native guidance for your callers.", lang: 'ig' },
+  { id: 'amina', name: 'Amina', provider: 'ElevenLabs', gender: 'Female', accent: 'Hausa Dialect', tag: 'Native Voice', text: "Sannu! I am Amina. I speak fluent Hausa and English, providing professional communication.", lang: 'ha' },
 ];
 
 function AgentContent() {
@@ -193,7 +210,16 @@ function AgentContent() {
   const [customName, setCustomName] = useState('');
   const [customPrompt, setCustomPrompt] = useState('');
   const [customVoice, setCustomVoice] = useState('rachel');
+  const [selectedLanguage, setSelectedLanguage] = useState('en');
   
+  // Custom Cloned Voice State
+  const [voices, setVoices] = useState(initialVoicesList);
+  const [showCloneModal, setShowCloneModal] = useState(false);
+  const [clonedVoiceName, setClonedVoiceName] = useState('');
+  const [clonedVoiceFile, setClonedVoiceFile] = useState<string | null>(null);
+  const [isCloning, setIsCloning] = useState(false);
+  const [cloneProgress, setCloneProgress] = useState(0);
+
   // Voice Preview Playing state
   const [playingVoice, setPlayingVoice] = useState<string | null>(null);
 
@@ -225,9 +251,9 @@ function AgentContent() {
       setCustomPrompt(selectedTemplate.prompt);
       setCustomVoice(selectedTemplate.voice);
       
-      // Initialize attached workflows
+      // Initialize ALL integrations as false
       const initial: Record<string, boolean> = {};
-      selectedTemplate.requiredIntegrations.forEach(integration => {
+      allIntegrations.forEach(integration => {
         initial[integration.name] = false;
       });
       setConnectedIntegrations(initial);
@@ -266,18 +292,18 @@ function AgentContent() {
     const utterance = new SpeechSynthesisUtterance(text);
     
     // Match appropriate system voice based on gender / dialect
-    const voices = window.speechSynthesis.getVoices();
+    const voicesListSystem = window.speechSynthesis.getVoices();
     let selectedSysVoice = null;
     
     if (gender.toLowerCase() === 'female') {
-      selectedSysVoice = voices.find(v => 
+      selectedSysVoice = voicesListSystem.find(v => 
         v.name.toLowerCase().includes('google us english') || 
         v.name.toLowerCase().includes('samantha') || 
         v.name.toLowerCase().includes('zira') || 
         v.name.toLowerCase().includes('female')
       );
     } else {
-      selectedSysVoice = voices.find(v => 
+      selectedSysVoice = voicesListSystem.find(v => 
         v.name.toLowerCase().includes('google uk english male') || 
         v.name.toLowerCase().includes('david') || 
         v.name.toLowerCase().includes('male')
@@ -297,6 +323,47 @@ function AgentContent() {
     };
 
     window.speechSynthesis.speak(utterance);
+  };
+
+  const handleCloneSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!clonedVoiceName.trim() || !clonedVoiceFile) {
+      setToast({ message: 'Please provide a name and upload a voice sample.', type: 'error' });
+      return;
+    }
+
+    setIsCloning(true);
+    setCloneProgress(0);
+
+    const interval = setInterval(() => {
+      setCloneProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          setTimeout(() => {
+            const newVoiceId = `cloned_${Date.now()}`;
+            const newClonedVoice = {
+              id: newVoiceId,
+              name: clonedVoiceName,
+              provider: 'Cloned Voice',
+              gender: 'Custom Voiceprint',
+              accent: 'Your Accent',
+              tag: '100% Match',
+              text: `Hi! I am your newly cloned custom voice. I sound exactly like the high-fidelity sample you uploaded to Amira!`,
+              lang: selectedLanguage
+            };
+            setVoices(prevVoices => [newClonedVoice, ...prevVoices]);
+            setCustomVoice(newVoiceId);
+            setIsCloning(false);
+            setShowCloneModal(false);
+            setClonedVoiceName('');
+            setClonedVoiceFile(null);
+            setToast({ message: '🎉 Voice cloned successfully! Cloned card added and selected.', type: 'success' });
+          }, 500);
+          return 100;
+        }
+        return prev + 25;
+      });
+    }, 400);
   };
 
   const simulateConnection = (name: string) => {
@@ -376,6 +443,8 @@ function AgentContent() {
       setIsTyping(false);
     }, 1500);
   };
+
+  const filteredVoices = voices.filter(v => v.lang === selectedLanguage);
 
   if (isLoading) {
     return (
@@ -486,6 +555,67 @@ function AgentContent() {
       <div style={{ maxWidth: '800px', margin: '2rem auto', width: '100%' }}>
         {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
         
+        {/* VOICE CLONING MODAL */}
+        <Modal isOpen={showCloneModal} onClose={() => !isCloning && setShowCloneModal(false)} title="Clone a Custom Voice print">
+          <form onSubmit={handleCloneSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <p style={{ color: 'var(--stripe-body)', fontSize: '13px', margin: '0 0 0.5rem 0', lineHeight: 1.5 }}>
+              Amira allows you to upload or record your own voice sample to instantaneously generate a custom, hyper-realistic voice clone.
+            </p>
+
+            {isCloning ? (
+              <div style={{ textAlign: 'center', padding: '2rem 0' }}>
+                <div style={{ fontSize: '16px', fontWeight: 600, color: '#533afd', marginBottom: '1rem' }}>Cloning Voiceprint: {cloneProgress}%</div>
+                <div style={{ height: '8px', backgroundColor: '#e2e8f0', borderRadius: '4px', maxWidth: '300px', margin: '0 auto', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${cloneProgress}%`, backgroundColor: '#533afd', transition: 'width 0.4s ease-in-out' }}></div>
+                </div>
+                <p style={{ color: 'var(--stripe-muted)', fontSize: '12px', marginTop: '1rem' }}>Matching neural voice frequencies...</p>
+              </div>
+            ) : (
+              <>
+                <Input 
+                  label="Voice Label Name" 
+                  placeholder="e.g. CEO Custom Voice" 
+                  value={clonedVoiceName}
+                  onChange={(e) => setClonedVoiceName(e.target.value)}
+                  required 
+                />
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', color: 'var(--stripe-label)', marginBottom: '6px', fontWeight: 500 }}>Upload Audio Sample</label>
+                  <div 
+                    onClick={() => setClonedVoiceFile('sample.mp3')}
+                    style={{
+                      border: '1px dashed var(--stripe-border)',
+                      borderRadius: '8px',
+                      padding: '2.5rem 1rem',
+                      textAlign: 'center',
+                      backgroundColor: clonedVoiceFile ? 'rgba(16,185,129,0.03)' : '#f8fafc',
+                      cursor: 'pointer',
+                      borderWidth: clonedVoiceFile ? '2px' : '1px',
+                      borderColor: clonedVoiceFile ? '#10b981' : 'var(--stripe-border)'
+                    }}
+                  >
+                    <span style={{ fontSize: '24px', display: 'block', marginBottom: '0.5rem' }}>🎙️</span>
+                    <span style={{ fontSize: '13px', color: 'var(--stripe-navy)', fontWeight: 600, display: 'block' }}>
+                      {clonedVoiceFile ? '✓ sample.mp3 ready!' : 'Drag & drop or Click to upload audio'}
+                    </span>
+                    <span style={{ fontSize: '11px', color: 'var(--stripe-muted)' }}>
+                      M4A, MP3, or WAV (Minimum 30 seconds of speech recommended)
+                    </span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
+                  <Button type="button" variant="outline" onClick={() => setShowCloneModal(false)}>Cancel</Button>
+                  <Button type="submit" style={{ backgroundColor: '#533afd', color: '#fff' }}>
+                    Start Cloning Neural Voiceprint
+                  </Button>
+                </div>
+              </>
+            )}
+          </form>
+        </Modal>
+
         {/* Wizard Progress Header */}
         <div style={{ backgroundColor: '#fff', border: '1px solid var(--stripe-border)', borderRadius: '12px', padding: '1.5rem 2rem', boxShadow: 'var(--stripe-shadow-ambient)', marginBottom: '2rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
@@ -524,15 +654,42 @@ function AgentContent() {
               />
             </div>
 
-            {/* PREVIEWABLE VOICE LIST */}
+            {/* PREVIEWABLE VOICE LIST WITH LANG SELECTION & VOICE CLONING */}
             <div style={{ marginBottom: '2.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--stripe-label)', fontWeight: 600 }}>Voice Profile</label>
-                <span style={{ fontSize: '11px', color: '#533afd', fontWeight: 500 }}>Select a voice & click "Preview" to listen</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', color: 'var(--stripe-label)', fontWeight: 600, marginBottom: '2px' }}>Voice Profile</label>
+                  <span style={{ fontSize: '11px', color: 'var(--stripe-muted)', fontWeight: 400 }}>Select a voice & click "Preview" to listen</span>
+                </div>
+                
+                {/* Language Selector & Clone Voice buttons */}
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                  <select 
+                    value={selectedLanguage} 
+                    onChange={(e) => setSelectedLanguage(e.target.value)}
+                    style={{ padding: '0.4rem 0.75rem', border: '1px solid var(--stripe-border)', borderRadius: '6px', fontSize: '12px', color: 'var(--stripe-navy)', backgroundColor: '#fff', fontWeight: 500 }}
+                  >
+                    <option value="en">English (US/UK/NG/KE)</option>
+                    <option value="yo">Yoruba Dialect (Nigeria)</option>
+                    <option value="ig">Igbo Dialect (Nigeria)</option>
+                    <option value="ha">Hausa Dialect (Nigeria)</option>
+                  </select>
+                  
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    style={{ borderColor: '#533afd', color: '#533afd', padding: '0.35rem 0.75rem' }}
+                    onClick={() => setShowCloneModal(true)}
+                  >
+                    🎙️ Clone My Voice
+                  </Button>
+                </div>
               </div>
               
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem', maxHeight: '320px', overflowY: 'auto', padding: '0.25rem', border: '1px solid var(--stripe-border)', borderRadius: '8px', backgroundColor: '#f9fafb' }}>
-                {voicesList.map((voice) => {
+              {/* Voice Cards Grid (Auto height - lists ALL filtered voices) */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem', padding: '0.25rem', border: '1px solid var(--stripe-border)', borderRadius: '8px', backgroundColor: '#f9fafb', maxHeight: '420px', overflowY: 'auto' }}>
+                {filteredVoices.map((voice) => {
                   const isSelected = customVoice === voice.id;
                   const isCurrentlyPlaying = playingVoice === voice.id;
                   return (
@@ -547,7 +704,11 @@ function AgentContent() {
                         cursor: 'pointer',
                         position: 'relative',
                         transition: 'all 0.15s ease-in-out',
-                        boxShadow: isSelected ? '0 4px 12px rgba(83,58,253,0.1)' : 'none'
+                        boxShadow: isSelected ? '0 4px 12px rgba(83,58,253,0.1)' : 'none',
+                        minHeight: '145px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between'
                       }}
                     >
                       {/* Selected indicator checkmark */}
@@ -557,57 +718,61 @@ function AgentContent() {
                         </div>
                       )}
                       
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem' }}>
-                        <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--stripe-navy)' }}>{voice.name}</span>
-                        <span style={{ fontSize: '10px', color: '#64748b', backgroundColor: '#f1f5f9', padding: '2px 6px', borderRadius: '4px', textTransform: 'capitalize' }}>
-                          {voice.provider}
-                        </span>
-                      </div>
-                      
-                      <div style={{ fontSize: '10px', color: 'var(--stripe-muted)', marginBottom: '0.5rem' }}>
-                        {voice.gender} • {voice.accent}
-                      </div>
-
-                      <div style={{ fontSize: '11px', color: '#10b981', fontWeight: 500, marginBottom: '0.75rem' }}>
-                        {voice.tag}
-                      </div>
-
-                      {/* Sound Wave Animation Visualizer */}
-                      {isCurrentlyPlaying && (
-                        <div style={{ display: 'flex', gap: '3px', alignItems: 'center', justifyContent: 'center', height: '16px', marginBottom: '0.5rem' }}>
-                          <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#533afd', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate' }}></span>
-                          <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#533afd', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate 0.2s' }}></span>
-                          <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#533afd', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate 0.4s' }}></span>
-                          <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#533afd', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate 0.1s' }}></span>
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem' }}>
+                          <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--stripe-navy)' }}>{voice.name}</span>
+                          <span style={{ fontSize: '9px', color: '#533afd', backgroundColor: 'rgba(83,58,253,0.08)', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                            {voice.provider}
+                          </span>
                         </div>
-                      )}
+                        
+                        <div style={{ fontSize: '10px', color: 'var(--stripe-muted)', marginBottom: '0.5rem' }}>
+                          {voice.gender} • {voice.accent}
+                        </div>
 
-                      {/* Preview Button */}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevents selection toggling
-                          playVoicePreview(voice.id, voice.text, voice.gender);
-                        }}
-                        style={{
-                          width: '100%',
-                          padding: '0.4rem',
-                          borderRadius: '4px',
-                          border: '1px solid #e2e8f0',
-                          backgroundColor: isCurrentlyPlaying ? '#fef2f2' : '#f8fafc',
-                          color: isCurrentlyPlaying ? '#ef4444' : 'var(--stripe-navy)',
-                          fontSize: '11px',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          textAlign: 'center',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '0.25rem'
-                        }}
-                      >
-                        {isCurrentlyPlaying ? '⏹️ Stop' : '🔊 Preview'}
-                      </button>
+                        <div style={{ fontSize: '11px', color: '#10b981', fontWeight: 500, marginBottom: '0.5rem' }}>
+                          {voice.tag}
+                        </div>
+                      </div>
+
+                      <div>
+                        {/* Sound Wave Animation Visualizer */}
+                        {isCurrentlyPlaying && (
+                          <div style={{ display: 'flex', gap: '3px', alignItems: 'center', justifyContent: 'center', height: '16px', marginBottom: '0.5rem' }}>
+                            <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#533afd', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate' }}></span>
+                            <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#533afd', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate 0.2s' }}></span>
+                            <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#533afd', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate 0.4s' }}></span>
+                            <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#533afd', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate 0.1s' }}></span>
+                          </div>
+                        )}
+
+                        {/* Preview Button */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation(); // Prevents selection toggling
+                            playVoicePreview(voice.id, voice.text, voice.gender);
+                          }}
+                          style={{
+                            width: '100%',
+                            padding: '0.4rem',
+                            borderRadius: '4px',
+                            border: '1px solid #e2e8f0',
+                            backgroundColor: isCurrentlyPlaying ? '#fef2f2' : '#f8fafc',
+                            color: isCurrentlyPlaying ? '#ef4444' : 'var(--stripe-navy)',
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            textAlign: 'center',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.25rem'
+                          }}
+                        >
+                          {isCurrentlyPlaying ? '⏹️ Stop' : '🔊 Preview'}
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
@@ -652,18 +817,26 @@ function AgentContent() {
               This agent needs access to specific third-party applications to carry out its operations. Please click "Connect" on each required service.
             </p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
-              {selectedTemplate.requiredIntegrations.map((int, i) => {
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '2rem', maxHeight: '350px', overflowY: 'auto', padding: '0.25rem', border: '1px solid var(--stripe-border)', borderRadius: '8px' }}>
+              {allIntegrations.map((int, i) => {
                 const connected = connectedIntegrations[int.name];
+                const isRequired = selectedTemplate.requiredIntegrations.some(req => req.name === int.name);
                 return (
-                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem', border: '1px solid var(--stripe-border)', borderRadius: '8px', backgroundColor: connected ? 'rgba(16,185,129,0.02)' : '#fff' }}>
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.25rem', border: '1px solid var(--stripe-border)', borderRadius: '8px', backgroundColor: connected ? 'rgba(16,185,129,0.02)' : '#fff' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
                       <div style={{ width: '40px', height: '40px', borderRadius: '8px', backgroundColor: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', border: '1px solid var(--stripe-border)' }}>
                         {int.icon}
                       </div>
                       <div>
-                        <div style={{ fontSize: '14px', color: 'var(--stripe-navy)', fontWeight: 600 }}>{int.name}</div>
-                        <div style={{ fontSize: '12px', color: 'var(--stripe-muted)' }}>{int.reason}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <span style={{ fontSize: '14px', color: 'var(--stripe-navy)', fontWeight: 600 }}>{int.name}</span>
+                          {isRequired && (
+                            <span style={{ fontSize: '10px', fontWeight: 600, color: '#533afd', backgroundColor: 'rgba(83,58,253,0.1)', padding: '2px 8px', borderRadius: '20px', textTransform: 'uppercase' }}>
+                              Recommended
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ fontSize: '12px', color: 'var(--stripe-body)', marginTop: '0.25rem' }}>{int.desc}</div>
                       </div>
                     </div>
                     
@@ -728,7 +901,7 @@ function AgentContent() {
                   <div>
                     <span style={{ fontSize: '11px', color: 'var(--stripe-muted)' }}>Voice Profile</span>
                     <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--stripe-navy)' }}>
-                      {voicesList.find(v => v.id === customVoice)?.name || 'Rachel'} ({voicesList.find(v => v.id === customVoice)?.provider || 'ElevenLabs'})
+                      {voices.find(v => v.id === customVoice)?.name || 'Rachel'} ({voices.find(v => v.id === customVoice)?.provider || 'ElevenLabs'})
                     </div>
                   </div>
                   <div>
