@@ -331,19 +331,43 @@ function AgentContent() {
   useEffect(() => {
     async function fetchAgents() {
       const res = await getAgents();
-      if (res.success && res.data && res.data.length > 0) {
-        setAgents(res.data);
-      } else {
-        // Fallback to localStorage list if database is unconfigured/empty
-        if (typeof window !== 'undefined') {
-          const local = localStorage.getItem('_amira_agents');
-          if (local) {
-            try {
-              setAgents(JSON.parse(local));
-            } catch (e) {}
-          }
+      const dbAgents = res.success && res.data ? res.data : [];
+      
+      let localAgents = [];
+      if (typeof window !== 'undefined') {
+        const local = localStorage.getItem('_amira_agents');
+        if (local) {
+          try {
+            localAgents = JSON.parse(local);
+          } catch (e) {}
         }
       }
+
+      // Merge and deduplicate by ID, prioritizing database version if exists
+      const mergedMap = new Map();
+      
+      // Load local agents first
+      localAgents.forEach((a: any) => {
+        if (a && a.id) mergedMap.set(a.id, a);
+      });
+      
+      // Load database agents second (overriding local ones of same ID since they are sync'd in DB)
+      dbAgents.forEach((a: any) => {
+        if (a && a.id) {
+          mergedMap.set(a.id, {
+            ...a,
+            config: typeof a.config === 'string' ? JSON.parse(a.config) : (a.config || {})
+          });
+        }
+      });
+
+      const mergedList = Array.from(mergedMap.values()).sort((a: any, b: any) => {
+        const dateA = new Date(a.created_at || a.createdAt || 0).getTime();
+        const dateB = new Date(b.created_at || b.createdAt || 0).getTime();
+        return dateB - dateA;
+      });
+
+      setAgents(mergedList);
       setIsLoading(false);
     }
     fetchAgents();
@@ -464,16 +488,17 @@ function AgentContent() {
         setCallStatus('active');
         setIsCallActive(true);
         
+        // Start listening for user speech immediately so the mic is hot and Web Speech API prompts/listens instantly
+        startListeningForUser();
+
         try {
           const audio = new Audio(voicePreviewUrl);
           audio.onended = () => {
-            if ((window as any)._simCallActive) {
-              startListeningForUser();
-            }
+            // No-op since we started listening immediately, but keep callback safe
           };
           (window as any)._simAudio = audio;
           audio.play().catch(err => {
-            console.error("Autoplay/audio play error:", err);
+            console.warn("Autoplay was blocked by browser. Moving directly to mic input.", err);
           });
         } catch (audioErr) {
           console.error("Audio greeting failed:", audioErr);
@@ -546,6 +571,13 @@ function AgentContent() {
             rec.onresult = (event: any) => {
               const text = event.results[0][0].transcript;
               if (text.trim() && (window as any)._simCallActive) {
+                // User Interruption: Immediately halt the greeting audio if it is still playing!
+                if ((window as any)._simAudio) {
+                  try {
+                    (window as any)._simAudio.pause();
+                  } catch (e) {}
+                }
+
                 setMessages(prev => [...prev, { sender: 'user', text }]);
                 setIsTyping(true);
                 

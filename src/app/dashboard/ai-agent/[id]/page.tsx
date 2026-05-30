@@ -337,16 +337,17 @@ export default function AgentBuilderPage() {
         setCallStatus('active');
         setIsCallActive(true);
         
+        // Start listening for user speech immediately so the mic is hot and Web Speech API prompts/listens instantly
+        startListeningForUser();
+
         try {
           const audio = new Audio(voicePreviewUrl);
           audio.onended = () => {
-            if ((window as any)._simCallActive) {
-              startListeningForUser();
-            }
+            // No-op since we started listening immediately, but keep callback safe
           };
           (window as any)._simAudio = audio;
           audio.play().catch(err => {
-            console.error("Autoplay/audio play error:", err);
+            console.warn("Autoplay was blocked by browser. Moving directly to mic input.", err);
           });
         } catch (audioErr) {
           console.error("Audio greeting failed:", audioErr);
@@ -419,6 +420,13 @@ export default function AgentBuilderPage() {
             rec.onresult = (event: any) => {
               const text = event.results[0][0].transcript;
               if (text.trim() && (window as any)._simCallActive) {
+                // User Interruption: Immediately halt the greeting audio if it is still playing!
+                if ((window as any)._simAudio) {
+                  try {
+                    (window as any)._simAudio.pause();
+                  } catch (e) {}
+                }
+
                 setTimeout(() => {
                   // Compute contextual responses
                   let responseText = "I'm fully trained on your customized brand details and attached workflow integrations. How can I help you?";
