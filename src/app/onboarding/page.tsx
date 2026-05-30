@@ -6,6 +6,7 @@ import { completeOnboarding } from '../actions/onboarding';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import Toast from '@/components/ui/Toast';
+import { createClient } from '@/utils/supabase/client';
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -29,6 +30,12 @@ export default function OnboardingPage() {
         router.push('/dashboard');
       }, 1000);
     }
+  };
+
+  const handleSignOut = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push('/login');
   };
 
   return (
@@ -77,9 +84,12 @@ export default function OnboardingPage() {
             </select>
           </div>
 
-          <div style={{ marginTop: '1rem' }}>
+          <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <Button type="submit" fullWidth size="lg" disabled={loading}>
               {loading ? 'Setting up...' : 'Complete Setup →'}
+            </Button>
+            <Button type="button" variant="outline" fullWidth onClick={handleSignOut} style={{ color: 'var(--text-secondary)' }}>
+              Sign out & start over
             </Button>
           </div>
         </form>
