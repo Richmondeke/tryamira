@@ -11,8 +11,10 @@ import {
   syncVapiRAG, 
   getAgentVectors, 
   deleteAgentVector, 
-  uploadClonedVoice 
+  uploadClonedVoice,
+  getElevenLabsVoices
 } from '@/app/actions/vapi';
+import Vapi from '@vapi-ai/web';
 
 // Premium voice names, providers, accents, and tags lists
 const namesList = [
@@ -151,6 +153,12 @@ export default function AgentBuilderPage() {
   const [availableWorkflows, setAvailableWorkflows] = useState<any[]>([]);
   const [attachedWorkflows, setAttachedWorkflows] = useState<string[]>([]);
 
+  // WebRTC testing call states
+  const [vapiInstance, setVapiInstance] = useState<any>(null);
+  const [isCallActive, setIsCallActive] = useState(false);
+  const [callStatus, setCallStatus] = useState<'idle' | 'connecting' | 'active'>('idle');
+  const [callVolume, setCallVolume] = useState(0);
+
   useEffect(() => {
     async function loadData() {
       if (!params.id) return;
@@ -193,7 +201,75 @@ export default function AgentBuilderPage() {
       setIsLoading(false);
     }
     loadData();
+
+    // 1. Fetch dynamic premium ElevenLabs voices
+    async function fetchDynamicVoices() {
+      const voicesRes = await getElevenLabsVoices();
+      if (voicesRes.success && voicesRes.data && voicesRes.data.length > 0) {
+        setVoices(prev => {
+          const customOnly = prev.filter(v => v.id.startsWith('cloned_') || v.id.startsWith('eleven-cloned-'));
+          const standardCore = prev.slice(0, 14); // Keep Dialect/Nigerian voices
+          return [...customOnly, ...voicesRes.data, ...prev.slice(14)];
+        });
+      }
+    }
+    fetchDynamicVoices();
+
+    // 2. Instantiate Vapi WebRTC SDK
+    if (typeof window !== 'undefined') {
+      const v = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || 'dummy-public-key');
+      v.on('call-start', () => {
+        setIsCallActive(true);
+        setCallStatus('active');
+      });
+      v.on('call-end', () => {
+        setIsCallActive(false);
+        setCallStatus('idle');
+        setCallVolume(0);
+      });
+      v.on('volume-level', (vol: number) => {
+        setCallVolume(vol);
+      });
+      v.on('error', (err: any) => {
+        console.error("Vapi WebRTC error:", err);
+        setIsCallActive(false);
+        setCallStatus('idle');
+      });
+      setVapiInstance(v);
+    }
   }, [params.id]);
+
+  const handleToggleCall = () => {
+    if (!vapiInstance) {
+      setToast('Vapi Web SDK is initializing, please try again.');
+      return;
+    }
+
+    if (isCallActive) {
+      vapiInstance.stop();
+    } else {
+      setCallStatus('connecting');
+      const activeVoiceObj = voices.find(v => v.id === customVoice);
+      vapiInstance.start({
+        name: agentName || 'HeyAmira Live Test Agent',
+        model: {
+          provider: 'openai',
+          model: 'gpt-4',
+          messages: [
+            {
+              role: 'system',
+              content: systemPrompt || 'You are a helpful customer support agent.'
+            }
+          ]
+        },
+        voice: {
+          provider: activeVoiceObj?.provider?.toLowerCase() || 'elevenlabs',
+          voiceId: customVoice
+        }
+      });
+    }
+  };
+
 
   // Clean up speech synthesis & audio elements if component unmounts
   useEffect(() => {
@@ -1149,7 +1225,7 @@ export default function AgentBuilderPage() {
               <span style={{ fontSize: '13px', color: 'var(--stripe-navy)', fontWeight: 500 }}>Keep responses under 2 sentences</span>
             </label>
 
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', marginBottom: '1.5rem' }}>
               <input 
                 type="checkbox" 
                 checked={captureEmailFirst}
@@ -1159,8 +1235,143 @@ export default function AgentBuilderPage() {
               <span style={{ fontSize: '13px', color: 'var(--stripe-navy)', fontWeight: 500 }}>Always capture email first</span>
             </label>
           </div>
+
+          {/* WebRTC Live Audio Sandbox Card */}
+          <div style={{ 
+            backgroundColor: '#ffffff', 
+            border: '1px solid var(--stripe-border)', 
+            borderRadius: '12px', 
+            padding: '1.5rem', 
+            boxShadow: '0 4px 20px rgba(83,58,253,0.06)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: '-50px',
+              right: '-50px',
+              width: '100px',
+              height: '100px',
+              borderRadius: '50%',
+              backgroundColor: isCallActive ? 'rgba(239,68,68,0.1)' : 'rgba(83,58,253,0.08)',
+              filter: 'blur(30px)',
+              transition: 'background-color 0.3s'
+            }} />
+
+            <h3 style={{ fontSize: '14px', color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+              🎙️ WebRTC Audio Sandbox
+            </h3>
+            <p style={{ fontSize: '12px', color: 'var(--stripe-body)', marginBottom: '1.5rem', lineHeight: 1.4 }}>
+              Test your system instructions and chosen voice profile live by initiating a direct microphone session.
+            </p>
+
+            {isCallActive ? (
+              <div style={{
+                textAlign: 'center',
+                padding: '1.25rem',
+                backgroundColor: '#f8fafc',
+                borderRadius: '8px',
+                border: '1px solid var(--stripe-border)',
+                animation: 'fadeIn 0.2s ease-in-out'
+              }}>
+                <div style={{ 
+                  width: '48px', 
+                  height: '48px', 
+                  borderRadius: '50%', 
+                  backgroundColor: 'rgba(83,58,253,0.08)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  fontSize: '20px',
+                  position: 'relative',
+                  margin: '0 auto 0.75rem auto'
+                }}>
+                  <div style={{
+                    position: 'absolute',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    border: '2px solid #533afd',
+                    borderRadius: '50%',
+                    animation: 'spin 2s linear infinite',
+                    opacity: 0.5
+                  }} />
+                  🎙️
+                </div>
+                <span style={{ fontSize: '12px', color: 'var(--stripe-navy)', fontWeight: 600, display: 'block' }}>Call In Progress...</span>
+                <span style={{ fontSize: '11px', color: 'var(--stripe-muted)', marginTop: '2px', display: 'block' }}>Your microphone is active</span>
+
+                {/* Animated soundwaves reflecting WebRTC volume level */}
+                <div style={{ display: 'flex', gap: '3px', alignItems: 'center', justifyContent: 'center', height: '20px', marginTop: '1rem' }}>
+                  {Array.from({ length: 7 }).map((_, idx) => {
+                    const minHeight = 4;
+                    const maxHeight = 20;
+                    const multiplier = idx === 3 ? 1 : idx === 2 || idx === 4 ? 0.7 : idx === 1 || idx === 5 ? 0.4 : 0.2;
+                    const height = Math.max(minHeight, Math.round(callVolume * maxHeight * multiplier * 1.5));
+                    return (
+                      <span 
+                        key={idx} 
+                        style={{ 
+                          display: 'inline-block', 
+                          width: '3px', 
+                          height: `${height}px`, 
+                          backgroundColor: '#533afd', 
+                          borderRadius: '2px', 
+                          transition: 'height 0.05s ease-out' 
+                        }} 
+                      />
+                    );
+                  })}
+                </div>
+
+                <Button 
+                  type="button" 
+                  onClick={handleToggleCall}
+                  style={{
+                    backgroundColor: '#ef4444',
+                    color: '#ffffff',
+                    width: '100%',
+                    marginTop: '1.25rem',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    boxShadow: '0 4px 12px rgba(239,68,68,0.2)'
+                  }}
+                >
+                  ⏹️ End Call Session
+                </Button>
+              </div>
+            ) : (
+              <Button 
+                type="button" 
+                onClick={handleToggleCall}
+                style={{
+                  backgroundColor: '#533afd',
+                  color: '#ffffff',
+                  width: '100%',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  boxShadow: '0 4px 12px rgba(83,58,253,0.15)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px'
+                }}
+              >
+                {callStatus === 'connecting' ? (
+                  <>
+                    <span style={{ display: 'inline-block', width: '12px', height: '12px', border: '2px solid #fff', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }} />
+                    Establishing WebRTC...
+                  </>
+                ) : (
+                  <>
+                    <span>📞</span> Start Test Call
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
+

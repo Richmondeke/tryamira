@@ -536,3 +536,42 @@ export async function deleteAgentVector(vectorId: string) {
   }
 }
 
+export async function getElevenLabsVoices() {
+  const apiKey = process.env.ELEVEN_LABS_API_KEY;
+  const headers: Record<string, string> = {
+    'Accept': 'application/json'
+  };
+  if (apiKey) {
+    headers['xi-api-key'] = apiKey;
+  }
+
+  try {
+    const res = await fetch('https://api.elevenlabs.io/v1/voices', {
+      method: 'GET',
+      headers
+    });
+    if (!res.ok) {
+      throw new Error(`ElevenLabs API returned ${res.status} ${res.statusText}`);
+    }
+    const data = await res.json();
+    
+    // Map ElevenLabs voices to our visual cards schema
+    const mapped = (data.voices || []).map((voice: any) => ({
+      id: voice.voice_id,
+      name: voice.name,
+      provider: 'ElevenLabs',
+      gender: voice.labels?.gender || 'Custom',
+      accent: voice.labels?.accent || 'English',
+      tag: voice.labels?.description || 'Premium Voice',
+      text: voice.description || `Hi! I am ${voice.name}, a premium ElevenLabs voice.`,
+      lang: 'en',
+      previewUrl: voice.preview_url
+    }));
+    return { success: true, data: mapped };
+  } catch (err: any) {
+    console.error("getElevenLabsVoices error:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+

@@ -3,11 +3,13 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getAgents, createAgent } from '@/app/actions/agent';
-import { syncVapiRAG, uploadClonedVoice } from '@/app/actions/vapi';
+import { syncVapiRAG, uploadClonedVoice, getElevenLabsVoices } from '@/app/actions/vapi';
 import Toast from '@/components/ui/Toast';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import Modal from '@/components/ui/Modal';
+import Vapi from '@vapi-ai/web';
+
 
 const templatesData = [
   {
@@ -318,6 +320,12 @@ function AgentContent() {
   const [chatInput, setChatInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
 
+  // WebRTC Live preview voice call states
+  const [vapiInstance, setVapiInstance] = useState<any>(null);
+  const [isCallActive, setIsCallActive] = useState(false);
+  const [callStatus, setCallStatus] = useState<'idle' | 'connecting' | 'active'>('idle');
+  const [callVolume, setCallVolume] = useState(0);
+
   const selectedTemplate = templatesData.find(t => t.id === templateId);
 
   useEffect(() => {
@@ -329,7 +337,75 @@ function AgentContent() {
       setIsLoading(false);
     }
     fetchAgents();
+
+    // 1. Fetch dynamic ElevenLabs authentic voices with gorgeous previews
+    async function fetchDynamicVoices() {
+      const voicesRes = await getElevenLabsVoices();
+      if (voicesRes.success && voicesRes.data && voicesRes.data.length > 0) {
+        setVoices(prev => {
+          const customOnly = prev.filter(v => v.id.startsWith('cloned_') || v.id.startsWith('eleven-cloned-'));
+          const standardCore = prev.slice(0, 14); // Keep Nigerian / Dialect baselines
+          return [...customOnly, ...voicesRes.data, ...prev.slice(14)];
+        });
+      }
+    }
+    fetchDynamicVoices();
+
+    // 2. Instantiate Vapi WebRTC SDK for client testing
+    if (typeof window !== 'undefined') {
+      const v = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || 'dummy-public-key');
+      v.on('call-start', () => {
+        setIsCallActive(true);
+        setCallStatus('active');
+      });
+      v.on('call-end', () => {
+        setIsCallActive(false);
+        setCallStatus('idle');
+        setCallVolume(0);
+      });
+      v.on('volume-level', (vol: number) => {
+        setCallVolume(vol);
+      });
+      v.on('error', (err: any) => {
+        console.error("Vapi WebRTC error:", err);
+        setIsCallActive(false);
+        setCallStatus('idle');
+      });
+      setVapiInstance(v);
+    }
   }, []);
+
+  const handleToggleCall = () => {
+    if (!vapiInstance) {
+      setToast({ message: 'Vapi Web SDK is initializing, please try again.', type: 'error' });
+      return;
+    }
+
+    if (isCallActive) {
+      vapiInstance.stop();
+    } else {
+      setCallStatus('connecting');
+      const activeVoiceObj = voices.find(v => v.id === customVoice);
+      vapiInstance.start({
+        name: customName || 'HeyAmira Live Test Agent',
+        model: {
+          provider: 'openai',
+          model: 'gpt-4',
+          messages: [
+            {
+              role: 'system',
+              content: customPrompt || 'You are a helpful customer support agent.'
+            }
+          ]
+        },
+        voice: {
+          provider: activeVoiceObj?.provider?.toLowerCase() || 'elevenlabs',
+          voiceId: customVoice
+        }
+      });
+    }
+  };
+
 
   useEffect(() => {
     if (selectedTemplate) {
@@ -1539,34 +1615,121 @@ function AgentContent() {
 
               {/* Right Column: Chat Playground */}
               <div>
-                <h4 style={{ fontSize: '12px', fontWeight: 600, color: 'var(--stripe-label)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.75rem' }}>Interactive Agent Playground</h4>
-                <div style={{ border: '1px solid var(--stripe-border)', borderRadius: '8px', height: '220px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                  {/* Messages list */}
-                  <div style={{ flex: 1, padding: '1rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem', backgroundColor: '#f8fafc' }}>
-                    {messages.map((msg, i) => (
-                      <div 
-                        key={i} 
-                        style={{
-                          alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-                          backgroundColor: msg.sender === 'user' ? '#533afd' : '#ffffff',
-                          color: msg.sender === 'user' ? '#ffffff' : 'var(--stripe-navy)',
-                          padding: '0.5rem 0.85rem',
-                          borderRadius: '8px',
-                          fontSize: '12px',
-                          maxWidth: '85%',
-                          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                          lineHeight: 1.4
-                        }}
-                      >
-                        {msg.text}
+                <h4 style={{ fontSize: '12px', fontWeight: 600, color: 'var(--stripe-label)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>Interactive Agent Playground</span>
+                  <button 
+                    type="button" 
+                    onClick={handleToggleCall}
+                    style={{
+                      border: 'none',
+                      backgroundColor: isCallActive ? '#ef4444' : 'rgba(83,58,253,0.1)',
+                      color: isCallActive ? '#ffffff' : '#533afd',
+                      padding: '4px 10px',
+                      borderRadius: '20px',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      transition: 'all 0.2s',
+                      boxShadow: isCallActive ? '0 0 8px rgba(239,68,68,0.4)' : 'none'
+                    }}
+                  >
+                    {isCallActive ? '⏹️ End Test Call' : callStatus === 'connecting' ? '⚡ Connecting...' : '📞 Speak with Agent'}
+                  </button>
+                </h4>
+                
+                <div style={{ border: '1px solid var(--stripe-border)', borderRadius: '8px', height: '220px', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
+                  {/* Messages list / Voice Active Waveform */}
+                  <div style={{ flex: 1, padding: '1rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem', backgroundColor: '#f8fafc', position: 'relative' }}>
+                    {isCallActive ? (
+                      <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '100%',
+                        animation: 'fadeIn 0.2s ease-in-out'
+                      }}>
+                        <div style={{ 
+                          width: '54px', 
+                          height: '54px', 
+                          borderRadius: '50%', 
+                          backgroundColor: 'rgba(83,58,253,0.08)', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', 
+                          fontSize: '24px',
+                          position: 'relative',
+                          marginBottom: '0.75rem',
+                          boxShadow: '0 0 16px rgba(83,58,253,0.15)'
+                        }}>
+                          <div style={{
+                            position: 'absolute',
+                            top: 0, left: 0, right: 0, bottom: 0,
+                            border: '2px solid #533afd',
+                            borderRadius: '50%',
+                            animation: 'spin 2s linear infinite',
+                            opacity: 0.5
+                          }} />
+                          🎙️
+                        </div>
+                        <span style={{ fontSize: '13px', color: 'var(--stripe-navy)', fontWeight: 600 }}>Active Voice Call Session</span>
+                        <span style={{ fontSize: '11px', color: 'var(--stripe-muted)', marginTop: '2px' }}>Speak clearly into your microphone</span>
+                        
+                        {/* Dynamic WebRTC volume sound wave lines */}
+                        <div style={{ display: 'flex', gap: '4px', alignItems: 'center', height: '24px', marginTop: '1rem' }}>
+                          {Array.from({ length: 9 }).map((_, idx) => {
+                            const minHeight = 4;
+                            const maxHeight = 24;
+                            const multiplier = idx === 4 ? 1 : idx === 3 || idx === 5 ? 0.8 : idx === 2 || idx === 6 ? 0.6 : idx === 1 || idx === 7 ? 0.4 : 0.2;
+                            const height = Math.max(minHeight, Math.round(callVolume * maxHeight * multiplier * 1.5));
+                            return (
+                              <span 
+                                key={idx} 
+                                style={{ 
+                                  display: 'inline-block', 
+                                  width: '3px', 
+                                  height: `${height}px`, 
+                                  backgroundColor: '#533afd', 
+                                  borderRadius: '2px', 
+                                  transition: 'height 0.05s ease-out' 
+                                }} 
+                              />
+                            );
+                          })}
+                        </div>
                       </div>
-                    ))}
-                    {isTyping && (
-                      <div style={{ alignSelf: 'flex-start', backgroundColor: '#ffffff', color: 'var(--stripe-muted)', padding: '0.5rem 0.85rem', borderRadius: '8px', fontSize: '12px' }}>
-                        Agent is typing...
-                      </div>
+                    ) : (
+                      <>
+                        {messages.map((msg, i) => (
+                          <div 
+                            key={i} 
+                            style={{
+                              alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
+                              backgroundColor: msg.sender === 'user' ? '#533afd' : '#ffffff',
+                              color: msg.sender === 'user' ? '#ffffff' : 'var(--stripe-navy)',
+                              padding: '0.5rem 0.85rem',
+                              borderRadius: '8px',
+                              fontSize: '12px',
+                              maxWidth: '85%',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                              lineHeight: 1.4
+                            }}
+                          >
+                            {msg.text}
+                          </div>
+                        ))}
+                        {isTyping && (
+                          <div style={{ alignSelf: 'flex-start', backgroundColor: '#ffffff', color: 'var(--stripe-muted)', padding: '0.5rem 0.85rem', borderRadius: '8px', fontSize: '12px' }}>
+                            Agent is typing...
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
+
                   {/* Input form */}
                   <form onSubmit={handleSendMessage} style={{ display: 'flex', borderTop: '1px solid var(--stripe-border)' }}>
                     <input 
