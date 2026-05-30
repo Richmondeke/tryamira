@@ -3,10 +3,10 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getAgents, createAgent } from '@/app/actions/agent';
-import Toast from '../../../components/ui/Toast';
+import Toast from '@/components/ui/Toast';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import Modal from '../../../../components/ui/Modal';
+import Modal from '@/components/ui/Modal';
 
 const templatesData = [
   {
