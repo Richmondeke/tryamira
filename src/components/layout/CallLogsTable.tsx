@@ -95,18 +95,19 @@ export default function CallLogsTable({ initialCalls }: { initialCalls: CallReco
     } else {
       let audio = audioObj;
       if (!audio) {
-        audio = new Audio(url);
-        audio.ontimeupdate = () => {
-          setPlaybackTime(Math.round(audio.currentTime));
+        const activeAudio = new Audio(url);
+        activeAudio.ontimeupdate = () => {
+          setPlaybackTime(Math.round(activeAudio.currentTime));
         };
-        audio.onloadedmetadata = () => {
-          setPlaybackDuration(Math.round(audio.duration));
+        activeAudio.onloadedmetadata = () => {
+          setPlaybackDuration(Math.round(activeAudio.duration));
         };
-        audio.onended = () => {
+        activeAudio.onended = () => {
           setIsPlaying(false);
           setPlaybackTime(0);
         };
-        setAudioObj(audio);
+        setAudioObj(activeAudio);
+        audio = activeAudio;
       }
 
       // Sync active volume & rate levels
@@ -346,7 +347,7 @@ export default function CallLogsTable({ initialCalls }: { initialCalls: CallReco
                       </span>
                     </td>
                     <td style={{ padding: '0.875rem 1.25rem', fontSize: '12px', color: 'var(--stripe-body)', textTransform: 'capitalize' }}>
-                      {(call.endedReason || call.endReason || '—').replace(/-/g, ' ')}
+                      {(call.endedReason || (call as any).endReason || '—').replace(/-/g, ' ')}
                     </td>
                     <td style={{ padding: '0.875rem 1.25rem', fontSize: '13px', color: 'var(--stripe-body)', fontFamily: 'monospace' }}>
                       ${(call.cost || 0).toFixed(4)}

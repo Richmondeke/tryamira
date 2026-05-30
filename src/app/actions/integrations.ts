@@ -18,7 +18,7 @@ export async function getComposioStatus() {
     
     // In a real app, you would fetch the specific connected accounts for this entity (workspace)
     // For this implementation, we will simulate the check against our local database mapping
-    const supabase = createClient();
+    const supabase = await createClient();
     if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
       const { data } = await supabase
         .from('workspace_integrations')
@@ -49,7 +49,7 @@ export async function initiateComposioConnection(appName: string) {
     const composio = new Composio({ apiKey });
     
     // Create an entity (or use an existing one) representing the workspace
-    const entity = await composio.getEntity(DEMO_WORKSPACE_ID);
+    const entity = await (composio as any).getEntity(DEMO_WORKSPACE_ID);
     
     // Initiate connection
     const connection = await entity.initiateConnection(appName);
@@ -67,7 +67,7 @@ export async function removeComposioIntegration(appName: string) {
     console.warn('COMPOSIO_API_KEY not set. Simulating disconnect.');
     // Also remove from supabase mock
     if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
-       const supabase = createClient();
+       const supabase = await createClient();
        await supabase.from('workspace_integrations').delete().match({ workspace_id: 1, provider: appName });
     }
     return { success: true };
@@ -75,7 +75,7 @@ export async function removeComposioIntegration(appName: string) {
 
   try {
     const composio = new Composio({ apiKey });
-    const entity = await composio.getEntity(DEMO_WORKSPACE_ID);
+    const entity = await (composio as any).getEntity(DEMO_WORKSPACE_ID);
     
     // Terminate connection on Composio's end
     // Note: The specific SDK method to remove connection might vary depending on Composio version
@@ -93,7 +93,7 @@ export async function removeComposioIntegration(appName: string) {
     
     // Remove from local DB
     if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      const supabase = createClient();
+      const supabase = await createClient();
       await supabase.from('workspace_integrations').delete().match({ workspace_id: 1, provider: appName });
     }
 
@@ -106,7 +106,7 @@ export async function removeComposioIntegration(appName: string) {
 
 // Keep the old save method for backward compatibility if needed, or to save mock state
 export async function saveIntegrationConfig(provider: string, config: any) {
-  const supabase = createClient();
+  const supabase = await createClient();
   
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
     return { success: true };

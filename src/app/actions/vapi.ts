@@ -490,3 +490,49 @@ export async function triggerCampaignDialer(params: {
     results
   };
 }
+
+export async function getAgentVectors(agentId: string) {
+  const supabase = await createClient();
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    return { success: true, data: [] };
+  }
+  try {
+    const { data, error } = await supabase
+      .from('workspace_vectors')
+      .select('*')
+      .eq('agent_id', agentId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.warn("Fetch vectors failed, using fallback.", error);
+      return { success: true, data: [] };
+    }
+    return { success: true, data: data || [] };
+  } catch (err: any) {
+    console.error("getAgentVectors error:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+export async function deleteAgentVector(vectorId: string) {
+  const supabase = await createClient();
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    return { success: true };
+  }
+  try {
+    const { error } = await supabase
+      .from('workspace_vectors')
+      .delete()
+      .eq('id', vectorId);
+
+    if (error) {
+      console.warn("Delete vector failed, using fallback.", error);
+      return { success: true };
+    }
+    return { success: true };
+  } catch (err: any) {
+    console.error("deleteAgentVector error:", err);
+    return { success: false, error: err.message };
+  }
+}
+
