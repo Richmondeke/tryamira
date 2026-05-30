@@ -100,6 +100,16 @@ export default function ChatPage() {
   }, []);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const searchParams = new URLSearchParams(window.location.search);
+      const searchVal = searchParams.get('search');
+      if (searchVal) {
+        setSearchQuery(searchVal);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     if (!useLiveData) {
       setMessages(MOCK_MESSAGES[activeChatId] || []);
       return;

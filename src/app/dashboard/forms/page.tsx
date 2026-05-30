@@ -13,7 +13,8 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
-  const [showResultsModal, setShowResultsModal] = useState(false);
+  const [showResultsSidebar, setShowResultsSidebar] = useState(false);
+  const [selectedSubmission, setSelectedSubmission] = useState<any>(null);
   const [selectedForm, setSelectedForm] = useState<any>(null);
   
   // Results details states
@@ -64,7 +65,8 @@ export default function Page() {
 
   const openResultsModal = async (form: any) => {
     setSelectedForm(form);
-    setShowResultsModal(true);
+    setShowResultsSidebar(true);
+    setSelectedSubmission(null);
     setLoadingSubmissions(true);
     
     const res = await getFormSubmissions(form.id);
@@ -138,56 +140,226 @@ export default function Page() {
         </div>
       </Modal>
 
-      {/* Results Inspector Modal */}
-      <Modal isOpen={showResultsModal} onClose={() => setShowResultsModal(false)} title={`Submissions: "${selectedForm?.name}"`}>
-        <div style={{ minWidth: '480px', maxHeight: '500px', overflowY: 'auto' }}>
+      {/* Right Slide-over Sidebar Backdrop */}
+      {showResultsSidebar && (
+        <div 
+          onClick={() => setShowResultsSidebar(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: 'rgba(15, 23, 42, 0.3)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 99,
+            transition: 'opacity 0.2s ease'
+          }}
+        />
+      )}
+
+      {/* Right Slide-over Sidebar Panel */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        right: showResultsSidebar ? 0 : '-500px',
+        width: '500px',
+        height: '100vh',
+        backgroundColor: '#ffffff',
+        boxShadow: '-4px 0 25px rgba(0,0,0,0.08)',
+        borderLeft: '1px solid #e2e8f0',
+        zIndex: 100,
+        transition: 'right 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        display: 'flex',
+        flexDirection: 'column',
+        fontFamily: 'Inter, system-ui, sans-serif'
+      }}>
+        {/* Header */}
+        <div style={{ padding: '1.5rem', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#0f172a', margin: 0 }}>
+              {selectedSubmission ? 'Submission Details' : `Submissions: ${selectedForm?.name || ''}`}
+            </h3>
+            <p style={{ fontSize: '12px', color: '#64748b', margin: '4px 0 0 0' }}>
+              {selectedSubmission 
+                ? `Response submitted on ${new Date(selectedSubmission.created_at).toLocaleString()}`
+                : `Captured ${submissions.length} active responses`
+              }
+            </p>
+          </div>
+          <button 
+            onClick={() => {
+              if (selectedSubmission) {
+                setSelectedSubmission(null);
+              } else {
+                setShowResultsSidebar(false);
+              }
+            }}
+            style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '18px', cursor: 'pointer', padding: '4px' }}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Content Body */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
           {loadingSubmissions ? (
-            <div style={{ textAlign: 'center', padding: '3rem 0' }}>
-              <div style={{ display: 'inline-block', width: '24px', height: '24px', border: '2px solid #6366f1', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '10px' }} />
-              <div style={{ fontSize: '12px', color: '#64748b' }}>Loading submissions...</div>
+            <div style={{ textAlign: 'center', padding: '4rem 0' }}>
+              <div style={{ display: 'inline-block', width: '28px', height: '28px', border: '3px solid #6366f1', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '12px' }} />
+              <div style={{ color: '#64748b', fontSize: '13px' }}>Loading submissions database...</div>
             </div>
           ) : submissions.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '3rem 1.5rem', color: '#94a3b8' }}>
-              <span style={{ fontSize: '28px', display: 'block', marginBottom: '8px' }}>📋</span>
-              <div style={{ fontSize: '13px', fontWeight: 500, color: '#475569' }}>No responses captured yet</div>
-              <p style={{ fontSize: '12px', color: '#64748b', margin: '4px 0 16px 0', lineHeight: 1.4 }}>Share your public link to start automatically capturing leads.</p>
-              <button onClick={() => { setShowResultsModal(false); openShareModal(selectedForm); }} style={{ backgroundColor: '#6366f1', color: '#fff', border: 'none', borderRadius: '4px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>Get Share Link</button>
+            <div style={{ textAlign: 'center', padding: '4rem 1.5rem', color: '#94a3b8' }}>
+              <span style={{ fontSize: '32px', display: 'block', marginBottom: '12px' }}>📋</span>
+              <div style={{ fontSize: '14px', fontWeight: 500, color: '#475569' }}>No responses captured yet</div>
+              <p style={{ fontSize: '12px', color: '#64748b', margin: '6px 0 20px 0', lineHeight: 1.5 }}>
+                Share your public link to start automatically capturing customer submissions.
+              </p>
+              <button 
+                onClick={() => { setShowResultsSidebar(false); openShareModal(selectedForm); }} 
+                style={{ backgroundColor: '#6366f1', color: '#fff', border: 'none', borderRadius: '6px', padding: '8px 16px', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}
+              >
+                Get Share Link
+              </button>
+            </div>
+          ) : selectedSubmission ? (
+            /* Submission Detail Viewer */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              {/* Back CTA */}
+              <button 
+                onClick={() => setSelectedSubmission(null)}
+                style={{ alignSelf: 'flex-start', background: 'none', border: 'none', color: '#6366f1', fontSize: '13px', fontWeight: 500, cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                ← Back to submissions list
+              </button>
+
+              {/* Answers Grid */}
+              <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}>
+                <div style={{ backgroundColor: '#f8fafc', padding: '0.75rem 1rem', borderBottom: '1px solid #e2e8f0', fontSize: '12px', fontWeight: 600, color: '#475569' }}>
+                  SUBMITTED FORM DATA
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  {Object.entries(selectedSubmission.answers || {}).map(([key, val]: any, idx) => {
+                    let label = key;
+                    if (key === 'firstName') label = 'First Name';
+                    else if (key === 'lastName') label = 'Last Name';
+                    else if (key === 'email') label = 'Email Address';
+                    else if (key === 'phone') label = 'Phone Number';
+                    else if (key === 'company') label = 'Company';
+
+                    let renderVal = val;
+                    if (Array.isArray(val)) renderVal = val.join(', ');
+                    else if (typeof val === 'object') renderVal = JSON.stringify(val);
+
+                    return (
+                      <div key={key} style={{ padding: '1rem', borderTop: idx > 0 ? '1px solid #f1f5f9' : 'none', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</span>
+                        <span style={{ fontSize: '13.5px', color: '#0f172a', fontWeight: 500 }}>{renderVal?.toString() || '—'}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Automated AI Follow-up Trigger Ingestion Logs */}
+              {selectedSubmission.answers?.phone && (
+                <div style={{
+                  padding: '1.25rem',
+                  borderRadius: '8px',
+                  background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(79, 70, 229, 0.05) 100%)',
+                  border: '1px solid rgba(99, 102, 241, 0.15)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.75rem'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '16px' }}>📞</span>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b' }}>Automated AI Outbound Call</div>
+                  </div>
+                  <p style={{ fontSize: '12px', color: '#64748b', margin: 0, lineHeight: 1.5 }}>
+                    An outbound telephone call is initiated to **{selectedSubmission.answers.phone}** to follow up and qualify this lead.
+                  </p>
+                  <button 
+                    onClick={() => {
+                      const leadName = `${selectedSubmission.answers.firstName || ''} ${selectedSubmission.answers.lastName || ''}`.trim() || selectedSubmission.answers.phone;
+                      router.push(`/dashboard/chat/inbox?search=${encodeURIComponent(leadName)}`);
+                    }}
+                    style={{
+                      alignSelf: 'flex-start',
+                      backgroundColor: '#6366f1',
+                      color: '#ffffff',
+                      border: 'none',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      padding: '8px 14px',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 8px rgba(99, 102, 241, 0.2)',
+                      transition: 'background 0.2s'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4f46e5'}
+                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#6366f1'}
+                  >
+                    View Call Transcript & Logs →
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
+            /* Submissions List View */
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '0.5rem' }}>
-                Captured **{submissions.length}** active customer submissions:
+              <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '0.25rem' }}>
+                Select a submission card below to drill down into detailed responses and follow-up call telemetry.
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {submissions.map((sub, i) => {
                   const answers = sub.answers || {};
                   const dateStr = new Date(sub.created_at).toLocaleString();
+                  const displayName = `${answers.firstName || ''} ${answers.lastName || ''}`.trim() || answers.email || answers.phone || 'Anonymous Submission';
                   return (
-                    <div key={sub.id || i} style={{ border: '1px solid #e2e8f0', borderRadius: '6px', padding: '1rem', backgroundColor: '#f8fafc' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px' }}>
-                        <span style={{ fontSize: '11px', fontWeight: 600, color: '#1e293b' }}>Response #{submissions.length - i}</span>
-                        <span style={{ fontSize: '10.5px', color: '#64748b' }}>{dateStr}</span>
+                    <div 
+                      key={sub.id || i} 
+                      onClick={() => setSelectedSubmission(sub)}
+                      style={{ 
+                        border: '1px solid #e2e8f0', 
+                        borderRadius: '8px', 
+                        padding: '1.25rem', 
+                        backgroundColor: '#ffffff',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
+                      }}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.borderColor = '#cbd5e1';
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.04)';
+                        e.currentTarget.style.transform = 'translateY(-1px)';
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.borderColor = '#e2e8f0';
+                        e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.02)';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 600, color: '#6366f1' }}>Response #{submissions.length - i}</span>
+                        <span style={{ fontSize: '11px', color: '#94a3b8' }}>{dateStr}</span>
                       </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem 1rem' }}>
-                        {Object.entries(answers).map(([key, val]: any) => {
-                          let label = key;
-                          if (key === 'firstName') label = 'First Name';
-                          else if (key === 'lastName') label = 'Last Name';
-                          else if (key === 'email') label = 'Email';
-                          else if (key === 'phone') label = 'Phone';
-                          else if (key === 'company') label = 'Company';
-                          
-                          let renderVal = val;
-                          if (Array.isArray(val)) renderVal = val.join(', ');
-                          else if (typeof val === 'object') renderVal = JSON.stringify(val);
-
-                          return (
-                            <div key={key} style={{ fontSize: '11.5px' }}>
-                              <span style={{ fontWeight: 600, color: '#475569', marginRight: '4px' }}>{label}:</span>
-                              <span style={{ color: '#0f172a' }}>{renderVal?.toString()}</span>
-                            </div>
-                          );
-                        })}
+                      
+                      <div style={{ fontSize: '14px', fontWeight: 600, color: '#0f172a', marginBottom: '4px' }}>{displayName}</div>
+                      
+                      {answers.email && (
+                        <div style={{ fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span>✉</span> {answers.email}
+                        </div>
+                      )}
+                      {answers.phone && (
+                        <div style={{ fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                          <span>📞</span> {answers.phone}
+                        </div>
+                      )}
+                      
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.75rem' }}>
+                        <span style={{ fontSize: '11.5px', color: '#6366f1', fontWeight: 600 }}>View Details →</span>
                       </div>
                     </div>
                   );
@@ -196,7 +368,7 @@ export default function Page() {
             </div>
           )}
         </div>
-      </Modal>
+      </div>
 
       <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
