@@ -585,6 +585,67 @@ export default function LandingPage() {
             </div>
           </div>
 
+          {/* BLOCK 4: Dynamic Tool Integrations & Actions */}
+          <div className={`${styles.splitRow} ${styles.rowInverse}`}>
+            <div className={styles.splitTextCol}>
+              <span className={styles.rowTag}>Step 4</span>
+              <h3 className={styles.rowTitle}>Connect your tools. Execute actions in real time.</h3>
+              <p className={styles.rowSubtitle}>
+                Allow your AI voice agent to read, write, and execute tasks across 1,000+ business applications in real time during a call.
+              </p>
+              <ul className={styles.rowList}>
+                <li>
+                  <span className={styles.listCheck}>✓</span>
+                  Sync CRM pipelines instantly (Salesforce, HubSpot, GoHighLevel)
+                </li>
+                <li>
+                  <span className={styles.listCheck}>✓</span>
+                  Trigger instant notifications and updates (Gmail, Slack, Twilio)
+                </li>
+                <li>
+                  <span className={styles.listCheck}>✓</span>
+                  Process secure payments, top-ups, and transactions (Stripe)
+                </li>
+              </ul>
+            </div>
+            <div className={styles.splitGraphicCol}>
+              <div className={styles.graphicBox}>
+                <div className={styles.integrationsWidget}>
+                  <div className={styles.integrationsHeader}>
+                    <span>App Integrations Status</span>
+                    <span className={styles.liveBadgeMini}>Live Sync</span>
+                  </div>
+                  <div className={styles.integrationsList}>
+                    <div className={styles.integrationItem}>
+                      <span className={styles.integrationLogo}>🟠</span>
+                      <div className={styles.integrationDetails}>
+                        <div className={styles.integrationName}>HubSpot CRM</div>
+                        <div className={styles.integrationAction}>Updating deal stage...</div>
+                      </div>
+                      <span className={styles.integrationState}>Active</span>
+                    </div>
+                    <div className={styles.integrationItem}>
+                      <span className={styles.integrationLogo}>💬</span>
+                      <div className={styles.integrationDetails}>
+                        <div className={styles.integrationName}>Slack Channel</div>
+                        <div className={styles.integrationAction}>Sending call logs...</div>
+                      </div>
+                      <span className={styles.integrationState}>Active</span>
+                    </div>
+                    <div className={styles.integrationItem}>
+                      <span className={styles.integrationLogo}>💳</span>
+                      <div className={styles.integrationDetails}>
+                        <div className={styles.integrationName}>Stripe Payments</div>
+                        <div className={styles.integrationAction}>Awaiting charge...</div>
+                      </div>
+                      <span className={styles.integrationState}>Ready</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </section>
 
