@@ -41,7 +41,7 @@ export async function getAgents() {
   }
 }
 
-export async function createAgent(name: string) {
+export async function createAgent(name: string, customConfig?: any) {
   const supabase = await createClient();
   const id = uuidv4();
   
@@ -62,13 +62,20 @@ export async function createAgent(name: string) {
 
     if (!memberData) throw new Error('No workspace found');
 
+    const defaultConfig = { 
+      agentName: name, 
+      voice: '11labs-josh', 
+      systemPrompt: 'You are a helpful assistant.', 
+      attachedWorkflows: [] 
+    };
+
     const { error } = await supabase
       .from('workspace_agents')
       .insert({ 
         id,
         workspace_id: memberData.workspace_id, 
         name,
-        config: { agentName: name, voice: '11labs-josh', systemPrompt: 'You are a helpful assistant.', attachedWorkflows: [] },
+        config: customConfig || defaultConfig,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });
