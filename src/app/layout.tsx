@@ -29,9 +29,9 @@ export const metadata: Metadata = {
   title: "Amira | Your A.I Powered Call Center",
   description: "Amira does the work of 1000 Call Center Agents, answering calls like a real human. Streamline customer interactions, reduce operational costs, and boost productivity with smart, scalable, and seamless solutions.",
   icons: {
-    icon: "https://framerusercontent.com/images/s6PTI0917GyaZC8qM5Tzk1HIAA.png",
-    shortcut: "https://framerusercontent.com/images/s6PTI0917GyaZC8qM5Tzk1HIAA.png",
-    apple: "https://framerusercontent.com/images/s6PTI0917GyaZC8qM5Tzk1HIAA.png",
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/apple-icon.png",
   }
 };
 
