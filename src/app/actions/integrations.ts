@@ -1,7 +1,6 @@
 'use server';
 
 import { createClient } from '@/utils/supabase/server';
-import { Composio } from '@composio/core';
 
 // We use a fixed workspace ID for demo purposes
 const DEMO_WORKSPACE_ID = 'workspace_1';
@@ -84,6 +83,7 @@ export async function getComposioStatus() {
   }
 
   try {
+    const { Composio } = await import('@composio/core');
     const composio = new Composio({ apiKey });
     
     // Fetch active connected accounts for the user (using workspace ID)
@@ -119,6 +119,7 @@ export async function initiateComposioConnection(appName: string) {
   }
 
   try {
+    const { Composio } = await import('@composio/core');
     const composio = new Composio({ apiKey });
     
     // Create a connection link using the recommended SDK link flow
@@ -148,6 +149,7 @@ export async function removeComposioIntegration(appName: string) {
   }
 
   try {
+    const { Composio } = await import('@composio/core');
     const composio = new Composio({ apiKey });
     
     // Fetch all connections and delete the one matching this app

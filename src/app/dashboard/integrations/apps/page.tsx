@@ -179,6 +179,10 @@ export default function IntegrationsPage() {
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
+        @keyframes pulse {
+          0%, 100% { opacity: 0.6; }
+          50% { opacity: 0.3; }
+        }
       `}</style>
 
       <div style={{ marginBottom: '1.5rem' }}>
@@ -203,12 +207,6 @@ export default function IntegrationsPage() {
               }} 
             />
           ))}
-          <style jsx>{`
-            @keyframes pulse {
-              0%, 100% { opacity: 0.6; }
-              50% { opacity: 0.3; }
-            }
-          `}</style>
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
