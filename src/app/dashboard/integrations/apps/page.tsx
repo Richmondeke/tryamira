@@ -55,9 +55,8 @@ export default function IntegrationsPage() {
       if (status === 'success' && app) {
         // Automatically save local DB status to make it active
         saveIntegrationConfig(app, { connected: true }).then(() => {
-          // Find matching app name if possible
           const cleanName = app.charAt(0).toUpperCase() + app.slice(1);
-          setToast(`🎉 Successfully authenticated! ${cleanName} is now connected.`);
+          setToast(`🎉 Successfully connected to ${cleanName}!`);
           
           // Clear query parameters cleanly from URL without reloading
           const url = new URL(window.location.href);
@@ -134,18 +133,18 @@ export default function IntegrationsPage() {
           <div style={{ textAlign: 'center', padding: '2.5rem 0' }}>
             <div style={{ display: 'inline-block', width: '32px', height: '32px', border: '3px solid #6366f1', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '1rem' }} />
             <div style={{ color: '#6366f1', fontSize: '14px', fontWeight: 600 }}>Secure Authorization</div>
-            <p style={{ color: '#94a3b8', fontSize: '13px', marginTop: '0.5rem', marginInline: 'auto', maxWidth: '320px' }}>
+            <p style={{ color: 'var(--stripe-body)', fontSize: '13px', marginTop: '0.5rem', marginInline: 'auto', maxWidth: '320px', lineHeight: 1.5 }}>
               Redirecting you to the Composio OAuth portal to authorize {connectingApp?.name} securely...
             </p>
           </div>
         ) : (
           <form onSubmit={performInstall}>
-            <p style={{ color: '#cbd5e1', fontSize: '13px', marginBottom: '1.5rem', lineHeight: 1.5 }}>
+            <p style={{ color: 'var(--stripe-body)', fontSize: '13px', marginBottom: '1.5rem', lineHeight: 1.5 }}>
               Connect your <strong>{connectingApp?.name}</strong> account to allow Amira AI agents to sync and automate workflows inside your CRM.
             </p>
 
-            <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.06)' }}>
-              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 }}>
+            <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid var(--stripe-border)' }}>
+              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', fontSize: '12px', color: 'var(--stripe-body)', lineHeight: 1.5 }}>
                 <span style={{ fontSize: '16px' }}>🛡️</span>
                 <span>
                   <strong>Composio Verified Connection:</strong> Authentication takes place directly through secure OAuth. Amira does not store your credentials.
@@ -157,15 +156,15 @@ export default function IntegrationsPage() {
               <button 
                 type="button" 
                 onClick={() => setShowModal(false)} 
-                style={{ padding: '0.5rem 1.25rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)', backgroundColor: 'transparent', color: '#cbd5e1', cursor: 'pointer', fontWeight: 500, transition: 'all 0.2s' }}
-                onMouseOver={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'; }}
-                onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                style={{ padding: '0.5rem 1.25rem', borderRadius: '6px', border: '1px solid var(--stripe-border)', backgroundColor: '#fff', color: 'var(--stripe-navy)', cursor: 'pointer', fontWeight: 500, transition: 'all 0.2s' }}
+                onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#f6f9fc'; }}
+                onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#fff'; }}
               >
                 Cancel
               </button>
               <button 
                 type="submit" 
-                style={{ padding: '0.5rem 1.25rem', borderRadius: '6px', border: 'none', backgroundColor: '#6366f1', color: '#fff', cursor: 'pointer', fontWeight: 600, boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)', transition: 'all 0.2s' }}
+                style={{ padding: '0.5rem 1.25rem', borderRadius: '6px', border: 'none', backgroundColor: '#6366f1', color: '#fff', cursor: 'pointer', fontWeight: 600, boxShadow: '0 4px 12px rgba(99, 102, 241, 0.2)', transition: 'all 0.2s' }}
                 onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#4f46e5'; }}
                 onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#6366f1'; }}
               >
@@ -182,24 +181,24 @@ export default function IntegrationsPage() {
         }
       `}</style>
 
-      <div style={{ marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '22px', fontWeight: 500, color: '#f8fafc', margin: '0 0 0.5rem 0' }}>Composio Integrations</h2>
-        <p style={{ color: '#94a3b8', fontSize: '13px', margin: 0 }}>
-          Enable multi-source syncing for your dialer, sync HubSpot CRM pipelines, import Google Contacts, and connect your workflow stack via Composio.
+      <div style={{ marginBottom: '1.5rem' }}>
+        <h2 style={{ fontSize: '18px', fontWeight: 400, color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0' }}>Software Apps</h2>
+        <p style={{ color: 'var(--stripe-body)', fontSize: '13px', margin: 0 }}>
+          Connect Amira with your existing software stack.
         </p>
       </div>
 
       {loading ? (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
-          {[1, 2, 4, 5, 6].map((i) => (
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <div 
               key={i} 
               style={{ 
                 width: 'calc(50% - 0.5rem)', 
                 height: '140px', 
-                backgroundColor: 'rgba(30, 41, 59, 0.5)', 
-                border: '1px solid rgba(255,255,255,0.04)', 
-                borderRadius: '8px', 
+                backgroundColor: '#ffffff', 
+                border: '1px solid var(--stripe-border)', 
+                borderRadius: '6px', 
                 animation: 'pulse 1.5s infinite ease-in-out' 
               }} 
             />
@@ -220,90 +219,91 @@ export default function IntegrationsPage() {
                 key={app.id || i} 
                 onClick={() => handleCardClick(app)}
                 style={{ 
-                  backgroundColor: isInstalled ? 'rgba(30, 41, 59, 0.4)' : 'rgba(15, 23, 42, 0.6)', 
-                  border: isInstalled ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid rgba(255,255,255,0.05)', 
-                  borderRadius: '10px', 
+                  backgroundColor: '#ffffff', 
+                  border: isInstalled ? '1px solid #6366f1' : '1px solid var(--stripe-border)', 
+                  borderRadius: '6px', 
                   padding: '1.5rem', 
-                  backdropFilter: 'blur(12px)',
-                  boxShadow: isInstalled ? '0 4px 20px rgba(99, 102, 241, 0.05)' : 'none',
+                  boxShadow: 'var(--stripe-shadow-ambient)',
                   cursor: isInstalled ? 'default' : 'pointer',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  position: 'relative',
-                  overflow: 'hidden'
+                  transition: 'all 0.2s ease-in-out',
+                  position: 'relative'
                 }}
                 onMouseOver={(e) => { 
                   if (!isInstalled) {
-                    e.currentTarget.style.border = '1px solid rgba(255,255,255,0.12)';
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 12px 24px -10px rgba(0,0,0,0.5)';
+                    e.currentTarget.style.boxShadow = '0 8px 24px rgba(50,50,93,0.08)';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
                   }
                 }}
                 onMouseOut={(e) => { 
                   if (!isInstalled) {
-                    e.currentTarget.style.border = '1px solid rgba(255,255,255,0.05)';
+                    e.currentTarget.style.boxShadow = 'var(--stripe-shadow-ambient)';
                     e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = 'none';
                   }
                 }}
               >
-                {/* Visual Installed Accent */}
+                {/* Visual Installed Badge */}
                 {isInstalled && (
-                  <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', backgroundColor: '#6366f1' }} />
+                  <div style={{ 
+                    position: 'absolute', 
+                    top: '1.5rem', 
+                    right: '1.5rem', 
+                    fontSize: '11px', 
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)', 
+                    color: '#6366f1',
+                    padding: '0.25rem 0.6rem', 
+                    borderRadius: '12px', 
+                    fontWeight: 600
+                  }}>
+                    Connected
+                  </div>
                 )}
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
                   <div style={{ 
-                    width: '46px', 
-                    height: '46px', 
-                    borderRadius: '10px', 
-                    backgroundColor: 'rgba(255,255,255,0.03)', 
-                    border: '1px solid rgba(255,255,255,0.06)',
+                    width: '40px', 
+                    height: '40px', 
+                    borderRadius: '8px', 
+                    backgroundColor: '#f6f9fc', 
+                    border: '1px solid var(--stripe-border)',
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center', 
-                    fontSize: '22px' 
+                    fontSize: '20px' 
                   }}>
                     {app.icon && app.icon.startsWith('http') ? (
-                      <img src={app.icon || undefined} alt={app.name} style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
+                      <img src={app.icon || undefined} alt={app.name} style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
                     ) : (
                       app.icon || '🧩'
                     )}
                   </div>
-                  {isInstalled ? (
+                  {isInstalled && (
                     <button 
                       onClick={(e) => handleUninstall(e, app.id, app.name)} 
                       style={{ 
-                        backgroundColor: 'rgba(239, 68, 68, 0.1)', 
-                        color: '#f87171', 
-                        border: '1px solid rgba(239, 68, 68, 0.2)', 
-                        borderRadius: '6px', 
-                        padding: '0.4rem 0.9rem', 
+                        backgroundColor: '#ffffff', 
+                        color: '#d92d20', 
+                        border: '1px solid #d92d20', 
+                        borderRadius: '4px', 
+                        padding: '0.35rem 0.75rem', 
                         fontSize: '12px', 
-                        fontWeight: 600, 
+                        fontWeight: 500, 
                         cursor: 'pointer',
-                        transition: 'all 0.2s'
+                        transition: 'all 0.2s',
+                        marginRight: '5.5rem' // push to left of Connected badge
                       }}
-                      onMouseOver={(e) => { e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.2)'; }}
-                      onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'; }}
+                      onMouseOver={(e) => { 
+                        e.currentTarget.style.backgroundColor = '#fff1f0'; 
+                      }}
+                      onMouseOut={(e) => { 
+                        e.currentTarget.style.backgroundColor = '#ffffff'; 
+                      }}
                     >
                       Uninstall
                     </button>
-                  ) : (
-                    <span style={{ 
-                      fontSize: '11px', 
-                      backgroundColor: 'rgba(255,255,255,0.03)', 
-                      border: '1px solid rgba(255,255,255,0.05)',
-                      padding: '0.25rem 0.6rem', 
-                      borderRadius: '12px', 
-                      color: '#64748b',
-                      fontWeight: 500
-                    }}>
-                      Not Active
-                    </span>
                   )}
                 </div>
-                <h3 style={{ fontSize: '14px', color: '#f8fafc', margin: '0 0 0.5rem 0', fontWeight: 600 }}>{app.name}</h3>
-                <p style={{ fontSize: '12px', color: isInstalled ? '#cbd5e1' : '#64748b', margin: 0, lineHeight: 1.5 }}>
+                <h3 style={{ fontSize: '13px', color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', fontWeight: 500 }}>{app.name}</h3>
+                <p style={{ fontSize: '12px', color: 'var(--stripe-body)', margin: 0, lineHeight: 1.5 }}>
                   {app.desc || `Integrate ${app.name} smoothly via secure Composio login.`}
                 </p>
               </div>
