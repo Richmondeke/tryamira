@@ -35,6 +35,8 @@ export const metadata: Metadata = {
   }
 };
 
+import Script from 'next/script';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -42,7 +44,44 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${paytoneOne.variable} ${poppins.variable} ${inter.variable} ${quantico.variable}`}>
-      <body>{children}</body>
+      <head>
+        <Script
+          src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+          strategy="afterInteractive"
+        />
+        <Script id="google-translate-init" strategy="afterInteractive">
+          {`
+            window.googleTranslateElementInit = function() {
+              new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,es,fr,de,yo,ig,ha,zh-CN,ja,ar,pt,it',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+              }, 'google_translate_element');
+            }
+          `}
+        </Script>
+        <style dangerouslySetInnerHTML={{__html: `
+          /* Premium override: hide Google Translate frames, banner, and standard selectors */
+          iframe.skiptranslate, .goog-te-banner-frame, #goog-gt-tt {
+            display: none !important;
+            visibility: hidden !important;
+          }
+          body {
+            top: 0px !important;
+          }
+          #google_translate_element {
+            display: none !important;
+          }
+          .goog-te-menu-value {
+            display: none !important;
+          }
+        `}} />
+      </head>
+      <body>
+        {children}
+        <div id="google_translate_element" style={{ display: 'none' }} />
+      </body>
     </html>
   );
 }

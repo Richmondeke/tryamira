@@ -178,17 +178,17 @@ const allIntegrations = [
 ];
 
 const initialVoicesList = [
-  { id: 'rachel', name: 'Rachel', provider: 'ElevenLabs', gender: 'Female', accent: 'US Friendly', tag: 'Best for Support', text: "Hi! I'm Rachel. I speak with a warm, empathetic, and professional tone. Perfect for customer support and patient care.", lang: 'en' },
-  { id: 'josh', name: 'Josh', provider: 'ElevenLabs', gender: 'Male', accent: 'US Professional', tag: 'Best for Sales', text: "Hello! I'm Josh. My voice is deep, confident, and persuasive. Excellent for outbound lead generation and sales calls.", lang: 'en' },
-  { id: 'kemi', name: 'Kemi', provider: 'ElevenLabs', gender: 'Female', accent: 'Nigerian (West Africa)', tag: 'Premium Local', text: "Kedu! I am Kemi. I speak with a clear and professional Nigerian English accent. Excellent for West African customer service.", lang: 'en' },
-  { id: 'chinedu', name: 'Chinedu', provider: 'ElevenLabs', gender: 'Male', accent: 'Nigerian (West Africa)', tag: 'Premium Local', text: "Hello! I am Chinedu. My voice is warm, relatable, and trustworthy, with a classic Nigerian accent. Perfect for local outbound services.", lang: 'en' },
-  { id: 'nova', name: 'Nova', provider: 'OpenAI', gender: 'Female', accent: 'US Energetic', tag: 'Best for Retail', text: "Hi there! I'm Nova. I have a bright, energetic, and highly engaging voice. Great for e-commerce and retail assistance.", lang: 'en' },
-  { id: 'alloy', name: 'Alloy', provider: 'OpenAI', gender: 'Male', accent: 'US Neutral', tag: 'Best for FAQs', text: "Hello, I'm Alloy. I offer a clear, calm, and neutral voice. Best for automated dispatching and FAQ triaging.", lang: 'en' },
-  { id: 'fin', name: 'Fin', provider: 'ElevenLabs', gender: 'Male', accent: 'British Warm', tag: 'Best for Consulting', text: "Cheers! I'm Fin. My British accent brings a warm, refined, and trustworthy tone. Ideal for B2B consulting.", lang: 'en' },
-  { id: 'bella', name: 'Bella', provider: 'ElevenLabs', gender: 'Female', accent: 'US Soft', tag: 'Best for Wellness', text: "Hi, I'm Bella. I have a gentle, soothing, and attentive voice. Suited for wellness clinics and hospitality.", lang: 'en' },
-  { id: 'thomas', name: 'Thomas', provider: 'PlayHT', gender: 'Male', accent: 'Aussie Friendly', tag: 'Best for Trades', text: "G'day! I'm Thomas. My Australian voice is friendly, down-to-earth, and relatable. Great for local trades and dispatch.", lang: 'en' },
-  { id: 'serena', name: 'Serena', provider: 'ElevenLabs', gender: 'Female', accent: 'US Conversational', tag: 'Best for Marketing', text: "Hey! I'm Serena. I have an upbeat, natural, and highly conversational voice. Superb for marketing campaigns.", lang: 'en' },
-  { id: 'mwangi', name: 'Mwangi', provider: 'PlayHT', gender: 'Male', accent: 'Kenyan (East Africa)', tag: 'Warm Support', text: "Jambo! I am Mwangi. I offer a warm, articulate Kenyan English voice profile.", lang: 'en' },
+  { id: 'rachel', name: 'Rachel', provider: 'ElevenLabs', gender: 'Female', accent: 'US Friendly', tag: 'Best for Support', text: "Hi! I'm Rachel. I speak with a warm, empathetic, and professional tone. Perfect for customer support and patient care.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/21m00Tcm4TlvDq8ikWAM.mp3' },
+  { id: 'josh', name: 'Josh', provider: 'ElevenLabs', gender: 'Male', accent: 'US Professional', tag: 'Best for Sales', text: "Hello! I'm Josh. My voice is deep, confident, and persuasive. Excellent for outbound lead generation and sales calls.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/TxGEqnHWrfWFTfGW9XjX.mp3' },
+  { id: 'kemi', name: 'Kemi', provider: 'ElevenLabs', gender: 'Female', accent: 'Nigerian (West Africa)', tag: 'Premium Local', text: "Kedu! I am Kemi. I speak with a clear and professional Nigerian English accent. Excellent for West African customer service.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/21m00Tcm4TlvDq8ikWAM.mp3' },
+  { id: 'chinedu', name: 'Chinedu', provider: 'ElevenLabs', gender: 'Male', accent: 'Nigerian (West Africa)', tag: 'Premium Local', text: "Hello! I am Chinedu. My voice is warm, relatable, and trustworthy, with a classic Nigerian accent. Perfect for local outbound services.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/TxGEqnHWrfWFTfGW9XjX.mp3' },
+  { id: 'nova', name: 'Nova', provider: 'OpenAI', gender: 'Female', accent: 'US Energetic', tag: 'Best for Retail', text: "Hi there! I'm Nova. I have a bright, energetic, and highly engaging voice. Great for e-commerce and retail assistance.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/AZnzlk1XvdvUeBnXmlld.mp3' },
+  { id: 'alloy', name: 'Alloy', provider: 'OpenAI', gender: 'Male', accent: 'US Neutral', tag: 'Best for FAQs', text: "Hello, I'm Alloy. I offer a clear, calm, and neutral voice. Best for automated dispatching and FAQ triaging.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/ErXwobaYiN019PkySvjV.mp3' },
+  { id: 'fin', name: 'Fin', provider: 'ElevenLabs', gender: 'Male', accent: 'British Warm', tag: 'Best for Consulting', text: "Cheers! I'm Fin. My British accent brings a warm, refined, and trustworthy tone. Ideal for B2B consulting.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/VR6A4mxSTDLrjDlsgcTC.mp3' },
+  { id: 'bella', name: 'Bella', provider: 'ElevenLabs', gender: 'Female', accent: 'US Soft', tag: 'Best for Wellness', text: "Hi, I'm Bella. I have a gentle, soothing, and attentive voice. Suited for wellness clinics and hospitality.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/EXAVITQu4vr4xnSDxMaL.mp3' },
+  { id: 'thomas', name: 'Thomas', provider: 'PlayHT', gender: 'Male', accent: 'Aussie Friendly', tag: 'Best for Trades', text: "G'day! I'm Thomas. My Australian voice is friendly, down-to-earth, and relatable. Great for local trades and dispatch.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/yoZ06a0ZtWhg3xoI4ILV.mp3' },
+  { id: 'serena', name: 'Serena', provider: 'ElevenLabs', gender: 'Female', accent: 'US Conversational', tag: 'Best for Marketing', text: "Hey! I'm Serena. I have an upbeat, natural, and highly conversational voice. Superb for marketing campaigns.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/pNInz6obpgq5paNs9W5D.mp3' },
+  { id: 'mwangi', name: 'Mwangi', provider: 'PlayHT', gender: 'Male', accent: 'Kenyan (East Africa)', tag: 'Warm Support', text: "Jambo! I am Mwangi. I offer a warm, articulate Kenyan English voice profile.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/TxGEqnHWrfWFTfGW9XjX.mp3' },
   { id: 'ambrose', name: 'Ambrose', provider: 'ElevenLabs', gender: 'Male', accent: 'Yoruba Dialect', tag: 'Native Voice', text: "E nle o! I am Ambrose. I speak fluent Yoruba and English, bridging traditional communications for your customer database.", lang: 'yo' },
   { id: 'chioma', name: 'Chioma', provider: 'ElevenLabs', gender: 'Female', accent: 'Igbo Dialect', tag: 'Native Voice', text: "Nnoo! I am Chioma. I speak fluent Igbo and English, providing warm native guidance for your callers.", lang: 'ig' },
   { id: 'amina', name: 'Amina', provider: 'ElevenLabs', gender: 'Female', accent: 'Hausa Dialect', tag: 'Native Voice', text: "Sannu! I am Amina. I speak fluent Hausa and English, providing professional communication.", lang: 'ha' },
@@ -222,6 +222,7 @@ function AgentContent() {
 
   // Voice Preview Playing state
   const [playingVoice, setPlayingVoice] = useState<string | null>(null);
+  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
 
   // Integration Connection simulation state
   const [connectedIntegrations, setConnectedIntegrations] = useState<Record<string, boolean>>({});
@@ -265,33 +266,67 @@ function AgentContent() {
     }
   }, [selectedTemplate]);
 
-  // Clean up speech synthesis if component unmounts
+  // Clean up speech synthesis & audio elements if component unmounts
   useEffect(() => {
     return () => {
       if (typeof window !== 'undefined' && window.speechSynthesis) {
         window.speechSynthesis.cancel();
       }
+      if (currentAudio) {
+        currentAudio.pause();
+      }
     };
-  }, []);
+  }, [currentAudio]);
 
   const playVoicePreview = (voiceId: string, text: string, gender: string) => {
+    const voiceObj = voices.find(v => v.id === voiceId);
+
+    // Stop current HTML5 audio if any is active
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+      setCurrentAudio(null);
+    }
+    
+    // Stop speechSynthesis if any is active
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+
+    if (playingVoice === voiceId) {
+      setPlayingVoice(null);
+      return;
+    }
+
+    // If premium MP3 preview URL exists, play actual high-fidelity voice audio!
+    if (voiceObj && (voiceObj as any).previewUrl) {
+      setPlayingVoice(voiceId);
+      const audio = new Audio((voiceObj as any).previewUrl);
+      setCurrentAudio(audio);
+      audio.onended = () => {
+        setPlayingVoice(null);
+        setCurrentAudio(null);
+      };
+      audio.onerror = () => {
+        setPlayingVoice(null);
+        setCurrentAudio(null);
+      };
+      audio.play().catch(err => {
+        console.error("Failed to play audio preview:", err);
+        setPlayingVoice(null);
+        setCurrentAudio(null);
+      });
+      return;
+    }
+
+    // Fallback: Web Speech API SpeechSynthesis
     if (typeof window === 'undefined' || !window.speechSynthesis) {
       setToast({ message: 'Speech synthesis is not supported in this browser.', type: 'error' });
       return;
     }
 
-    if (playingVoice === voiceId) {
-      window.speechSynthesis.cancel();
-      setPlayingVoice(null);
-      return;
-    }
-
-    window.speechSynthesis.cancel();
     setPlayingVoice(voiceId);
-
     const utterance = new SpeechSynthesisUtterance(text);
-    
-    // Match appropriate system voice based on gender / dialect
     const voicesListSystem = window.speechSynthesis.getVoices();
     let selectedSysVoice = null;
     

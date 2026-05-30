@@ -5,6 +5,45 @@ import styles from "./page.module.css";
 
 export default function LandingPage() {
   const [activePlan, setActivePlan] = useState<"monthly" | "annually">("monthly");
+  const [currentLang, setCurrentLang] = useState('en');
+  const [showLangMenu, setShowLangMenu] = useState(false);
+
+  const languagesList = [
+    { code: 'en', label: 'English', flag: '🇺🇸' },
+    { code: 'es', label: 'Español', flag: '🇪🇸' },
+    { code: 'fr', label: 'Français', flag: '🇫🇷' },
+    { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
+    { code: 'yo', label: 'Yoruba', flag: '🇳🇬' },
+    { code: 'ig', label: 'Igbo', flag: '🇳🇬' },
+    { code: 'ha', label: 'Hausa', flag: '🇳🇬' },
+    { code: 'zh-CN', label: '中文', flag: '🇨🇳' },
+    { code: 'ja', label: '日本語', flag: '🇯🇵' },
+  ];
+
+  useEffect(() => {
+    const getCookie = (name: string) => {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(';').shift();
+      return null;
+    };
+    const trans = getCookie('googtrans');
+    if (trans) {
+      const code = trans.split('/').pop();
+      if (code) setCurrentLang(code);
+    }
+  }, []);
+
+  const changeLanguage = (langCode: string) => {
+    if (langCode === 'en') {
+      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" + window.location.hostname;
+    } else {
+      document.cookie = `googtrans=/en/${langCode}; path=/;`;
+      document.cookie = `googtrans=/en/${langCode}; path=/; domain=` + window.location.hostname;
+    }
+    window.location.reload();
+  };
   const [activeFeatureTab, setActiveFeatureTab] = useState<"channels" | "knowledge" | "automation">("channels");
   const [liveTranscript, setLiveTranscript] = useState<Array<{ sender: "user" | "ai"; text: string }>>([]);
   const [currentCallStatus, setCurrentCallStatus] = useState<"idle" | "calling" | "connected" | "ended">("idle");
@@ -87,6 +126,101 @@ export default function LandingPage() {
           </ul>
 
           <div className={styles.navActions}>
+            {/* Custom Language Switcher */}
+            <div style={{ position: 'relative', display: 'inline-block' }}>
+              <button 
+                onClick={() => setShowLangMenu(!showLangMenu)}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.4rem', 
+                  fontSize: '13px', 
+                  fontWeight: 500, 
+                  padding: '8px 14px', 
+                  borderRadius: '30px', 
+                  border: '1px solid rgba(255, 255, 255, 0.15)', 
+                  backgroundColor: 'rgba(255, 255, 255, 0.06)', 
+                  color: '#ffffff',
+                  cursor: 'pointer',
+                  backdropFilter: 'blur(8px)',
+                  transition: 'background-color 0.2s ease, border-color 0.2s ease'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.12)';
+                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.06)';
+                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                }}
+              >
+                <span style={{ fontSize: '15px' }}>
+                  {languagesList.find(l => l.code === currentLang)?.flag || '🇺🇸'}
+                </span>
+                <span style={{ color: 'rgba(255,255,255,0.9)' }}>
+                  {languagesList.find(l => l.code === currentLang)?.label || 'English'}
+                </span>
+                <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.6)' }}>▼</span>
+              </button>
+              
+              {showLangMenu && (
+                <div style={{ 
+                  position: 'absolute', 
+                  top: '100%', 
+                  right: 0, 
+                  marginTop: '8px', 
+                  backgroundColor: '#061b31', // Premium dark navy to match landing page
+                  border: '1px solid rgba(255, 255, 255, 0.15)', 
+                  borderRadius: '10px', 
+                  boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5)', 
+                  zIndex: 9999, 
+                  minWidth: '155px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  padding: '6px',
+                  backdropFilter: 'blur(12px)'
+                }}>
+                  {languagesList.map(lang => (
+                    <button
+                      key={lang.code}
+                      onClick={() => {
+                        changeLanguage(lang.code);
+                        setShowLangMenu(false);
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem',
+                        padding: '8px 12px',
+                        width: '100%',
+                        border: 'none',
+                        background: 'none',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        color: 'rgba(255, 255, 255, 0.85)',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        fontWeight: currentLang === lang.code ? 600 : 400,
+                        backgroundColor: currentLang === lang.code ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
+                        transition: 'all 0.15s ease'
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.12)';
+                        e.currentTarget.style.color = '#ffffff';
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.backgroundColor = currentLang === lang.code ? 'rgba(255, 255, 255, 0.08)' : 'transparent';
+                        e.currentTarget.style.color = 'rgba(255, 255, 255, 0.85)';
+                      }}
+                    >
+                      <span style={{ fontSize: '14px' }}>{lang.flag}</span>
+                      <span>{lang.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <a href="/dashboard" className={styles.navSignIn}>Login</a>
             <a href="#demo" className={styles.navSecondaryBtn}>Talk to Sales</a>
             <a href="/dashboard" className={styles.navCta}>Start Free Trial</a>
