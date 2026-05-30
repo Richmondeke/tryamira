@@ -37,37 +37,55 @@ export async function getComposioApps() {
   const isKeyEmpty = !apiKey || 
                      apiKey === 'undefined' || 
                      apiKey === 'null' || 
-                     apiKey.trim() === '' ||
-                     apiKey.length < 30; // Composio keys are always 40+ chars
+                     apiKey.trim() === '';
 
   if (isKeyEmpty) {
-    console.warn('COMPOSIO_API_KEY not set or appears truncated — using mock integrations.');
-    return {
-      success: true,
-      data: MOCK_INTEGRATIONS
-    };
+    console.warn('COMPOSIO_API_KEY not set — using mock integrations.');
+    return { success: true, data: MOCK_INTEGRATIONS };
   }
 
   try {
-    // Use @composio/core SDK which handles API versioning automatically
-    const { Composio } = await import('@composio/core');
-    const composio = new Composio({ apiKey });
-
-    // Fetch all available toolkits/apps from Composio
-    const toolkits = await composio.toolkits.list({});
+    // Composio v3 REST API with cursor-based pagination
+    const COMPOSIO_BASE = 'https://backend.composio.dev/api/v3';
+    const headers = { 'x-api-key': apiKey };
     
-    const apps = (toolkits?.items || []).map((app: any) => ({
-      id: app.slug || app.name?.toLowerCase().replace(/\s+/g, '-') || app.key,
+    let allApps: any[] = [];
+    let cursor: string | null = null;
+    let page = 1;
+    const MAX_PAGES = 11; // v3 returns up to 1043 apps across 11 pages
+
+    do {
+      const url = cursor
+        ? `${COMPOSIO_BASE}/toolkits?limit=100&cursor=${cursor}`
+        : `${COMPOSIO_BASE}/toolkits?limit=100&page=${page}`;
+      
+      const res = await fetch(url, { headers });
+      if (!res.ok) throw new Error(`Composio v3 API error: ${res.status}`);
+      
+      const json = await res.json();
+      const items = json.items || [];
+      allApps = allApps.concat(items);
+      
+      cursor = json.next_cursor || null;
+      page++;
+      
+      // Stop if no more pages
+      if (!cursor || page > MAX_PAGES) break;
+    } while (true);
+
+    const apps = allApps.map((app: any) => ({
+      id: app.slug || app.name?.toLowerCase().replace(/\s+/g, '-'),
       name: app.name || app.displayName,
-      desc: app.description || `Connect Amira with your ${app.name} account via Composio.`,
-      icon: app.logo || app.logoUrl || '🧩',
+      desc: app.meta?.description || `Connect Amira with your ${app.name} account via Composio.`,
+      icon: app.meta?.logo || app.logo || '🧩',
+      toolsCount: app.meta?.tools_count || 0,
       type: 'oauth'
     })).filter((a: any) => a.id && a.name);
-    
-    console.log(`✅ Composio: loaded ${apps.length} live integrations`);
+
+    console.log(`✅ Composio v3: loaded ${apps.length} live integrations`);
     return { success: true, data: apps.length > 0 ? apps : MOCK_INTEGRATIONS };
   } catch (err: any) {
-    console.error('Error fetching Composio apps, falling back to mock list:', err?.message || err);
+    console.error('Composio v3 fetch error, falling back to mock list:', err?.message || err);
     return { success: true, data: MOCK_INTEGRATIONS };
   }
 }
@@ -81,7 +99,6 @@ export async function getComposioStatus() {
 
   if (isKeyEmpty) {
     console.warn('COMPOSIO_API_KEY not set. Simulating Composio status fetch.');
-    // Check locally in Supabase if URL is defined
     const supabase = await createClient();
     if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
       const { data } = await supabase
@@ -94,30 +111,30 @@ export async function getComposioStatus() {
   }
 
   try {
-    const { Composio } = await import('@composio/core');
-    const composio = new Composio({ apiKey });
-    
-    // Fetch active connected accounts for the user (using workspace ID)
-    const accounts = await composio.connectedAccounts.list({
-      userIds: [DEMO_WORKSPACE_ID]
-    });
-    
-    // Map connections format
-    const mapped = accounts.items.map((conn: any) => ({
-      provider: conn.toolkit.slug,
-      status: conn.status.toLowerCase() === 'active' ? 'active' : 'inactive'
+    // Composio v3 REST API — fetch connected accounts
+    const res = await fetch(
+      `https://backend.composio.dev/api/v3/connected_accounts?user_uuid=${DEMO_WORKSPACE_ID}&limit=100`,
+      { headers: { 'x-api-key': apiKey } }
+    );
+
+    if (!res.ok) throw new Error(`Composio v3 status error: ${res.status}`);
+    const json = await res.json();
+
+    const mapped = (json.items || []).map((conn: any) => ({
+      provider: conn.toolkit?.slug || conn.appName?.toLowerCase(),
+      status: conn.status?.toLowerCase() === 'active' ? 'active' : 'inactive'
     }));
-    
+
     return { success: true, data: mapped };
   } catch (err: any) {
-    console.error('Error fetching Composio status:', err);
+    console.error('Error fetching Composio v3 status:', err?.message || err);
     return { success: false, error: err.message || 'Failed to fetch status' };
   }
 }
 
 export async function initiateComposioConnection(appName: string) {
   const apiKey = process.env.COMPOSIO_API_KEY;
-  const origin = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const origin = process.env.NEXT_PUBLIC_APP_URL || 'https://heyamira.com';
   const callbackUrl = `${origin}/dashboard/integrations/apps?status=success&app=${appName}`;
 
   const isKeyEmpty = !apiKey || 
@@ -127,27 +144,37 @@ export async function initiateComposioConnection(appName: string) {
 
   if (isKeyEmpty) {
     console.warn('COMPOSIO_API_KEY not set. Simulating OAuth redirect.');
-    // Simulate a redirect back to our callback success URL
-    return { 
-      success: true, 
-      redirectUrl: callbackUrl
-    };
+    return { success: true, redirectUrl: callbackUrl };
   }
 
   try {
-    const { Composio } = await import('@composio/core');
-    const composio = new Composio({ apiKey });
-    
-    // Create a connection link using the recommended SDK link flow
-    const connectionRequest = await composio.connectedAccounts.link(
-      DEMO_WORKSPACE_ID,
-      appName,
-      { callbackUrl }
+    // Composio v3 REST API — initiate OAuth connection
+    const res = await fetch(
+      `https://backend.composio.dev/api/v3/toolkits/${appName}/connections`,
+      {
+        method: 'POST',
+        headers: { 
+          'x-api-key': apiKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          user_uuid: DEMO_WORKSPACE_ID,
+          redirect_url: callbackUrl
+        })
+      }
     );
-    
-    return { success: true, redirectUrl: connectionRequest.redirectUrl };
+
+    if (!res.ok) {
+      const errJson = await res.json().catch(() => ({}));
+      throw new Error(errJson?.message || `Composio v3 connection error: ${res.status}`);
+    }
+
+    const json = await res.json();
+    const redirectUrl = json.redirectUrl || json.redirect_url || json.connectionRequestId;
+
+    return { success: true, redirectUrl: redirectUrl || callbackUrl };
   } catch (err: any) {
-    console.error('Error initiating Composio connection:', err);
+    console.error('Error initiating Composio v3 connection:', err?.message || err);
     return { success: false, error: err.message || 'Failed to initiate connection' };
   }
 }
