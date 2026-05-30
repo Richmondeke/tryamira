@@ -27,6 +27,9 @@ export default function SignupPage() {
     if (result?.error) {
       setToast({ message: result.error, type: 'error' });
       setLoading(false);
+    } else if (result?.needsEmailConfirmation) {
+      setToast({ message: result.message || 'Please check your email to verify your account.', type: 'success' });
+      setLoading(false);
     } else {
       setToast({ message: 'Account created successfully!', type: 'success' });
       // Small delay to show the toast
@@ -56,6 +59,7 @@ export default function SignupPage() {
         <Toast 
           message={toast.message} 
           type={toast.type} 
+          // Keep it on screen longer if it's the email verification message
           onClose={() => setToast(null)} 
         />
       )}

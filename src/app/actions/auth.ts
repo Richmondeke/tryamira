@@ -33,10 +33,15 @@ export async function signup(formData: FormData) {
     }
   };
 
-  const { error } = await supabase.auth.signUp(data);
+  const { data: authData, error } = await supabase.auth.signUp(data);
 
   if (error) {
     return { error: error.message };
+  }
+
+  // If email confirmation is required, session will be null
+  if (authData?.user && !authData?.session) {
+    return { needsEmailConfirmation: true, message: "Please check your email to verify your account before logging in." };
   }
 
   return { success: true };
