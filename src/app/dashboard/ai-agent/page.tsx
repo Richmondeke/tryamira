@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getAgents, createAgent } from '@/app/actions/agent';
 import Toast from '../../../components/ui/Toast';
+import { Button } from '@/components/ui/Button';
 
 const templatesData = [
   {
@@ -23,7 +24,7 @@ const templatesData = [
       { name: 'Gmail', icon: '📧', reason: 'Send follow-up emails to customers' },
       { name: 'Slack', icon: '💬', reason: 'Notify your team of escalations' },
     ],
-    voice: '11labs-rachel',
+    voice: 'rachel',
     callsHandled: '~240 calls/mo',
     prompt: `You are an expert Customer Support Agent for our company. 
 Your goal is to be helpful, professional, and empathetic.
@@ -50,7 +51,7 @@ You can:
       { name: 'HubSpot', icon: '🟠', reason: 'Push qualified leads and scores to CRM' },
       { name: 'Slack', icon: '💬', reason: 'Alert your sales team on hot leads' },
     ],
-    voice: '11labs-josh',
+    voice: 'josh',
     callsHandled: '~180 calls/mo',
     prompt: `You are a high-performing Sales Qualification Agent.
 Your objective is to run BANT (Budget, Authority, Need, Timeline) qualification on inbound leads.
@@ -77,7 +78,7 @@ If they qualify:
       { name: 'HubSpot', icon: '🟠', reason: 'Log lead details and call notes' },
       { name: 'Gmail', icon: '📧', reason: 'Send confirmation to the buyer' },
     ],
-    voice: '11labs-rachel',
+    voice: 'rachel',
     callsHandled: '~120 calls/mo',
     prompt: `You are a professional Real Estate Assistant.
 Your goal is to capture buyer or renter preferences (location, budget, bedrooms, timeline).
@@ -103,7 +104,7 @@ Your goal is to capture buyer or renter preferences (location, budget, bedrooms,
       { name: 'Stripe', icon: '💳', reason: 'Issue refunds & store credit' },
       { name: 'Zendesk', icon: '🎫', reason: 'Open tickets for complex issues' },
     ],
-    voice: 'openai-nova',
+    voice: 'nova',
     callsHandled: '~300 calls/mo',
     prompt: `You are an E-commerce Concierge assistant.
 Your main goals:
@@ -129,7 +130,7 @@ Your main goals:
       { name: 'Twilio', icon: '📱', reason: 'SMS job details to the on-call tech' },
       { name: 'Stripe', icon: '💳', reason: 'Collect emergency dispatch fee upfront' },
     ],
-    voice: '11labs-josh',
+    voice: 'josh',
     callsHandled: '~90 calls/mo',
     prompt: `You are a 24/7 Emergency Dispatcher for our home services business.
 Your job is to triage emergency situations (e.g. active leaks, heating outages) and dispatch technicians.
@@ -154,7 +155,7 @@ Your job is to triage emergency situations (e.g. active leaks, heating outages) 
       { name: 'Gmail', icon: '📧', reason: 'Send pre-appointment instructions' },
       { name: 'Notion', icon: '📝', reason: 'Log patient intake information' },
     ],
-    voice: '11labs-rachel',
+    voice: 'rachel',
     callsHandled: '~150 calls/mo',
     prompt: `You are a friendly receptionist for our MedSpa clinic.
 You are warm, inviting, and highly organized.
@@ -163,6 +164,17 @@ You are warm, inviting, and highly organized.
 3. Collect new patient intake information and log it to Notion.
 4. Send customized pre-appointment instructions via Gmail.`
   }
+];
+
+const voicesList = [
+  { id: 'rachel', name: 'Rachel', provider: 'ElevenLabs', gender: 'Female', accent: 'US Friendly', tag: 'Best for Support', text: "Hi! I'm Rachel. I speak with a warm, empathetic, and professional tone. Perfect for customer support and patient care." },
+  { id: 'josh', name: 'Josh', provider: 'ElevenLabs', gender: 'Male', accent: 'US Professional', tag: 'Best for Sales', text: "Hello! I'm Josh. My voice is deep, confident, and persuasive. Excellent for outbound lead generation and sales calls." },
+  { id: 'nova', name: 'Nova', provider: 'OpenAI', gender: 'Female', accent: 'US Energetic', tag: 'Best for Retail', text: "Hi there! I'm Nova. I have a bright, energetic, and highly engaging voice. Great for e-commerce and retail assistance." },
+  { id: 'alloy', name: 'Alloy', provider: 'OpenAI', gender: 'Male', accent: 'US Neutral', tag: 'Best for FAQs', text: "Hello, I'm Alloy. I offer a clear, calm, and neutral voice. Best for automated dispatching and FAQ triaging." },
+  { id: 'fin', name: 'Fin', provider: 'ElevenLabs', gender: 'Male', accent: 'British Warm', tag: 'Best for Consulting', text: "Cheers! I'm Fin. My British accent brings a warm, refined, and trustworthy tone. Ideal for B2B consulting." },
+  { id: 'bella', name: 'Bella', provider: 'ElevenLabs', gender: 'Female', accent: 'US Soft', tag: 'Best for Wellness', text: "Hi, I'm Bella. I have a gentle, soothing, and attentive voice. Suited for wellness clinics and hospitality." },
+  { id: 'thomas', name: 'Thomas', provider: 'PlayHT', gender: 'Male', accent: 'Aussie Friendly', tag: 'Best for Trades', text: "G'day! I'm Thomas. My Australian voice is friendly, down-to-earth, and relatable. Great for local trades and dispatch." },
+  { id: 'serena', name: 'Serena', provider: 'ElevenLabs', gender: 'Female', accent: 'US Conversational', tag: 'Best for Marketing', text: "Hey! I'm Serena. I have an upbeat, natural, and highly conversational voice. Superb for marketing campaigns." }
 ];
 
 function AgentContent() {
@@ -180,8 +192,11 @@ function AgentContent() {
   const [onboardingStep, setOnboardingStep] = useState(1);
   const [customName, setCustomName] = useState('');
   const [customPrompt, setCustomPrompt] = useState('');
-  const [customVoice, setCustomVoice] = useState('11labs-josh');
+  const [customVoice, setCustomVoice] = useState('rachel');
   
+  // Voice Preview Playing state
+  const [playingVoice, setPlayingVoice] = useState<string | null>(null);
+
   // Integration Connection simulation state
   const [connectedIntegrations, setConnectedIntegrations] = useState<Record<string, boolean>>({});
   const [isConnecting, setIsConnecting] = useState<string | null>(null);
@@ -223,6 +238,66 @@ function AgentContent() {
       ]);
     }
   }, [selectedTemplate]);
+
+  // Clean up speech synthesis if component unmounts
+  useEffect(() => {
+    return () => {
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
+  const playVoicePreview = (voiceId: string, text: string, gender: string) => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) {
+      setToast({ message: 'Speech synthesis is not supported in this browser.', type: 'error' });
+      return;
+    }
+
+    if (playingVoice === voiceId) {
+      window.speechSynthesis.cancel();
+      setPlayingVoice(null);
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    setPlayingVoice(voiceId);
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    
+    // Match appropriate system voice based on gender / dialect
+    const voices = window.speechSynthesis.getVoices();
+    let selectedSysVoice = null;
+    
+    if (gender.toLowerCase() === 'female') {
+      selectedSysVoice = voices.find(v => 
+        v.name.toLowerCase().includes('google us english') || 
+        v.name.toLowerCase().includes('samantha') || 
+        v.name.toLowerCase().includes('zira') || 
+        v.name.toLowerCase().includes('female')
+      );
+    } else {
+      selectedSysVoice = voices.find(v => 
+        v.name.toLowerCase().includes('google uk english male') || 
+        v.name.toLowerCase().includes('david') || 
+        v.name.toLowerCase().includes('male')
+      );
+    }
+    
+    if (selectedSysVoice) {
+      utterance.voice = selectedSysVoice;
+    }
+    
+    utterance.onend = () => {
+      setPlayingVoice(null);
+    };
+
+    utterance.onerror = () => {
+      setPlayingVoice(null);
+    };
+
+    window.speechSynthesis.speak(utterance);
+  };
 
   const simulateConnection = (name: string) => {
     setIsConnecting(name);
@@ -358,7 +433,7 @@ function AgentContent() {
                 <span style={{ fontSize: '24px' }}>🗣️</span>
                 <div>
                   <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--stripe-navy)' }}>
-                    {selectedTemplate.voice === '11labs-josh' ? 'ElevenLabs Josh' : selectedTemplate.voice === '11labs-rachel' ? 'ElevenLabs Rachel' : 'OpenAI Nova'}
+                    {selectedTemplate.voice === 'josh' ? 'Josh (ElevenLabs)' : selectedTemplate.voice === 'rachel' ? 'Rachel (ElevenLabs)' : 'Nova (OpenAI)'}
                   </div>
                   <div style={{ fontSize: '12px', color: 'var(--stripe-muted)' }}>Professional, ultra-realistic voice model</div>
                 </div>
@@ -383,19 +458,22 @@ function AgentContent() {
           </div>
 
           {/* Action Bar */}
-          <div style={{ padding: '1.5rem 2.5rem', backgroundColor: '#f8fafc', borderTop: '1px solid var(--stripe-border)', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-            <button 
+          <div style={{ padding: '1.5rem 2.5rem', backgroundColor: '#f8fafc', borderTop: '1px solid var(--stripe-border)', display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
+            <Button 
+              type="button"
+              variant="outline"
               onClick={() => router.push('/dashboard/templates')}
-              style={{ padding: '0.6rem 1.25rem', border: '1px solid var(--stripe-border)', borderRadius: '6px', fontSize: '13px', color: 'var(--stripe-navy)', backgroundColor: '#fff', cursor: 'pointer', fontWeight: 500 }}
             >
               Cancel
-            </button>
-            <button 
+            </Button>
+            <Button 
+              type="button"
+              variant="primary"
+              style={{ backgroundColor: '#533afd', color: '#fff' }}
               onClick={() => router.push(`/dashboard/ai-agent?template=${selectedTemplate.id}`)}
-              style={{ padding: '0.6rem 1.75rem', border: 'none', borderRadius: '6px', fontSize: '13px', color: '#fff', backgroundColor: 'var(--stripe-purple)', cursor: 'pointer', fontWeight: 600, boxShadow: 'var(--stripe-shadow-action)' }}
             >
               Hire Agent Now →
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -408,26 +486,26 @@ function AgentContent() {
       <div style={{ maxWidth: '800px', margin: '2rem auto', width: '100%' }}>
         {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
         
-        {/* Wizard Header Progress Bar */}
+        {/* Wizard Progress Header */}
         <div style={{ backgroundColor: '#fff', border: '1px solid var(--stripe-border)', borderRadius: '12px', padding: '1.5rem 2rem', boxShadow: 'var(--stripe-shadow-ambient)', marginBottom: '2rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
             <div>
               <h2 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--stripe-navy)', margin: '0 0 0.25rem 0' }}>Hiring {selectedTemplate.name}</h2>
               <p style={{ color: 'var(--stripe-muted)', fontSize: '12px', margin: 0 }}>Configure and deploy your new AI employee live.</p>
             </div>
-            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--stripe-purple)' }}>
+            <div style={{ fontSize: '13px', fontWeight: 600, color: '#533afd' }}>
               Step {onboardingStep} of 3
             </div>
           </div>
           
           <div style={{ height: '6px', backgroundColor: '#e2e8f0', borderRadius: '3px', position: 'relative' }}>
-            <div style={{ height: '100%', width: `${(onboardingStep / 3) * 100}%`, backgroundColor: 'var(--stripe-purple)', borderRadius: '3px', transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }} />
+            <div style={{ height: '100%', width: `${(onboardingStep / 3) * 100}%`, backgroundColor: '#533afd', borderRadius: '3px', transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }} />
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 500, color: 'var(--stripe-muted)', marginTop: '0.75rem' }}>
-            <span style={{ color: onboardingStep >= 1 ? 'var(--stripe-purple)' : 'inherit', fontWeight: onboardingStep >= 1 ? 600 : 500 }}>1. Brain & Identity</span>
-            <span style={{ color: onboardingStep >= 2 ? 'var(--stripe-purple)' : 'inherit', fontWeight: onboardingStep >= 2 ? 600 : 500 }}>2. Connect Workflows</span>
-            <span style={{ color: onboardingStep >= 3 ? 'var(--stripe-purple)' : 'inherit', fontWeight: onboardingStep >= 3 ? 600 : 500 }}>3. Go Live 🚀</span>
+            <span style={{ color: onboardingStep >= 1 ? '#533afd' : 'inherit', fontWeight: onboardingStep >= 1 ? 600 : 500 }}>1. Brain & Identity</span>
+            <span style={{ color: onboardingStep >= 2 ? '#533afd' : 'inherit', fontWeight: onboardingStep >= 2 ? 600 : 500 }}>2. Connect Workflows</span>
+            <span style={{ color: onboardingStep >= 3 ? '#533afd' : 'inherit', fontWeight: onboardingStep >= 3 ? 600 : 500 }}>3. Go Live 🚀</span>
           </div>
         </div>
 
@@ -436,26 +514,103 @@ function AgentContent() {
           <div style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '12px', padding: '2.5rem', boxShadow: 'var(--stripe-shadow-ambient)' }}>
             <h3 style={{ fontSize: '15px', color: 'var(--stripe-navy)', margin: '0 0 1.5rem 0', fontWeight: 600 }}>Configure Agent Identity</h3>
             
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--stripe-label)', marginBottom: '0.5rem', fontWeight: 600 }}>Employee Name</label>
-                <input 
-                  type="text" 
-                  value={customName}
-                  onChange={(e) => setCustomName(e.target.value)}
-                  style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--stripe-border)', borderRadius: '6px', fontSize: '13px', color: 'var(--stripe-navy)', fontWeight: 500 }} 
-                />
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', fontSize: '12px', color: 'var(--stripe-label)', marginBottom: '0.5rem', fontWeight: 600 }}>Employee Name</label>
+              <input 
+                type="text" 
+                value={customName}
+                onChange={(e) => setCustomName(e.target.value)}
+                style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--stripe-border)', borderRadius: '6px', fontSize: '13px', color: 'var(--stripe-navy)', fontWeight: 500 }} 
+              />
+            </div>
+
+            {/* PREVIEWABLE VOICE LIST */}
+            <div style={{ marginBottom: '2.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                <label style={{ display: 'block', fontSize: '12px', color: 'var(--stripe-label)', fontWeight: 600 }}>Voice Profile</label>
+                <span style={{ fontSize: '11px', color: '#533afd', fontWeight: 500 }}>Select a voice & click "Preview" to listen</span>
               </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--stripe-label)', marginBottom: '0.5rem', fontWeight: 600 }}>Voice Model</label>
-                <select 
-                  value={customVoice}
-                  onChange={(e) => setCustomVoice(e.target.value)}
-                  style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--stripe-border)', borderRadius: '6px', fontSize: '13px', color: 'var(--stripe-navy)', backgroundColor: '#fff', fontWeight: 500 }}>
-                  <option value="11labs-josh">ElevenLabs - Josh (Deep, Professional)</option>
-                  <option value="11labs-rachel">ElevenLabs - Rachel (Friendly, Upbeat)</option>
-                  <option value="openai-nova">OpenAI - Nova (Warm, Welcoming)</option>
-                </select>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem', maxHeight: '320px', overflowY: 'auto', padding: '0.25rem', border: '1px solid var(--stripe-border)', borderRadius: '8px', backgroundColor: '#f9fafb' }}>
+                {voicesList.map((voice) => {
+                  const isSelected = customVoice === voice.id;
+                  const isCurrentlyPlaying = playingVoice === voice.id;
+                  return (
+                    <div 
+                      key={voice.id}
+                      onClick={() => setCustomVoice(voice.id)}
+                      style={{
+                        backgroundColor: '#ffffff',
+                        border: isSelected ? '2px solid #533afd' : '1px solid var(--stripe-border)',
+                        borderRadius: '8px',
+                        padding: '1rem',
+                        cursor: 'pointer',
+                        position: 'relative',
+                        transition: 'all 0.15s ease-in-out',
+                        boxShadow: isSelected ? '0 4px 12px rgba(83,58,253,0.1)' : 'none'
+                      }}
+                    >
+                      {/* Selected indicator checkmark */}
+                      {isSelected && (
+                        <div style={{ position: 'absolute', top: '8px', right: '8px', width: '16px', height: '16px', borderRadius: '50%', backgroundColor: '#533afd', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold' }}>
+                          ✓
+                        </div>
+                      )}
+                      
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--stripe-navy)' }}>{voice.name}</span>
+                        <span style={{ fontSize: '10px', color: '#64748b', backgroundColor: '#f1f5f9', padding: '2px 6px', borderRadius: '4px', textTransform: 'capitalize' }}>
+                          {voice.provider}
+                        </span>
+                      </div>
+                      
+                      <div style={{ fontSize: '10px', color: 'var(--stripe-muted)', marginBottom: '0.5rem' }}>
+                        {voice.gender} • {voice.accent}
+                      </div>
+
+                      <div style={{ fontSize: '11px', color: '#10b981', fontWeight: 500, marginBottom: '0.75rem' }}>
+                        {voice.tag}
+                      </div>
+
+                      {/* Sound Wave Animation Visualizer */}
+                      {isCurrentlyPlaying && (
+                        <div style={{ display: 'flex', gap: '3px', alignItems: 'center', justifyContent: 'center', height: '16px', marginBottom: '0.5rem' }}>
+                          <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#533afd', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate' }}></span>
+                          <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#533afd', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate 0.2s' }}></span>
+                          <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#533afd', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate 0.4s' }}></span>
+                          <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#533afd', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate 0.1s' }}></span>
+                        </div>
+                      )}
+
+                      {/* Preview Button */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevents selection toggling
+                          playVoicePreview(voice.id, voice.text, voice.gender);
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '0.4rem',
+                          borderRadius: '4px',
+                          border: '1px solid #e2e8f0',
+                          backgroundColor: isCurrentlyPlaying ? '#fef2f2' : '#f8fafc',
+                          color: isCurrentlyPlaying ? '#ef4444' : 'var(--stripe-navy)',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          textAlign: 'center',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '0.25rem'
+                        }}
+                      >
+                        {isCurrentlyPlaying ? '⏹️ Stop' : '🔊 Preview'}
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -464,23 +619,27 @@ function AgentContent() {
               <textarea 
                 value={customPrompt}
                 onChange={(e) => setCustomPrompt(e.target.value)}
-                style={{ width: '100%', height: '220px', padding: '0.75rem', border: '1px solid var(--stripe-border)', borderRadius: '6px', fontSize: '13px', color: 'var(--stripe-navy)', outline: 'none', resize: 'vertical', lineHeight: 1.5 }}
+                style={{ width: '100%', height: '160px', padding: '0.75rem', border: '1px solid var(--stripe-border)', borderRadius: '6px', fontSize: '13px', color: 'var(--stripe-navy)', outline: 'none', resize: 'vertical', lineHeight: 1.5 }}
               />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', borderTop: '1px solid var(--stripe-border)', paddingTop: '1.5rem' }}>
-              <button 
+            {/* ACTION BUTTONS (FIXED LAYOUT) */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--stripe-border)', paddingTop: '1.5rem', marginTop: '1.5rem' }}>
+              <Button 
+                type="button"
+                variant="outline"
                 onClick={() => router.push('/dashboard/templates')}
-                style={{ padding: '0.6rem 1.25rem', border: '1px solid var(--stripe-border)', borderRadius: '6px', fontSize: '13px', color: 'var(--stripe-navy)', backgroundColor: '#fff', cursor: 'pointer', fontWeight: 500 }}
               >
                 Cancel
-              </button>
-              <button 
+              </Button>
+              <Button 
+                type="button"
+                variant="primary"
+                style={{ backgroundColor: '#533afd', color: '#fff' }}
                 onClick={() => setOnboardingStep(2)}
-                style={{ padding: '0.6rem 1.75rem', border: 'none', borderRadius: '6px', fontSize: '13px', color: '#fff', backgroundColor: 'var(--stripe-purple)', cursor: 'pointer', fontWeight: 600 }}
               >
                 Next: Connect Workflows →
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -514,8 +673,8 @@ function AgentContent() {
                       style={{
                         padding: '0.5rem 1.25rem',
                         borderRadius: '6px',
-                        border: connected ? '1px solid #10b981' : '1px solid var(--stripe-purple)',
-                        backgroundColor: connected ? 'transparent' : 'var(--stripe-purple)',
+                        border: connected ? '1px solid #10b981' : '1px solid #533afd',
+                        backgroundColor: connected ? 'transparent' : '#533afd',
                         color: connected ? '#10b981' : '#ffffff',
                         fontSize: '12px',
                         fontWeight: 600,
@@ -533,18 +692,21 @@ function AgentContent() {
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--stripe-border)', paddingTop: '1.5rem' }}>
-              <button 
+              <Button 
+                type="button"
+                variant="outline"
                 onClick={() => setOnboardingStep(1)}
-                style={{ padding: '0.6rem 1.25rem', border: '1px solid var(--stripe-border)', borderRadius: '6px', fontSize: '13px', color: 'var(--stripe-navy)', backgroundColor: '#fff', cursor: 'pointer', fontWeight: 500 }}
               >
                 Back
-              </button>
-              <button 
+              </Button>
+              <Button 
+                type="button"
+                variant="primary"
+                style={{ backgroundColor: '#533afd', color: '#fff' }}
                 onClick={() => setOnboardingStep(3)}
-                style={{ padding: '0.6rem 1.75rem', border: 'none', borderRadius: '6px', fontSize: '13px', color: '#fff', backgroundColor: 'var(--stripe-purple)', cursor: 'pointer', fontWeight: 600 }}
               >
                 Next: Review & Go Live →
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -566,7 +728,7 @@ function AgentContent() {
                   <div>
                     <span style={{ fontSize: '11px', color: 'var(--stripe-muted)' }}>Voice Profile</span>
                     <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--stripe-navy)' }}>
-                      {customVoice === '11labs-josh' ? 'Josh (ElevenLabs)' : customVoice === '11labs-rachel' ? 'Rachel (ElevenLabs)' : 'Nova (OpenAI)'}
+                      {voicesList.find(v => v.id === customVoice)?.name || 'Rachel'} ({voicesList.find(v => v.id === customVoice)?.provider || 'ElevenLabs'})
                     </div>
                   </div>
                   <div>
@@ -595,7 +757,7 @@ function AgentContent() {
                         key={i} 
                         style={{
                           alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-                          backgroundColor: msg.sender === 'user' ? 'var(--stripe-purple)' : '#ffffff',
+                          backgroundColor: msg.sender === 'user' ? '#533afd' : '#ffffff',
                           color: msg.sender === 'user' ? '#ffffff' : 'var(--stripe-navy)',
                           padding: '0.5rem 0.85rem',
                           borderRadius: '8px',
@@ -623,7 +785,7 @@ function AgentContent() {
                       onChange={(e) => setChatInput(e.target.value)}
                       style={{ flex: 1, padding: '0.6rem', fontSize: '12px', border: 'none', outline: 'none' }}
                     />
-                    <button type="submit" style={{ padding: '0 1rem', backgroundColor: 'transparent', border: 'none', color: 'var(--stripe-purple)', fontWeight: 600, fontSize: '12px', cursor: 'pointer' }}>
+                    <button type="submit" style={{ padding: '0 1rem', backgroundColor: 'transparent', border: 'none', color: '#533afd', fontWeight: 600, fontSize: '12px', cursor: 'pointer' }}>
                       Send
                     </button>
                   </form>
@@ -632,33 +794,34 @@ function AgentContent() {
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--stripe-border)', paddingTop: '1.5rem' }}>
-              <button 
+              <Button 
+                type="button"
+                variant="outline"
                 onClick={() => setOnboardingStep(2)}
-                style={{ padding: '0.6rem 1.25rem', border: '1px solid var(--stripe-border)', borderRadius: '6px', fontSize: '13px', color: 'var(--stripe-navy)', backgroundColor: '#fff', cursor: 'pointer', fontWeight: 500 }}
               >
                 Back
-              </button>
+              </Button>
               
-              <button 
+              <Button 
+                type="button"
+                variant="primary"
+                style={{ backgroundColor: '#10b981', color: '#fff', boxShadow: '0 4px 12px rgba(16,185,129,0.2)' }}
                 onClick={handleGoLive}
                 disabled={isCreating}
-                style={{ 
-                  padding: '0.65rem 2rem', 
-                  border: 'none', 
-                  borderRadius: '6px', 
-                  fontSize: '14px', 
-                  color: '#fff', 
-                  backgroundColor: '#10b981', 
-                  cursor: isCreating ? 'wait' : 'pointer', 
-                  fontWeight: 600,
-                  boxShadow: '0 4px 12px rgba(16,185,129,0.2)'
-                }}
               >
                 {isCreating ? 'Deploying...' : 'Go Live 🚀'}
-              </button>
+              </Button>
             </div>
           </div>
         )}
+
+        {/* Global Sound Wave Animation Style */}
+        <style jsx global>{`
+          @keyframes bounce {
+            0% { transform: scaleY(0.2); }
+            100% { transform: scaleY(1); }
+          }
+        `}</style>
       </div>
     );
   }
@@ -677,7 +840,7 @@ function AgentContent() {
           onClick={handleCreateAgent} 
           disabled={isCreating}
           style={{ 
-            backgroundColor: 'var(--stripe-purple)', 
+            backgroundColor: '#533afd', 
             color: '#ffffff', 
             border: 'none', 
             borderRadius: '4px', 
@@ -729,7 +892,7 @@ function AgentContent() {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(83,58,253,0.1)', color: 'var(--stripe-purple)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(83,58,253,0.1)', color: '#533afd', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
                   🤖
                 </div>
                 <div>
