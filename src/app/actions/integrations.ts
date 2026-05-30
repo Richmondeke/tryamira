@@ -37,10 +37,11 @@ export async function getComposioApps() {
   const isKeyEmpty = !apiKey || 
                      apiKey === 'undefined' || 
                      apiKey === 'null' || 
-                     apiKey.trim() === '';
+                     apiKey.trim() === '' ||
+                     apiKey.length < 30; // Composio keys are always 40+ chars
 
   if (isKeyEmpty) {
-    // Return gorgeous library of top Composio integrations
+    console.warn('COMPOSIO_API_KEY not set or appears truncated — using mock integrations.');
     return {
       success: true,
       data: MOCK_INTEGRATIONS
@@ -48,27 +49,25 @@ export async function getComposioApps() {
   }
 
   try {
-    const res = await fetch('https://backend.composio.dev/api/v1/apps', {
-      headers: {
-        'x-api-key': apiKey
-      }
-    });
+    // Use @composio/core SDK which handles API versioning automatically
+    const { Composio } = await import('@composio/core');
+    const composio = new Composio({ apiKey });
+
+    // Fetch all available toolkits/apps from Composio
+    const toolkits = await composio.toolkits.list({});
     
-    if (!res.ok) throw new Error('Failed to fetch from Composio API');
-    const json = await res.json();
-    
-    // Map Composio apps directly
-    const apps = (json.apps || []).map((app: any) => ({
-      id: app.key || app.name.toLowerCase(),
-      name: app.name,
+    const apps = (toolkits?.items || []).map((app: any) => ({
+      id: app.slug || app.name?.toLowerCase().replace(/\s+/g, '-') || app.key,
+      name: app.name || app.displayName,
       desc: app.description || `Connect Amira with your ${app.name} account via Composio.`,
-      icon: app.logo || '🧩',
+      icon: app.logo || app.logoUrl || '🧩',
       type: 'oauth'
-    }));
+    })).filter((a: any) => a.id && a.name);
     
-    return { success: true, data: apps };
+    console.log(`✅ Composio: loaded ${apps.length} live integrations`);
+    return { success: true, data: apps.length > 0 ? apps : MOCK_INTEGRATIONS };
   } catch (err: any) {
-    console.error('Error fetching Composio apps, falling back to mock list:', err);
+    console.error('Error fetching Composio apps, falling back to mock list:', err?.message || err);
     return { success: true, data: MOCK_INTEGRATIONS };
   }
 }
