@@ -30,13 +30,19 @@ export default function Page() {
     }
     
     async function loadForms() {
-      const res = await getForms();
-      if (res.success && res.data) {
-        setForms(res.data);
-      } else {
-        setToast('Failed to fetch forms from database.');
+      try {
+        const res = await getForms();
+        if (res.success && res.data) {
+          setForms(res.data);
+        } else {
+          setToast('Failed to fetch forms from database.');
+        }
+      } catch (err) {
+        console.error('loadForms client exception:', err);
+        setToast('Database exception occurred. Fallback in play.');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
     loadForms();
   }, []);
@@ -47,14 +53,19 @@ export default function Page() {
     const name = formData.get('name') as string;
     
     setLoading(true);
-    const res = await createForm(name);
-    setLoading(false);
-    
-    if (res.success && res.data) {
-      setShowModal(false);
-      router.push(`/dashboard/forms/${res.data.id}`);
-    } else {
-      setToast('Failed to create form in live database.');
+    try {
+      const res = await createForm(name);
+      if (res.success && res.data) {
+        setShowModal(false);
+        router.push(`/dashboard/forms/${res.data.id}`);
+      } else {
+        setToast('Failed to create form in live database.');
+      }
+    } catch (err) {
+      console.error('handleCreateForm client exception:', err);
+      setToast('Failed to connect to form service.');
+    } finally {
+      setLoading(false);
     }
   };
 
