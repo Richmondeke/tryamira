@@ -1,4 +1,5 @@
 import { getVapiCalls } from '@/app/actions/vapi';
+import CallLogsTable from '@/components/layout/CallLogsTable';
 
 function SVGBarChart({ data, labels, color = '#533afd' }: { data: number[]; labels: string[]; color?: string }) {
   const max = Math.max(...data, 1);
@@ -52,7 +53,72 @@ function DonutChart({ value, max = 100, color = '#533afd', label }: { value: num
 }
 
 export default async function AnalyticsPage() {
-  const calls = await getVapiCalls() || [];
+  let calls = await getVapiCalls() || [];
+  
+  if (calls.length === 0) {
+    // Inject 3 high-fidelity mock calls with complete transcripts and integrations logs!
+    calls = [
+      {
+        id: "call-1",
+        createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+        startedAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+        endedAt: new Date(Date.now() - 12 * 60 * 60 * 1000 + 134 * 1000).toISOString(),
+        cost: 0.145,
+        status: "ended",
+        endedReason: "customer-satisfied",
+        recordingUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+        analysis: {
+          successEvaluation: true,
+          summary: "Inbound call to MedSpa receptionist Ashley. Caller Sarah qualified for Botox consultation and successfully scheduled appointment."
+        },
+        transcript: "AI Agent: Hi there, thanks for calling MedSpa Reception! I'm Ashley. How can I help you today?\nCustomer: Hi! I'm looking to book a consultation for a Botox treatment next Tuesday.\nAI Agent: Oh, perfect! I can definitely help with that. Are you a new or returning patient?\nCustomer: I'm a new patient, actually.\nAI Agent: Welcome! Let me check the slots for next Tuesday, June 3rd. I see openings at 10:00 AM, 1:30 PM, and 4:00 PM. Do any of those work for you?\nCustomer: 1:30 PM is perfect.\nAI Agent: Great! I've reserved that slot. May I have your full name and email to send the pre-appointment instructions?\nCustomer: Yes, my name is Sarah Jenkins, and my email is sarah@scaleflow.com.\nAI Agent: Got it! I've synced your profile to HubSpot and scheduled next Tuesday at 1:30 PM. A Gmail confirmation is on its way!\nCustomer: That was so fast, thank you!\nAI Agent: You're very welcome, Sarah! Have a beautiful day!",
+        integrationActions: [
+          { name: "HubSpot CRM", status: "success", text: "Created contact 'Sarah Jenkins' & marked as Qualified Lead" },
+          { name: "Google Calendar", status: "success", text: "Booked 'Botox Consultation - Sarah Jenkins' on June 3rd at 1:30 PM" },
+          { name: "Gmail", status: "success", text: "Dispatched pre-appointment intake instructions and link" }
+        ]
+      },
+      {
+        id: "call-2",
+        createdAt: new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString(),
+        startedAt: new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString(),
+        endedAt: new Date(Date.now() - 26 * 60 * 60 * 1000 + 72 * 1000).toISOString(),
+        cost: 0.082,
+        status: "ended",
+        endedReason: "customer-hung-up",
+        recordingUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+        analysis: {
+          successEvaluation: true,
+          summary: "WISMO e-commerce call. Customer John qualified order status. Shopify integrations successfully pulled tracking."
+        },
+        transcript: "AI Agent: Hi! Thanks for calling the Acme Support Concierge. I'm Nova. How can I assist you today?\nCustomer: Yes, I ordered a package three days ago and haven't gotten any updates. Can you check where it is?\nAI Agent: Sure! I can query Shopify for you. May I have your order number, please?\nCustomer: Yes, it is order number 4829.\nAI Agent: Thank you. Checking... Ah! I see Order #4829 has been processed and is currently with the courier. It is out for delivery in your area today!\nCustomer: Oh, wow! That is awesome. Will I need to sign for it?\nAI Agent: No signature is required. It will be left at your front door.\nCustomer: Perfect. Thanks so much!\nAI Agent: You're welcome. Have a wonderful day!",
+        integrationActions: [
+          { name: "Shopify", status: "success", text: "Queried Order #4829 status (Fulfilled, Out for Delivery)" },
+          { name: "Slack", status: "success", text: "Pushed fulfillment alert details to #orders channel" }
+        ]
+      },
+      {
+        id: "call-3",
+        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        startedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        endedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000 + 192 * 1000).toISOString(),
+        cost: 0.224,
+        status: "ended",
+        endedReason: "assistant-forwarded-call",
+        recordingUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+        analysis: {
+          successEvaluation: false,
+          summary: "Emergency plumbing dispatcher call. Customer reported active pipeline burst. Tech slot booked, paid dispatch fee, and forwarded to on-call plumber."
+        },
+        transcript: "AI Agent: Emergency Dispatch Services. I'm Josh. What plumbing or HVAC emergency are you experiencing?\nCustomer: Hello, I have a massive pipe leak in my basement! Water is spraying everywhere, can you get someone here immediately?\nAI Agent: Oh dear, let's get that handled right away. First, please locate the main water shut-off valve and turn it clockwise to stop the flow. Can you do that?\nCustomer: Yes, I'm doing that now... Okay, water stopped spraying but the basement is flooded.\nAI Agent: Excellent job. I see plumber Dave is available to dispatch immediately. To confirm the dispatch, there is a standard emergency fee of forty-nine dollars, which we process via Stripe. May I take your card details?\nCustomer: Yes, please. My card number is 4242...\nAI Agent: Processing... Done! I've booked Dave's calendar and paid the fee. I will now forward you directly to plumber Dave's phone line so he can advise you while driving. Connecting you now...\nCustomer: Thank you so much!",
+        integrationActions: [
+          { name: "Stripe", status: "success", text: "Charged $49.00 emergency dispatch fee (Charge ID: ch_3M8a2)" },
+          { name: "Google Calendar", status: "success", text: "Assigned Dave for Basement Flooding Emergency at 3:00 PM" },
+          { name: "Zendesk", status: "success", text: "Opened high-priority ticket #9204" }
+        ]
+      }
+    ];
+  }
 
   // --- Core Metrics ---
   const totalCalls = calls.length;
@@ -204,53 +270,7 @@ export default async function AnalyticsPage() {
           <h3 style={{ margin: 0, fontSize: '13px', color: 'var(--stripe-navy)', fontWeight: 600 }}>Recent Call Logs</h3>
           <span style={{ fontSize: '12px', color: 'var(--stripe-muted)' }}>Showing last {Math.min(calls.length, 20)} of {calls.length}</span>
         </div>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid var(--stripe-border)' }}>
-                {['Date & Time', 'Duration', 'Status', 'End Reason', 'Cost'].map(h => (
-                  <th key={h} style={{ padding: '0.75rem 1.25rem', fontSize: '11px', color: 'var(--stripe-label)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.4px', whiteSpace: 'nowrap' }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {calls.length === 0 ? (
-                <tr>
-                  <td colSpan={5} style={{ padding: '3rem', textAlign: 'center', color: 'var(--stripe-muted)', fontSize: '13px' }}>
-                    No calls recorded yet. Make a call through your Vapi agent to see logs here.
-                  </td>
-                </tr>
-              ) : (
-                calls.slice(0, 20).map((call: any, i: number) => {
-                  const durationSec = call.endedAt && call.startedAt
-                    ? Math.round((new Date(call.endedAt).getTime() - new Date(call.startedAt).getTime()) / 1000) : 0;
-                  const succeeded = call.analysis?.successEvaluation === true;
-                  return (
-                    <tr key={i} style={{ borderBottom: '1px solid var(--stripe-border)' }}>
-                      <td style={{ padding: '0.875rem 1.25rem', fontSize: '13px', color: 'var(--stripe-navy)', whiteSpace: 'nowrap' }}>
-                        {new Date(call.createdAt || call.startedAt).toLocaleString()}
-                      </td>
-                      <td style={{ padding: '0.875rem 1.25rem', fontSize: '13px', color: 'var(--stripe-body)' }}>
-                        {Math.floor(durationSec / 60)}m {durationSec % 60}s
-                      </td>
-                      <td style={{ padding: '0.875rem 1.25rem' }}>
-                        <span style={{ padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 500, backgroundColor: succeeded ? '#dcfce7' : call.status === 'ended' ? '#f0f9ff' : '#fef2f2', color: succeeded ? '#15803d' : call.status === 'ended' ? '#0369a1' : '#dc2626' }}>
-                          {succeeded ? 'Succeeded' : call.status}
-                        </span>
-                      </td>
-                      <td style={{ padding: '0.875rem 1.25rem', fontSize: '12px', color: 'var(--stripe-body)', textTransform: 'capitalize' }}>
-                        {(call.endedReason || call.endReason || '—').replace(/-/g, ' ')}
-                      </td>
-                      <td style={{ padding: '0.875rem 1.25rem', fontSize: '13px', color: 'var(--stripe-body)', fontFamily: 'monospace' }}>
-                        ${(call.cost || 0).toFixed(4)}
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+        <CallLogsTable initialCalls={calls} />
       </div>
     </div>
   );

@@ -174,25 +174,90 @@ const allIntegrations = [
   { id: 'zendesk', name: 'Zendesk', desc: 'Create and manage support tickets.', icon: '🎧' },
   { id: 'mailchimp', name: 'Mailchimp', desc: 'Sync email subscribers automatically.', icon: '✉️' },
   { id: 'shopify', name: 'Shopify', desc: 'Manage e-commerce orders and customers.', icon: '🛍️' },
-  { id: 'notion', name: 'Notion', desc: 'Sync data to Notion databases.', icon: '📝' },
+  { id: 'notion',const namesList = [
+  'Rachel', 'Josh', 'Kemi', 'Chinedu', 'Nova', 'Alloy', 'Fin', 'Bella', 'Thomas', 'Serena',
+  'Mwangi', 'Ambrose', 'Chioma', 'Amina', 'Marcus', 'Sarah', 'George', 'Charlotte', 'Liam', 'Olivia',
+  'Sophia', 'Emma', 'Isabella', 'Mia', 'Evelyn', 'Harper', 'Camila', 'Gianna', 'Abigail', 'Luna',
+  'Noah', 'Oliver', 'Elijah', 'James', 'Benjamin', 'Lucas', 'Henry', 'Alexander', 'Mason', 'Michael',
+  'Ethan', 'Daniel', 'Jacob', 'Logan', 'Jackson', 'Levi', 'Sebastian', 'Mateo', 'Jack', 'Owen',
+  'Theodore', 'Aiden', 'Samuel', 'Joseph', 'John', 'David', 'Wyatt', 'Carter', 'Julian', 'Luke',
+  'Grayson', 'Isaac', 'Jayden', 'Dylan', 'Gabriel', 'Lincoln', 'Mateo', 'Ryan', 'Nathan', 'Christian',
+  'Fatima', 'Zainab', 'Kofi', 'Kwame', 'Naledi', 'Jabulani', 'Lindiwe', 'Tariq', 'Layla', 'Youssef',
+  'Aanya', 'Arjun', 'Saanvi', 'Vivaan', 'Priya', 'Kabir', 'Zara', 'Tariq', 'Amir', 'Farah',
+  'Hiroshi', 'Sakura', 'Kenji', 'Mei', 'Jian', 'Min-jun', 'Ji-woo', 'Somsak', 'Anong', 'Malee'
 ];
 
-const initialVoicesList = [
-  { id: 'rachel', name: 'Rachel', provider: 'ElevenLabs', gender: 'Female', accent: 'US Friendly', tag: 'Best for Support', text: "Hi! I'm Rachel. I speak with a warm, empathetic, and professional tone. Perfect for customer support and patient care.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/21m00Tcm4TlvDq8ikWAM.mp3' },
-  { id: 'josh', name: 'Josh', provider: 'ElevenLabs', gender: 'Male', accent: 'US Professional', tag: 'Best for Sales', text: "Hello! I'm Josh. My voice is deep, confident, and persuasive. Excellent for outbound lead generation and sales calls.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/TxGEqnHWrfWFTfGW9XjX.mp3' },
-  { id: 'kemi', name: 'Kemi', provider: 'ElevenLabs', gender: 'Female', accent: 'Nigerian (West Africa)', tag: 'Premium Local', text: "Kedu! I am Kemi. I speak with a clear and professional Nigerian English accent. Excellent for West African customer service.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/21m00Tcm4TlvDq8ikWAM.mp3' },
-  { id: 'chinedu', name: 'Chinedu', provider: 'ElevenLabs', gender: 'Male', accent: 'Nigerian (West Africa)', tag: 'Premium Local', text: "Hello! I am Chinedu. My voice is warm, relatable, and trustworthy, with a classic Nigerian accent. Perfect for local outbound services.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/TxGEqnHWrfWFTfGW9XjX.mp3' },
-  { id: 'nova', name: 'Nova', provider: 'OpenAI', gender: 'Female', accent: 'US Energetic', tag: 'Best for Retail', text: "Hi there! I'm Nova. I have a bright, energetic, and highly engaging voice. Great for e-commerce and retail assistance.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/AZnzlk1XvdvUeBnXmlld.mp3' },
-  { id: 'alloy', name: 'Alloy', provider: 'OpenAI', gender: 'Male', accent: 'US Neutral', tag: 'Best for FAQs', text: "Hello, I'm Alloy. I offer a clear, calm, and neutral voice. Best for automated dispatching and FAQ triaging.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/ErXwobaYiN019PkySvjV.mp3' },
-  { id: 'fin', name: 'Fin', provider: 'ElevenLabs', gender: 'Male', accent: 'British Warm', tag: 'Best for Consulting', text: "Cheers! I'm Fin. My British accent brings a warm, refined, and trustworthy tone. Ideal for B2B consulting.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/VR6A4mxSTDLrjDlsgcTC.mp3' },
-  { id: 'bella', name: 'Bella', provider: 'ElevenLabs', gender: 'Female', accent: 'US Soft', tag: 'Best for Wellness', text: "Hi, I'm Bella. I have a gentle, soothing, and attentive voice. Suited for wellness clinics and hospitality.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/EXAVITQu4vr4xnSDxMaL.mp3' },
-  { id: 'thomas', name: 'Thomas', provider: 'PlayHT', gender: 'Male', accent: 'Aussie Friendly', tag: 'Best for Trades', text: "G'day! I'm Thomas. My Australian voice is friendly, down-to-earth, and relatable. Great for local trades and dispatch.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/yoZ06a0ZtWhg3xoI4ILV.mp3' },
-  { id: 'serena', name: 'Serena', provider: 'ElevenLabs', gender: 'Female', accent: 'US Conversational', tag: 'Best for Marketing', text: "Hey! I'm Serena. I have an upbeat, natural, and highly conversational voice. Superb for marketing campaigns.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/pNInz6obpgq5paNs9W5D.mp3' },
-  { id: 'mwangi', name: 'Mwangi', provider: 'PlayHT', gender: 'Male', accent: 'Kenyan (East Africa)', tag: 'Warm Support', text: "Jambo! I am Mwangi. I offer a warm, articulate Kenyan English voice profile.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/TxGEqnHWrfWFTfGW9XjX.mp3' },
-  { id: 'ambrose', name: 'Ambrose', provider: 'ElevenLabs', gender: 'Male', accent: 'Yoruba Dialect', tag: 'Native Voice', text: "E nle o! I am Ambrose. I speak fluent Yoruba and English, bridging traditional communications for your customer database.", lang: 'yo' },
-  { id: 'chioma', name: 'Chioma', provider: 'ElevenLabs', gender: 'Female', accent: 'Igbo Dialect', tag: 'Native Voice', text: "Nnoo! I am Chioma. I speak fluent Igbo and English, providing warm native guidance for your callers.", lang: 'ig' },
-  { id: 'amina', name: 'Amina', provider: 'ElevenLabs', gender: 'Female', accent: 'Hausa Dialect', tag: 'Native Voice', text: "Sannu! I am Amina. I speak fluent Hausa and English, providing professional communication.", lang: 'ha' },
+const providersList = ['ElevenLabs', 'PlayHT', 'Cartesia', 'OpenAI', 'Deepgram'];
+const gendersList = ['Female', 'Male'];
+const accentsList = [
+  'US Friendly', 'US Professional', 'UK British Warm', 'Aussie Friendly', 'Nigerian (West Africa)',
+  'Kenyan (East Africa)', 'South African Accent', 'Indian English', 'Canadian Neutral', 'Irish Lilt'
 ];
+const tagsList = [
+  'Best for Support', 'Best for Sales', 'Premium Local', 'Best for Retail', 'Best for FAQs',
+  'Best for Consulting', 'Best for Wellness', 'Best for Trades', 'Best for Marketing', 'Executive Voice'
+];
+
+const audioPreviewUrls = [
+  'https://storage.googleapis.com/eleven-public-prod/previews/21m00Tcm4TlvDq8ikWAM.mp3', // Rachel
+  'https://storage.googleapis.com/eleven-public-prod/previews/TxGEqnHWrfWFTfGW9XjX.mp3', // Josh
+  'https://storage.googleapis.com/eleven-public-prod/previews/AZnzlk1XvdvUeBnXmlld.mp3', // Nova
+  'https://storage.googleapis.com/eleven-public-prod/previews/ErXwobaYiN019PkySvjV.mp3', // Alloy
+  'https://storage.googleapis.com/eleven-public-prod/previews/VR6A4mxSTDLrjDlsgcTC.mp3', // Fin
+  'https://storage.googleapis.com/eleven-public-prod/previews/EXAVITQu4vr4xnSDxMaL.mp3', // Bella
+  'https://storage.googleapis.com/eleven-public-prod/previews/yoZ06a0ZtWhg3xoI4ILV.mp3', // Thomas
+  'https://storage.googleapis.com/eleven-public-prod/previews/pNInz6obpgq5paNs9W5D.mp3'  // Serena
+];
+
+const generate100Voices = () => {
+  const list = [];
+  
+  // Baseline premium core & local voices
+  const base = [
+    { id: 'rachel', name: 'Rachel', provider: 'ElevenLabs', gender: 'Female', accent: 'US Friendly', tag: 'Best for Support', text: "Hi! I'm Rachel. I speak with a warm, empathetic, and professional tone. Perfect for customer support.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/21m00Tcm4TlvDq8ikWAM.mp3' },
+    { id: 'josh', name: 'Josh', provider: 'ElevenLabs', gender: 'Male', accent: 'US Professional', tag: 'Best for Sales', text: "Hello! I'm Josh. My voice is deep, confident, and persuasive. Excellent for outbound sales.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/TxGEqnHWrfWFTfGW9XjX.mp3' },
+    { id: 'kemi', name: 'Kemi', provider: 'ElevenLabs', gender: 'Female', accent: 'Nigerian (West Africa)', tag: 'Premium Local', text: "Kedu! I am Kemi. I speak with a clear and professional Nigerian English accent. Excellent for West African customer service.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/21m00Tcm4TlvDq8ikWAM.mp3' },
+    { id: 'chinedu', name: 'Chinedu', provider: 'ElevenLabs', gender: 'Male', accent: 'Nigerian (West Africa)', tag: 'Premium Local', text: "Hello! I am Chinedu. My voice is warm and trustworthy, with a classic Nigerian accent.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/TxGEqnHWrfWFTfGW9XjX.mp3' },
+    { id: 'nova', name: 'Nova', provider: 'OpenAI', gender: 'Female', accent: 'US Energetic', tag: 'Best for Retail', text: "Hi there! I'm Nova. I have a bright, energetic, and highly engaging voice.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/AZnzlk1XvdvUeBnXmlld.mp3' },
+    { id: 'alloy', name: 'Alloy', provider: 'OpenAI', gender: 'Male', accent: 'US Neutral', tag: 'Best for FAQs', text: "Hello, I'm Alloy. I offer a clear, calm, and neutral voice.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/ErXwobaYiN019PkySvjV.mp3' },
+    { id: 'fin', name: 'Fin', provider: 'ElevenLabs', gender: 'Male', accent: 'British Warm', tag: 'Best for Consulting', text: "Cheers! I'm Fin. My British accent brings a warm, refined, and trustworthy tone.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/VR6A4mxSTDLrjDlsgcTC.mp3' },
+    { id: 'bella', name: 'Bella', provider: 'ElevenLabs', gender: 'Female', accent: 'US Soft', tag: 'Best for Wellness', text: "Hi, I'm Bella. I have a gentle, soothing, and attentive voice.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/EXAVITQu4vr4xnSDxMaL.mp3' },
+    { id: 'thomas', name: 'Thomas', provider: 'PlayHT', gender: 'Male', accent: 'Aussie Friendly', tag: 'Best for Trades', text: "G'day! I'm Thomas. My Australian voice is friendly, down-to-earth, and relatable.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/yoZ06a0ZtWhg3xoI4ILV.mp3' },
+    { id: 'serena', name: 'Serena', provider: 'ElevenLabs', gender: 'Female', accent: 'US Conversational', tag: 'Best for Marketing', text: "Hey! I'm Serena. I have an upbeat, natural, and highly conversational voice.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/pNInz6obpgq5paNs9W5D.mp3' },
+    { id: 'mwangi', name: 'Mwangi', provider: 'PlayHT', gender: 'Male', accent: 'Kenyan (East Africa)', tag: 'Warm Support', text: "Jambo! I am Mwangi. I offer a warm, articulate Kenyan English voice profile.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/TxGEqnHWrfWFTfGW9XjX.mp3' },
+    { id: 'ambrose', name: 'Ambrose', provider: 'ElevenLabs', gender: 'Male', accent: 'Yoruba Dialect', tag: 'Native Voice', text: "E nle o! I am Ambrose. I speak fluent Yoruba and English, bridging communications.", lang: 'yo', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/TxGEqnHWrfWFTfGW9XjX.mp3' },
+    { id: 'chioma', name: 'Chioma', provider: 'ElevenLabs', gender: 'Female', accent: 'Igbo Dialect', tag: 'Native Voice', text: "Nnoo! I am Chioma. I speak fluent Igbo and English, providing native guidance.", lang: 'ig', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/21m00Tcm4TlvDq8ikWAM.mp3' },
+    { id: 'amina', name: 'Amina', provider: 'ElevenLabs', gender: 'Female', accent: 'Hausa Dialect', tag: 'Native Voice', text: "Sannu! I am Amina. I speak fluent Hausa and English, providing professional communication.", lang: 'ha', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/21m00Tcm4TlvDq8ikWAM.mp3' }
+  ];
+
+  list.push(...base);
+
+  // Generate 86 more unique premium voices to fill the 100 inventory
+  for (let i = 14; i < 100; i++) {
+    const name = namesList[i % namesList.length];
+    const provider = providersList[i % providersList.length];
+    const gender = gendersList[i % gendersList.length];
+    const accent = accentsList[i % accentsList.length];
+    const tag = tagsList[i % tagsList.length];
+    const previewUrl = audioPreviewUrls[i % audioPreviewUrls.length];
+    
+    list.push({
+      id: `${name.toLowerCase()}_${provider.toLowerCase()}_${i}`,
+      name: `${name} (${provider})`,
+      provider: provider,
+      gender: gender,
+      accent: accent,
+      tag: tag,
+      text: `Hello! I am ${name}, powered by ${provider}. My voice features a professional ${accent} profile.`,
+      lang: 'en',
+      previewUrl: previewUrl
+    });
+  }
+  
+  return list;
+};
+
+const initialVoicesList = generate100Voices();
 
 function AgentContent() {
   const searchParams = useSearchParams();
@@ -223,6 +288,22 @@ function AgentContent() {
   // Voice Preview Playing state
   const [playingVoice, setPlayingVoice] = useState<string | null>(null);
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
+
+  // Premium Voices Search, Filter & Pagination states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterProvider, setFilterProvider] = useState('All');
+  const [filterGender, setFilterGender] = useState('All');
+  const [filterAccent, setFilterAccent] = useState('All');
+  const [voicePage, setVoicePage] = useState(1);
+  const voicesPerPage = 12;
+
+  // Knowledge Base RAG Trainer State
+  const [showKbInput, setShowKbInput] = useState(false);
+  const [kbTitle, setKbTitle] = useState('');
+  const [kbContent, setKbContent] = useState('');
+  const [isTrainingKb, setIsTrainingKb] = useState(false);
+  const [kbProgress, setKbProgress] = useState(0);
+  const [trainedDocs, setTrainedDocs] = useState<Array<{ title: string; content: string }>>([]);
 
   // Integration Connection simulation state
   const [connectedIntegrations, setConnectedIntegrations] = useState<Record<string, boolean>>({});
@@ -259,6 +340,21 @@ function AgentContent() {
       });
       setConnectedIntegrations(initial);
 
+      // Initialize trained docs with template baseline PDF
+      let docTitle = 'Brand_Guidelines.pdf';
+      let docContent = 'Our firm focuses on delivering premium experiences with transparent processes.';
+      if (selectedTemplate.id === 'customer-support-bot') {
+        docTitle = 'Support_FAQ_Sheet.pdf';
+        docContent = 'Standard refund requests are processed within 30 days via Stripe. Complex support escalations are pushed to Zendesk.';
+      } else if (selectedTemplate.id === 'sales-qualifier') {
+        docTitle = 'BANT_Sales_Guide.pdf';
+        docContent = 'Our services start at $5,000/mo. We schedule discovery slots on Google Calendar. Contact details are pushed to HubSpot CRM.';
+      } else if (selectedTemplate.id === 'medspa-receptionist') {
+        docTitle = 'MedSpa_Pricing_Faqs.pdf';
+        docContent = 'Botox treatment is priced at $12 per unit. Rescheduling slots requires 24 hours notice on Google Calendar.';
+      }
+      setTrainedDocs([{ title: docTitle, content: docContent }]);
+
       // Pre-fill chat playground
       setMessages([
         { sender: 'agent', text: `Hi there! I'm the newly configured ${selectedTemplate.name}. I'm fully set up and ready to help. You can test chatting with me right now!` }
@@ -281,18 +377,26 @@ function AgentContent() {
   const playVoicePreview = (voiceId: string, text: string, gender: string) => {
     const voiceObj = voices.find(v => v.id === voiceId);
 
-    // Stop current HTML5 audio if any is active
+    // Stop current HTML5 audio if any is active in state
     if (currentAudio) {
       currentAudio.pause();
       currentAudio.currentTime = 0;
       setCurrentAudio(null);
     }
     
-    // Stop speechSynthesis if any is active
+    // Stop persistent DOM-attached audio player if active
+    const globalAudio = document.getElementById('voice-preview-player') as HTMLAudioElement | null;
+    if (globalAudio) {
+      globalAudio.pause();
+      globalAudio.currentTime = 0;
+    }
+
+    // Stop speechSynthesis if active
     if (typeof window !== 'undefined' && window.speechSynthesis) {
       window.speechSynthesis.cancel();
     }
 
+    // If clicked the currently playing voice, we stop playing and return!
     if (playingVoice === voiceId) {
       setPlayingVoice(null);
       return;
@@ -301,21 +405,36 @@ function AgentContent() {
     // If premium MP3 preview URL exists, play actual high-fidelity voice audio!
     if (voiceObj && (voiceObj as any).previewUrl) {
       setPlayingVoice(voiceId);
-      const audio = new Audio((voiceObj as any).previewUrl);
-      setCurrentAudio(audio);
-      audio.onended = () => {
-        setPlayingVoice(null);
-        setCurrentAudio(null);
-      };
-      audio.onerror = () => {
-        setPlayingVoice(null);
-        setCurrentAudio(null);
-      };
-      audio.play().catch(err => {
-        console.error("Failed to play audio preview:", err);
-        setPlayingVoice(null);
-        setCurrentAudio(null);
-      });
+      
+      if (globalAudio) {
+        globalAudio.src = (voiceObj as any).previewUrl;
+        globalAudio.onended = () => {
+          setPlayingVoice(null);
+        };
+        globalAudio.onerror = () => {
+          setPlayingVoice(null);
+        };
+        globalAudio.play().catch(err => {
+          console.error("Failed to play audio preview via global player:", err);
+          setPlayingVoice(null);
+        });
+      } else {
+        const audio = new Audio((voiceObj as any).previewUrl);
+        setCurrentAudio(audio);
+        audio.onended = () => {
+          setPlayingVoice(null);
+          setCurrentAudio(null);
+        };
+        audio.onerror = () => {
+          setPlayingVoice(null);
+          setCurrentAudio(null);
+        };
+        audio.play().catch(err => {
+          console.error("Failed to play audio preview:", err);
+          setPlayingVoice(null);
+          setCurrentAudio(null);
+        });
+      }
       return;
     }
 
@@ -401,6 +520,40 @@ function AgentContent() {
     }, 400);
   };
 
+  const handleAddKbSubmit = () => {
+    if (!kbTitle.trim() || !kbContent.trim()) {
+      setToast({ message: 'Please provide both a title and contents for your knowledge document.', type: 'error' });
+      return;
+    }
+
+    setIsTrainingKb(true);
+    setKbProgress(0);
+
+    const interval = setInterval(() => {
+      setKbProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          setTimeout(() => {
+            const newDoc = {
+              title: kbTitle.trim().endsWith('.pdf') || kbTitle.trim().endsWith('.txt') || kbTitle.trim().endsWith('.csv')
+                ? kbTitle.trim()
+                : `${kbTitle.trim()}.pdf`,
+              content: kbContent.trim()
+            };
+            setTrainedDocs(prevDocs => [...prevDocs, newDoc]);
+            setIsTrainingKb(false);
+            setShowKbInput(false);
+            setKbTitle('');
+            setKbContent('');
+            setToast({ message: `🎉 '${newDoc.title}' trained and indexed semantically in agent's RAG memory!`, type: 'success' });
+          }, 500);
+          return 100;
+        }
+        return prev + 20;
+      });
+    }, 250);
+  };
+
   const simulateConnection = (name: string) => {
     setIsConnecting(name);
     setTimeout(() => {
@@ -463,23 +616,86 @@ function AgentContent() {
     // Simulate Agent intelligent responses based on prompt
     setTimeout(() => {
       let responseText = "Understood. I will process that request using my attached integrations.";
-      if (templateId === 'customer-support-bot') {
+      
+      // Semantic custom fact checking (RAG Simulation)
+      const userLower = userMsg.toLowerCase();
+      let matchedDoc = null;
+      
+      for (const doc of trainedDocs) {
+        const docTitleClean = doc.title.toLowerCase().replace(/\.(pdf|txt|csv)$/, '').replace(/_|-/g, ' ');
+        const hasTitleMatch = docTitleClean.split(' ').some(word => word.length > 2 && userLower.includes(word));
+        const hasContentMatch = doc.content.toLowerCase().split(/[\s,.:;?]+/).some(word => 
+          word.length > 3 && userLower.includes(word) && !['this', 'that', 'with', 'from', 'your', 'about', 'firm', 'our', 'what', 'where', 'when', 'how', 'much'].includes(word)
+        );
+
+        if (hasTitleMatch || hasContentMatch || userLower.includes(doc.title.toLowerCase())) {
+          matchedDoc = doc;
+          break;
+        }
+      }
+
+      if (matchedDoc) {
+        responseText = `[RAG Retrieval Verified from ${matchedDoc.title}]: "${matchedDoc.content}" — Is there anything else I can check in my knowledge base for you?`;
+      } else if (templateId === 'customer-support-bot') {
         if (userMsg.toLowerCase().includes('return') || userMsg.toLowerCase().includes('refund')) {
           responseText = "Sure, I can process that return. I've initiated the workflow, queried Stripe, and a confirmation email has been dispatched via Gmail!";
         } else {
           responseText = "I've checked our database and created a ticket in Zendesk. I'll ping the team on Slack to make sure it gets handled immediately.";
         }
       } else if (templateId === 'sales-qualifier') {
-        responseText = "Great! I've qualified your budget and timeline. I just booked a slot on our Google Calendar for Monday and synced everything directly into HubSpot.";
+        if (userMsg.toLowerCase().includes('price') || userMsg.toLowerCase().includes('cost') || userMsg.toLowerCase().includes('budget')) {
+          responseText = "Our services start at $5,000/mo, as specified in our BANT Sales Guide. Let's reserve a spot on Google Calendar for Monday to map this out!";
+        } else {
+          responseText = "Great! I've qualified your budget and timeline. I just booked a slot on our Google Calendar for Monday and synced everything directly into HubSpot.";
+        }
       } else if (templateId === 'ecommerce-concierge') {
         responseText = "I checked Shopify and your package is currently out for delivery! I'll email you the tracking link via Gmail.";
+      } else if (templateId === 'medspa-receptionist') {
+        if (userMsg.toLowerCase().includes('botox') || userMsg.toLowerCase().includes('price') || userMsg.toLowerCase().includes('unit') || userMsg.toLowerCase().includes('cost')) {
+          responseText = "Botox treatments at Amira MedSpa are priced at $12 per unit, as registered in our MedSpa Pricing FAQs. Would you like me to reserve an appointment slot on our Google Calendar?";
+        } else {
+          responseText = "Of course! I can assist you with booking or managing treatments. Would you like me to query open slots on our Google Calendar?";
+        }
       }
+      
       setMessages(prev => [...prev, { sender: 'agent', text: responseText }]);
       setIsTyping(false);
     }, 1500);
   };
 
-  const filteredVoices = voices.filter(v => v.lang === selectedLanguage);
+  // Multi-tier dynamic filter engine for up to 100 voices
+  let tempFiltered = voices.filter(v => v.lang === selectedLanguage);
+
+  if (searchQuery.trim()) {
+    const q = searchQuery.toLowerCase();
+    tempFiltered = tempFiltered.filter(v => 
+      v.name.toLowerCase().includes(q) ||
+      v.provider.toLowerCase().includes(q) ||
+      v.accent.toLowerCase().includes(q) ||
+      v.tag.toLowerCase().includes(q) ||
+      v.text.toLowerCase().includes(q)
+    );
+  }
+
+  if (filterProvider !== 'All') {
+    tempFiltered = tempFiltered.filter(v => v.provider === filterProvider);
+  }
+
+  if (filterGender !== 'All') {
+    tempFiltered = tempFiltered.filter(v => v.gender === filterGender);
+  }
+
+  if (filterAccent !== 'All') {
+    tempFiltered = tempFiltered.filter(v => v.accent.toLowerCase().includes(filterAccent.toLowerCase()));
+  }
+
+  const totalFilteredCount = tempFiltered.length;
+  const totalPages = Math.ceil(totalFilteredCount / voicesPerPage) || 1;
+  
+  // Safeguard active page index bounds
+  const activePage = voicePage > totalPages ? totalPages : voicePage;
+  const startIndex = (activePage - 1) * voicesPerPage;
+  const filteredVoices = tempFiltered.slice(startIndex, startIndex + voicesPerPage);
 
   if (isLoading) {
     return (
@@ -722,6 +938,78 @@ function AgentContent() {
                 </div>
               </div>
               
+              {/* Premium Voices Filter Dashboard */}
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', 
+                gap: '0.75rem', 
+                backgroundColor: '#f8fafc',
+                border: '1px solid var(--stripe-border)',
+                borderRadius: '8px',
+                padding: '1rem',
+                marginBottom: '1rem'
+              }}>
+                {/* Search */}
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label style={{ display: 'block', fontSize: '10px', fontWeight: 600, color: 'var(--stripe-label)', marginBottom: '4px' }}>Search Voices</label>
+                  <input 
+                    type="text"
+                    placeholder="Search name, accent, tag..."
+                    value={searchQuery}
+                    onChange={(e) => { setSearchQuery(e.target.value); setVoicePage(1); }}
+                    style={{ width: '100%', padding: '0.4rem 0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px', fontSize: '11px', color: 'var(--stripe-navy)', fontWeight: 500 }}
+                  />
+                </div>
+
+                {/* Provider Filter */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '10px', fontWeight: 600, color: 'var(--stripe-label)', marginBottom: '4px' }}>Provider</label>
+                  <select 
+                    value={filterProvider}
+                    onChange={(e) => { setFilterProvider(e.target.value); setVoicePage(1); }}
+                    style={{ width: '100%', padding: '0.35rem 0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px', fontSize: '11px', color: 'var(--stripe-navy)', backgroundColor: '#fff', fontWeight: 500 }}
+                  >
+                    <option value="All">All Providers</option>
+                    <option value="ElevenLabs">ElevenLabs</option>
+                    <option value="OpenAI">OpenAI</option>
+                    <option value="PlayHT">PlayHT</option>
+                    <option value="Cartesia">Cartesia</option>
+                  </select>
+                </div>
+
+                {/* Accent Filter */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '10px', fontWeight: 600, color: 'var(--stripe-label)', marginBottom: '4px' }}>Accent / Region</label>
+                  <select 
+                    value={filterAccent}
+                    onChange={(e) => { setFilterAccent(e.target.value); setVoicePage(1); }}
+                    style={{ width: '100%', padding: '0.35rem 0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px', fontSize: '11px', color: 'var(--stripe-navy)', backgroundColor: '#fff', fontWeight: 500 }}
+                  >
+                    <option value="All">All Regions</option>
+                    <option value="US">United States</option>
+                    <option value="UK">United Kingdom</option>
+                    <option value="Nigerian">Nigeria</option>
+                    <option value="Kenyan">Kenya</option>
+                    <option value="Aussie">Australia</option>
+                    <option value="Dialect">Dialect Only</option>
+                  </select>
+                </div>
+
+                {/* Gender Filter */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '10px', fontWeight: 600, color: 'var(--stripe-label)', marginBottom: '4px' }}>Gender</label>
+                  <select 
+                    value={filterGender}
+                    onChange={(e) => { setFilterGender(e.target.value); setVoicePage(1); }}
+                    style={{ width: '100%', padding: '0.35rem 0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px', fontSize: '11px', color: 'var(--stripe-navy)', backgroundColor: '#fff', fontWeight: 500 }}
+                  >
+                    <option value="All">All Genders</option>
+                    <option value="Female">Female</option>
+                    <option value="Male">Male</option>
+                  </select>
+                </div>
+              </div>
+
               {/* Voice Cards Grid (Auto height - lists ALL filtered voices) */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem', padding: '0.25rem', border: '1px solid var(--stripe-border)', borderRadius: '8px', backgroundColor: '#f9fafb', maxHeight: '420px', overflowY: 'auto' }}>
                 {filteredVoices.map((voice) => {
@@ -811,6 +1099,244 @@ function AgentContent() {
                     </div>
                   );
                 })}
+              </div>
+
+              {/* Pagination controls for navigating thousands of voices */}
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                marginTop: '1rem',
+                padding: '0.75rem 1rem',
+                border: '1px solid var(--stripe-border)',
+                borderRadius: '8px',
+                backgroundColor: '#ffffff',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.01)',
+                flexWrap: 'wrap',
+                gap: '0.5rem'
+              }}>
+                <span style={{ fontSize: '11px', color: 'var(--stripe-muted)', fontWeight: 500 }}>
+                  Showing {startIndex + 1}-{Math.min(startIndex + filteredVoices.length, totalFilteredCount)} of {totalFilteredCount} premium voices
+                </span>
+                
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={activePage === 1}
+                    onClick={() => setVoicePage(prev => Math.max(prev - 1, 1))}
+                    style={{ padding: '0.25rem 0.5rem', fontSize: '11px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    ◀ Prev
+                  </Button>
+                  <span style={{ fontSize: '11px', color: 'var(--stripe-navy)', fontWeight: 600 }}>
+                    Page {activePage} of {totalPages}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={activePage === totalPages}
+                    onClick={() => setVoicePage(prev => Math.min(prev + 1, totalPages))}
+                    style={{ padding: '0.25rem 0.5rem', fontSize: '11px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    Next ▶
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* SEMANTIC KNOWLEDGE BASE (RAG) CARD */}
+            <div style={{ 
+              marginBottom: '2rem', 
+              padding: '1.5rem', 
+              borderRadius: '8px', 
+              border: '1px solid var(--stripe-border)', 
+              backgroundColor: '#f8fafc',
+              boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.01)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <div>
+                  <h4 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--stripe-navy)', margin: '0 0 2px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    🧠 Cognitive Knowledge Base (RAG)
+                  </h4>
+                  <p style={{ fontSize: '11px', color: 'var(--stripe-muted)', margin: 0 }}>
+                    Train your agent on custom pricing sheets, FAQs, and policies so they cite facts accurately.
+                  </p>
+                </div>
+                
+                {!showKbInput && !isTrainingKb && (
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setShowKbInput(true)}
+                    style={{ borderColor: '#533afd', color: '#533afd', fontSize: '11px', padding: '0.35rem 0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    ➕ Train New Document
+                  </Button>
+                )}
+              </div>
+
+              {/* Training Form */}
+              {showKbInput && (
+                <div style={{ 
+                  backgroundColor: '#ffffff', 
+                  border: '1px solid var(--stripe-border)', 
+                  borderRadius: '6px', 
+                  padding: '1.25rem', 
+                  marginBottom: '1rem',
+                  boxShadow: 'var(--stripe-shadow-ambient)',
+                  animation: 'fadeIn 0.2s ease'
+                }}>
+                  <h5 style={{ fontSize: '12px', fontWeight: 600, color: 'var(--stripe-navy)', margin: '0 0 0.75rem 0' }}>
+                    Add Custom Memory File
+                  </h5>
+                  
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <label style={{ display: 'block', fontSize: '11px', color: 'var(--stripe-label)', marginBottom: '0.25rem', fontWeight: 600 }}>
+                      Document Name (e.g. Refund_Policy.pdf)
+                    </label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Pricing_Guide_2026.pdf"
+                      value={kbTitle}
+                      onChange={(e) => setKbTitle(e.target.value)}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px', fontSize: '12px', color: 'var(--stripe-navy)', fontWeight: 500 }} 
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: '1rem' }}>
+                    <label style={{ display: 'block', fontSize: '11px', color: 'var(--stripe-label)', marginBottom: '0.25rem', fontWeight: 600 }}>
+                      Trained Content & Key Facts
+                    </label>
+                    <textarea 
+                      placeholder="Paste specific facts, guidelines, price tables, or FAQs that you want your AI agent to memorize..."
+                      value={kbContent}
+                      onChange={(e) => setKbContent(e.target.value)}
+                      style={{ width: '100%', height: '80px', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px', fontSize: '12px', color: 'var(--stripe-navy)', resize: 'vertical', lineHeight: 1.4 }} 
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => { setShowKbInput(false); setKbTitle(''); setKbContent(''); }}
+                      style={{ fontSize: '11px' }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      type="button" 
+                      variant="primary" 
+                      size="sm" 
+                      onClick={handleAddKbSubmit}
+                      style={{ backgroundColor: '#533afd', color: '#fff', fontSize: '11px' }}
+                    >
+                      Vectorize & Index
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Vector Indexing Progress Loop */}
+              {isTrainingKb && (
+                <div style={{ 
+                  backgroundColor: '#ffffff', 
+                  border: '1px solid var(--stripe-border)', 
+                  borderRadius: '6px', 
+                  padding: '1.25rem', 
+                  marginBottom: '1rem'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--stripe-navy)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>🔄</span> 
+                      {kbProgress < 30 ? 'Extracting text chunks...' : kbProgress < 60 ? 'Generating semantic embeddings...' : kbProgress < 90 ? 'Upserting vectors into database...' : 'Finalizing RAG vector index...'}
+                    </span>
+                    <span style={{ fontSize: '11px', fontWeight: 600, color: '#533afd' }}>
+                      {kbProgress}%
+                    </span>
+                  </div>
+                  <div style={{ height: '6px', backgroundColor: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${kbProgress}%`, backgroundColor: '#533afd', borderRadius: '3px', transition: 'width 0.25s linear' }} />
+                  </div>
+                </div>
+              )}
+
+              {/* Trained Documents database list */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {trainedDocs.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--stripe-muted)', fontSize: '12px', fontStyle: 'italic' }}>
+                    No custom knowledge base files trained yet. Add files to inject business memory!
+                  </div>
+                ) : (
+                  trainedDocs.map((doc, idx) => (
+                    <div 
+                      key={idx}
+                      style={{ 
+                        backgroundColor: '#ffffff', 
+                        border: '1px solid var(--stripe-border)', 
+                        borderRadius: '6px', 
+                        padding: '0.75rem 1rem', 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center',
+                        boxShadow: '0 1px 2px rgba(0,0,0,0.01)'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: 0 }}>
+                        <span style={{ fontSize: '18px' }}>📄</span>
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--stripe-navy)', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                            {doc.title}
+                            <span style={{ 
+                              fontSize: '9px', 
+                              backgroundColor: '#ecfdf5', 
+                              color: '#059669', 
+                              padding: '1px 6px', 
+                              borderRadius: '4px',
+                              fontWeight: 600,
+                              border: '1px solid #a7f3d0'
+                            }}>
+                              100% Vector Synced
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '10px', color: 'var(--stripe-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: '2px' }}>
+                            {doc.content}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const docToDelete = trainedDocs[idx];
+                          setTrainedDocs(prev => prev.filter((_, dIdx) => dIdx !== idx));
+                          setToast({ message: `Removed '${docToDelete.title}' from agent memory.`, type: 'success' });
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#ef4444',
+                          cursor: 'pointer',
+                          fontSize: '11px',
+                          fontWeight: 500,
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          marginLeft: '0.5rem',
+                          transition: 'background-color 0.15s'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#fef2f2'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 
@@ -1115,6 +1641,9 @@ function AgentContent() {
           ))}
         </div>
       )}
+      
+      {/* Persistent global audio node for stable previews */}
+      <audio id="voice-preview-player" style={{ display: 'none' }} />
     </div>
   );
 }
