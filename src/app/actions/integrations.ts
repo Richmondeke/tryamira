@@ -5,38 +5,45 @@ import { createClient } from '@/utils/supabase/server';
 // We use a fixed workspace ID for demo purposes
 const DEMO_WORKSPACE_ID = 'workspace_1';
 
+const MOCK_INTEGRATIONS = [
+  { id: 'hubspot', name: 'HubSpot', desc: 'Sync CRM leads, contact pipelines, and customer lists.', icon: '🟠', type: 'oauth' },
+  { id: 'gmail', name: 'Gmail', desc: 'Send emails and trigger notification updates.', icon: '📧', type: 'oauth' },
+  { id: 'googlecalendar', name: 'Google Calendar', desc: 'Book appointments, discover slots, and sync schedules.', icon: '📅', type: 'oauth' },
+  { id: 'salesforce', name: 'Salesforce', desc: 'Bidirectional sync for Enterprise Salesforce CRM records.', icon: '☁️', type: 'oauth' },
+  { id: 'slack', name: 'Slack', desc: 'Send direct notifications to team Slack channels.', icon: '💬', type: 'oauth' },
+  { id: 'stripe', name: 'Stripe', desc: 'Charge payments and view billing transactions.', icon: '💳', type: 'oauth' },
+  { id: 'zendesk', name: 'Zendesk', desc: 'Create support tickets and check escalation queues.', icon: '🎧', type: 'oauth' },
+  { id: 'notion', name: 'Notion', desc: 'Read and sync database workspace items.', icon: '📝', type: 'oauth' },
+  { id: 'github', name: 'GitHub', desc: 'Create issues, review commits, and track code changes.', icon: '🐙', type: 'oauth' },
+  { id: 'trello', name: 'Trello', desc: 'Manage project cards and kanban lists.', icon: '📋', type: 'oauth' },
+  { id: 'jira', name: 'Jira', desc: 'Sync issue queues and development tickets.', icon: '🎯', type: 'oauth' },
+  { id: 'asana', name: 'Asana', desc: 'Schedule tasks and verify team milestones.', icon: '💮', type: 'oauth' },
+  { id: 'googledrive', name: 'Google Drive', desc: 'Access team files, brochures, and asset folders.', icon: '📁', type: 'oauth' },
+  { id: 'shopify', name: 'Shopify', desc: 'Sync customer shopping carts, catalogs, and orders.', icon: '🛍️', type: 'oauth' },
+  { id: 'discord', name: 'Discord', desc: 'Send alerts and chat logs directly to Discord.', icon: '🎮', type: 'oauth' },
+  { id: 'zoom', name: 'Zoom', desc: 'Generate video meet links and calendar schedules.', icon: '📹', type: 'oauth' },
+  { id: 'twilio', name: 'Twilio', desc: 'Trigger SMS messages and phone outbound alerts.', icon: '📱', type: 'oauth' },
+  { id: 'mailchimp', name: 'Mailchimp', desc: 'Sync email subscribers to newsletter lists.', icon: '✉️', type: 'oauth' },
+  { id: 'msteams', name: 'Microsoft Teams', desc: 'Send alerts and chat summaries to MS Teams.', icon: '👥', type: 'oauth' },
+  { id: 'airtable', name: 'Airtable', desc: 'Organize relational data sheets and leads.', icon: '📊', type: 'oauth' },
+  { id: 'intercom', name: 'Intercom', desc: 'Trigger dynamic chat support escalation.', icon: '💬', type: 'oauth' },
+  { id: 'quickbooks', name: 'QuickBooks', desc: 'Sync business invoices, ledgers, and expenses.', icon: '💰', type: 'oauth' },
+  { id: 'googlecontacts', name: 'Google Contacts', desc: 'Import contacts and phone lists.', icon: '👤', type: 'oauth' },
+  { id: 'clickup', name: 'ClickUp', desc: 'Track tasks, workspaces, and team goals.', icon: '🔝', type: 'oauth' }
+];
+
 export async function getComposioApps() {
   const apiKey = process.env.COMPOSIO_API_KEY;
-  if (!apiKey) {
+  const isKeyEmpty = !apiKey || 
+                     apiKey === 'undefined' || 
+                     apiKey === 'null' || 
+                     apiKey.trim() === '';
+
+  if (isKeyEmpty) {
     // Return gorgeous library of top Composio integrations
     return {
       success: true,
-      data: [
-        { id: 'hubspot', name: 'HubSpot', desc: 'Sync CRM leads, contact pipelines, and customer lists.', icon: '🟠', type: 'oauth' },
-        { id: 'gmail', name: 'Gmail', desc: 'Send emails and trigger notification updates.', icon: '📧', type: 'oauth' },
-        { id: 'googlecalendar', name: 'Google Calendar', desc: 'Book appointments, discover slots, and sync schedules.', icon: '📅', type: 'oauth' },
-        { id: 'salesforce', name: 'Salesforce', desc: 'Bidirectional sync for Enterprise Salesforce CRM records.', icon: '☁️', type: 'oauth' },
-        { id: 'slack', name: 'Slack', desc: 'Send direct notifications to team Slack channels.', icon: '💬', type: 'oauth' },
-        { id: 'stripe', name: 'Stripe', desc: 'Charge payments and view billing transactions.', icon: '💳', type: 'oauth' },
-        { id: 'zendesk', name: 'Zendesk', desc: 'Create support tickets and check escalation queues.', icon: '🎧', type: 'oauth' },
-        { id: 'notion', name: 'Notion', desc: 'Read and sync database workspace items.', icon: '📝', type: 'oauth' },
-        { id: 'github', name: 'GitHub', desc: 'Create issues, review commits, and track code changes.', icon: '🐙', type: 'oauth' },
-        { id: 'trello', name: 'Trello', desc: 'Manage project cards and kanban lists.', icon: '📋', type: 'oauth' },
-        { id: 'jira', name: 'Jira', desc: 'Sync issue queues and development tickets.', icon: '🎯', type: 'oauth' },
-        { id: 'asana', name: 'Asana', desc: 'Schedule tasks and verify team milestones.', icon: '💮', type: 'oauth' },
-        { id: 'googledrive', name: 'Google Drive', desc: 'Access team files, brochures, and asset folders.', icon: '📁', type: 'oauth' },
-        { id: 'shopify', name: 'Shopify', desc: 'Sync customer shopping carts, catalogs, and orders.', icon: '🛍️', type: 'oauth' },
-        { id: 'discord', name: 'Discord', desc: 'Send alerts and chat logs directly to Discord.', icon: '🎮', type: 'oauth' },
-        { id: 'zoom', name: 'Zoom', desc: 'Generate video meet links and calendar schedules.', icon: '📹', type: 'oauth' },
-        { id: 'twilio', name: 'Twilio', desc: 'Trigger SMS messages and phone outbound alerts.', icon: '📱', type: 'oauth' },
-        { id: 'mailchimp', name: 'Mailchimp', desc: 'Sync email subscribers to newsletter lists.', icon: '✉️', type: 'oauth' },
-        { id: 'msteams', name: 'Microsoft Teams', desc: 'Send alerts and chat summaries to MS Teams.', icon: '👥', type: 'oauth' },
-        { id: 'airtable', name: 'Airtable', desc: 'Organize relational data sheets and leads.', icon: '📊', type: 'oauth' },
-        { id: 'intercom', name: 'Intercom', desc: 'Trigger dynamic chat support escalation.', icon: '💬', type: 'oauth' },
-        { id: 'quickbooks', name: 'QuickBooks', desc: 'Sync business invoices, ledgers, and expenses.', icon: '💰', type: 'oauth' },
-        { id: 'googlecontacts', name: 'Google Contacts', desc: 'Import contacts and phone lists.', icon: '👤', type: 'oauth' },
-        { id: 'clickup', name: 'ClickUp', desc: 'Track tasks, workspaces, and team goals.', icon: '🔝', type: 'oauth' }
-      ]
+      data: MOCK_INTEGRATIONS
     };
   }
 
@@ -61,8 +68,8 @@ export async function getComposioApps() {
     
     return { success: true, data: apps };
   } catch (err: any) {
-    console.error('Error fetching Composio apps:', err);
-    return { success: false, error: err.message };
+    console.error('Error fetching Composio apps, falling back to mock list:', err);
+    return { success: true, data: MOCK_INTEGRATIONS };
   }
 }
 
