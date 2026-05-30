@@ -9,6 +9,7 @@ export default function IntegrationsLayout({ children }: { children: React.React
   const tabs = [
     { name: 'Software Apps', href: '/dashboard/integrations/apps' },
     { name: 'Social Channels', href: '/dashboard/integrations/channels' },
+    { name: 'Phone Numbers', href: '/dashboard/integrations/phone' },
   ];
 
   return (
