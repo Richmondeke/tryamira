@@ -136,45 +136,62 @@ export async function initiateComposioConnection(appName: string) {
   const apiKey = process.env.COMPOSIO_API_KEY;
   const origin = process.env.NEXT_PUBLIC_APP_URL || 'https://heyamira.com';
   const callbackUrl = `${origin}/dashboard/integrations/apps?status=success&app=${appName}`;
+  const BASE = 'https://backend.composio.dev/api/v3';
+  const headers = { 'x-api-key': apiKey!, 'Content-Type': 'application/json' };
 
-  const isKeyEmpty = !apiKey || 
-                     apiKey === 'undefined' || 
-                     apiKey === 'null' || 
-                     apiKey.trim() === '';
-
+  const isKeyEmpty = !apiKey || apiKey === 'undefined' || apiKey === 'null' || apiKey.trim() === '';
   if (isKeyEmpty) {
     console.warn('COMPOSIO_API_KEY not set. Simulating OAuth redirect.');
     return { success: true, redirectUrl: callbackUrl };
   }
 
   try {
-    // Composio v3 REST API — initiate OAuth connection
-    const res = await fetch(
-      `https://backend.composio.dev/api/v3/toolkits/${appName}/connections`,
-      {
-        method: 'POST',
-        headers: { 
-          'x-api-key': apiKey,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user_uuid: DEMO_WORKSPACE_ID,
-          redirect_url: callbackUrl
-        })
-      }
-    );
+    // ── Step 1: Create (or reuse) a Composio-managed auth config for this toolkit ──
+    const configRes = await fetch(`${BASE}/auth_configs`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        toolkit: { slug: appName },
+        name: `${appName}_composio_managed_${DEMO_WORKSPACE_ID}`,
+        auth_scheme: 'OAUTH2',
+        use_composio_managed_oauth: true
+      })
+    });
 
-    if (!res.ok) {
-      const errJson = await res.json().catch(() => ({}));
-      throw new Error(errJson?.message || `Composio v3 connection error: ${res.status}`);
+    if (!configRes.ok) {
+      const e = await configRes.json().catch(() => ({}));
+      throw new Error(e?.error?.message || `Auth config error: ${configRes.status}`);
     }
 
-    const json = await res.json();
-    const redirectUrl = json.redirectUrl || json.redirect_url || json.connectionRequestId;
+    const configJson = await configRes.json();
+    const authConfigId = configJson?.auth_config?.id;
+    if (!authConfigId) throw new Error('No auth_config id returned from Composio');
 
-    return { success: true, redirectUrl: redirectUrl || callbackUrl };
+    // ── Step 2: Generate an OAuth link token via /connected_accounts/link ──
+    const linkRes = await fetch(`${BASE}/connected_accounts/link`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        auth_config_id: authConfigId,
+        user_id: DEMO_WORKSPACE_ID,
+        redirect_url: callbackUrl
+      })
+    });
+
+    if (!linkRes.ok) {
+      const e = await linkRes.json().catch(() => ({}));
+      throw new Error(e?.error?.message || `Link error: ${linkRes.status}`);
+    }
+
+    const linkJson = await linkRes.json();
+    // Returns: { link_token, redirect_url: 'https://connect.composio.dev/link/lk_...', expires_at, connected_account_id }
+    const redirectUrl = linkJson?.redirect_url;
+    if (!redirectUrl) throw new Error('No redirect_url returned from Composio link');
+
+    console.log(`✅ Composio OAuth link for ${appName}:`, redirectUrl);
+    return { success: true, redirectUrl };
   } catch (err: any) {
-    console.error('Error initiating Composio v3 connection:', err?.message || err);
+    console.error('Error initiating Composio v3 OAuth:', err?.message || err);
     return { success: false, error: err.message || 'Failed to initiate connection' };
   }
 }
@@ -197,20 +214,30 @@ export async function removeComposioIntegration(appName: string) {
   }
 
   try {
-    const { Composio } = await import('@composio/core');
-    const composio = new Composio({ apiKey });
-    
-    // Fetch all connections and delete the one matching this app
-    const accounts = await composio.connectedAccounts.list({
-      userIds: [DEMO_WORKSPACE_ID]
-    });
-    
-    const account = accounts.items.find((a: any) => a.toolkit.slug.toLowerCase() === appName.toLowerCase());
-    if (account) {
-       await composio.connectedAccounts.delete(account.id);
+    const BASE = 'https://backend.composio.dev/api/v3';
+    const hdrs = { 'x-api-key': apiKey! };
+
+    // Find the connected account for this toolkit and user via v3 REST
+    const listRes = await fetch(
+      `${BASE}/connected_accounts?user_uuid=${DEMO_WORKSPACE_ID}&toolkit_slug=${appName}&limit=10`,
+      { headers: hdrs }
+    );
+
+    if (listRes.ok) {
+      const listJson = await listRes.json();
+      const account = (listJson?.items || []).find(
+        (a: any) => a.toolkit?.slug?.toLowerCase() === appName.toLowerCase()
+      );
+
+      if (account?.id) {
+        await fetch(`${BASE}/connected_accounts/${account.id}`, {
+          method: 'DELETE',
+          headers: hdrs
+        });
+      }
     }
-    
-    // Remove from local DB
+
+    // Also remove from local DB
     if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
       const supabase = await createClient();
       await supabase.from('workspace_integrations').delete().match({ workspace_id: 1, provider: appName });
@@ -218,7 +245,7 @@ export async function removeComposioIntegration(appName: string) {
 
     return { success: true };
   } catch (err: any) {
-    console.error('Error removing Composio integration:', err);
+    console.error('Error removing Composio v3 integration:', err?.message || err);
     return { success: false, error: err.message || 'Failed to remove integration' };
   }
 }
