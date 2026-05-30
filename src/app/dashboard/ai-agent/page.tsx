@@ -174,7 +174,10 @@ const allIntegrations = [
   { id: 'zendesk', name: 'Zendesk', desc: 'Create and manage support tickets.', icon: '🎧' },
   { id: 'mailchimp', name: 'Mailchimp', desc: 'Sync email subscribers automatically.', icon: '✉️' },
   { id: 'shopify', name: 'Shopify', desc: 'Manage e-commerce orders and customers.', icon: '🛍️' },
-  { id: 'notion',const namesList = [
+  { id: 'notion', name: 'Notion', desc: 'Sync data to Notion databases.', icon: '📝' }
+];
+
+const namesList = [
   'Rachel', 'Josh', 'Kemi', 'Chinedu', 'Nova', 'Alloy', 'Fin', 'Bella', 'Thomas', 'Serena',
   'Mwangi', 'Ambrose', 'Chioma', 'Amina', 'Marcus', 'Sarah', 'George', 'Charlotte', 'Liam', 'Olivia',
   'Sophia', 'Emma', 'Isabella', 'Mia', 'Evelyn', 'Harper', 'Camila', 'Gianna', 'Abigail', 'Luna',
