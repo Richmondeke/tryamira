@@ -377,6 +377,55 @@ function AgentContent() {
     };
   }, [currentAudio]);
 
+  const runSpeechSynthesis = (text: string, gender: string, onEndCallback: () => void) => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) {
+      onEndCallback();
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    const voicesListSystem = window.speechSynthesis.getVoices();
+    let selectedSysVoice = null;
+    
+    const isFemale = gender.toLowerCase().includes('female') || gender.toLowerCase().includes('soft') || gender.toLowerCase().includes('friendly');
+    
+    if (isFemale) {
+      selectedSysVoice = voicesListSystem.find(v => 
+        v.name.toLowerCase().includes('google us english') || 
+        v.name.toLowerCase().includes('samantha') || 
+        v.name.toLowerCase().includes('zira') || 
+        v.name.toLowerCase().includes('hazel') || 
+        v.name.toLowerCase().includes('female')
+      ) || voicesListSystem.find(v => v.lang.startsWith('en'));
+    } else {
+      selectedSysVoice = voicesListSystem.find(v => 
+        v.name.toLowerCase().includes('google uk english male') || 
+        v.name.toLowerCase().includes('david') || 
+        v.name.toLowerCase().includes('mark') || 
+        v.name.toLowerCase().includes('george') || 
+        v.name.toLowerCase().includes('male')
+      ) || voicesListSystem.find(v => v.lang.startsWith('en'));
+    }
+    
+    if (selectedSysVoice) {
+      utterance.voice = selectedSysVoice;
+    }
+
+    utterance.pitch = 1.0;
+    utterance.rate = 1.05;
+    
+    utterance.onend = () => {
+      onEndCallback();
+    };
+
+    utterance.onerror = (e) => {
+      console.error("SpeechSynthesis fallback error:", e);
+      onEndCallback();
+    };
+
+    window.speechSynthesis.speak(utterance);
+  };
+
   const playVoicePreview = (voiceId: string, text: string, gender: string) => {
     const voiceObj = voices.find(v => v.id === voiceId);
 
@@ -405,21 +454,28 @@ function AgentContent() {
       return;
     }
 
-    // If premium MP3 preview URL exists, play actual high-fidelity voice audio!
+    // Attempt premium audio preview URL first
     if (voiceObj && (voiceObj as any).previewUrl) {
       setPlayingVoice(voiceId);
       
+      const triggerFallback = () => {
+        console.warn(`Premium preview URL failed for voice ${voiceId}. Falling back to browser SpeechSynthesis.`);
+        runSpeechSynthesis(text, gender, () => {
+          setPlayingVoice(null);
+        });
+      };
+
       if (globalAudio) {
         globalAudio.src = (voiceObj as any).previewUrl;
         globalAudio.onended = () => {
           setPlayingVoice(null);
         };
         globalAudio.onerror = () => {
-          setPlayingVoice(null);
+          triggerFallback();
         };
         globalAudio.play().catch(err => {
-          console.error("Failed to play audio preview via global player:", err);
-          setPlayingVoice(null);
+          console.warn("Failed to play via global audio node, falling back:", err);
+          triggerFallback();
         });
       } else {
         const audio = new Audio((voiceObj as any).previewUrl);
@@ -429,57 +485,21 @@ function AgentContent() {
           setCurrentAudio(null);
         };
         audio.onerror = () => {
-          setPlayingVoice(null);
-          setCurrentAudio(null);
+          triggerFallback();
         };
         audio.play().catch(err => {
-          console.error("Failed to play audio preview:", err);
-          setPlayingVoice(null);
-          setCurrentAudio(null);
+          console.warn("Failed to play via Audio context, falling back:", err);
+          triggerFallback();
         });
       }
       return;
     }
 
-    // Fallback: Web Speech API SpeechSynthesis
-    if (typeof window === 'undefined' || !window.speechSynthesis) {
-      setToast({ message: 'Speech synthesis is not supported in this browser.', type: 'error' });
-      return;
-    }
-
+    // If no preview URL exists, run SpeechSynthesis directly
     setPlayingVoice(voiceId);
-    const utterance = new SpeechSynthesisUtterance(text);
-    const voicesListSystem = window.speechSynthesis.getVoices();
-    let selectedSysVoice = null;
-    
-    if (gender.toLowerCase() === 'female') {
-      selectedSysVoice = voicesListSystem.find(v => 
-        v.name.toLowerCase().includes('google us english') || 
-        v.name.toLowerCase().includes('samantha') || 
-        v.name.toLowerCase().includes('zira') || 
-        v.name.toLowerCase().includes('female')
-      );
-    } else {
-      selectedSysVoice = voicesListSystem.find(v => 
-        v.name.toLowerCase().includes('google uk english male') || 
-        v.name.toLowerCase().includes('david') || 
-        v.name.toLowerCase().includes('male')
-      );
-    }
-    
-    if (selectedSysVoice) {
-      utterance.voice = selectedSysVoice;
-    }
-    
-    utterance.onend = () => {
+    runSpeechSynthesis(text, gender, () => {
       setPlayingVoice(null);
-    };
-
-    utterance.onerror = () => {
-      setPlayingVoice(null);
-    };
-
-    window.speechSynthesis.speak(utterance);
+    });
   };
 
   const handleCloneSubmit = (e: React.FormEvent) => {
