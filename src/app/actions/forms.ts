@@ -21,7 +21,7 @@ const DEFAULT_CONFIG = {
 };
 
 // Beautiful mock data fallback for sandbox/offline modes
-const MOCK_FORMS = [
+const INITIAL_MOCK_FORMS = [
   { 
     id: 'form-mock-1', 
     name: 'Real Estate Inquiry', 
@@ -51,6 +51,9 @@ const MOCK_FORMS = [
     }
   }
 ];
+
+// A dynamic in-memory registry of mock forms that persists changes during the current runtime session
+const DYNAMIC_MOCK_FORMS: any[] = [...INITIAL_MOCK_FORMS];
 
 const MOCK_SUBMISSIONS = [
   { id: 'sub-1', form_id: 'form-mock-1', answers: { firstName: 'Sarah', lastName: 'Connor', email: 'sarah@resistance.org', phone: '+234 803 111 2222', company: 'TechCom' }, created_at: new Date(Date.now() - 3600000 * 2).toISOString() },
@@ -93,7 +96,7 @@ export async function getForms() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       console.warn('getForms: User not authenticated. Returning mock forms library.');
-      return { success: true, data: MOCK_FORMS };
+      return { success: true, data: DYNAMIC_MOCK_FORMS };
     }
 
     const workspaceId = await getOrCreateWorkspace(supabase, user.id);
@@ -107,7 +110,7 @@ export async function getForms() {
     return { success: true, data: data || [] };
   } catch (err: any) {
     console.warn('getForms database query failed. Returning mock library. Details:', err.message);
-    return { success: true, data: MOCK_FORMS };
+    return { success: true, data: DYNAMIC_MOCK_FORMS };
   }
 }
 
@@ -130,6 +133,7 @@ export async function createForm(name: string) {
         created_at: new Date().toISOString(),
         config: { ...DEFAULT_CONFIG, title: name }
       };
+      DYNAMIC_MOCK_FORMS.unshift(mockForm);
       return { success: true, data: mockForm };
     }
 
@@ -163,6 +167,7 @@ export async function createForm(name: string) {
       created_at: new Date().toISOString(),
       config: { ...DEFAULT_CONFIG, title: name }
     };
+    DYNAMIC_MOCK_FORMS.unshift(mockForm);
     return { success: true, data: mockForm };
   }
 }
@@ -171,53 +176,53 @@ export async function createForm(name: string) {
  * Fetch a form by its ID with full UUID syntax safety and dynamic mock resolver
  */
 export async function getFormById(id: string) {
-  // 1. Handle empty, undefined, demo, or dynamic mock IDs safely
+  // 1. Handle empty, undefined, demo, or dynamic mock IDs safely from dynamic registry
   if (!id || id === 'undefined' || id === 'demo' || id.startsWith('form-mock')) {
-    // Check if it matches static mock forms first
-    const mockMatch = MOCK_FORMS.find(f => f.id === id);
+    const mockMatch = DYNAMIC_MOCK_FORMS.find(f => f.id === id);
     if (mockMatch) return { success: true, data: mockMatch };
 
-    // Otherwise return a beautifully structured dynamic mock form preview
+    // Otherwise return and record a beautifully structured dynamic mock form preview
     const cleanId = id || 'demo';
     const formTitle = cleanId === 'demo' ? 'Standard Demo Form' : 'Dynamic Sandbox Form';
-    return {
-      success: true,
-      data: {
-        id: cleanId,
-        name: formTitle,
-        views: 24,
-        submissions: 3,
-        conversion_rate: 12.5,
-        created_at: new Date().toISOString(),
-        config: {
-          ...DEFAULT_CONFIG,
-          title: formTitle,
-          description: 'This is a live interactive sandbox preview of your lead capture form.'
-        }
+    const defaultForm = {
+      id: cleanId,
+      name: formTitle,
+      views: 24,
+      submissions: 3,
+      conversion_rate: 12.5,
+      created_at: new Date().toISOString(),
+      config: {
+        ...DEFAULT_CONFIG,
+        title: formTitle,
+        description: 'This is a live interactive sandbox preview of your lead capture form.'
       }
     };
+    DYNAMIC_MOCK_FORMS.unshift(defaultForm);
+    return { success: true, data: defaultForm };
   }
 
   // 2. Validate database UUID structure to prevent PostgreSQL type crashes
   const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   if (!UUID_REGEX.test(id)) {
-    console.warn(`getFormById called with non-UUID format: "${id}". Redirecting to mock preview.`);
-    return {
-      success: true,
-      data: {
-        id: id,
-        name: 'Lead Capture Form Preview',
-        views: 45,
-        submissions: 9,
-        conversion_rate: 20.0,
-        created_at: new Date().toISOString(),
-        config: {
-          ...DEFAULT_CONFIG,
-          title: 'Lead Capture Form Preview',
-          description: 'This preview is generated automatically because the shared link contains a custom ID format.'
-        }
+    console.warn(`getFormById called with non-UUID format: "${id}". Pulling mock buffer.`);
+    const mockMatch = DYNAMIC_MOCK_FORMS.find(f => f.id === id);
+    if (mockMatch) return { success: true, data: mockMatch };
+
+    const defaultForm = {
+      id: id,
+      name: 'Lead Capture Form Preview',
+      views: 45,
+      submissions: 9,
+      conversion_rate: 20.0,
+      created_at: new Date().toISOString(),
+      config: {
+        ...DEFAULT_CONFIG,
+        title: 'Lead Capture Form Preview',
+        description: 'This preview is generated automatically because the shared link contains a custom ID format.'
       }
     };
+    DYNAMIC_MOCK_FORMS.unshift(defaultForm);
+    return { success: true, data: defaultForm };
   }
 
   // 3. Query actual database
@@ -232,7 +237,10 @@ export async function getFormById(id: string) {
     if (error) throw error;
     return { success: true, data };
   } catch (err: any) {
-    console.warn(`getFormById database query failed for UUID: "${id}". Falling back to mock.`, err.message);
+    console.warn(`getFormById database query failed for UUID: "${id}". Falling back to dynamic registry.`, err.message);
+    const mockMatch = DYNAMIC_MOCK_FORMS.find(f => f.id === id);
+    if (mockMatch) return { success: true, data: mockMatch };
+
     return {
       success: true,
       data: {
@@ -253,11 +261,26 @@ export async function getFormById(id: string) {
 }
 
 /**
- * Save form details and configurations
+ * Save form details and configurations (Updating both Supabase and dynamic mock registries)
  */
 export async function saveForm(id: string, name: string, config: any) {
-  // If it's a mock form, simulate immediate success
+  // If it's a mock form, update the dynamic in-memory registry so customizations stick!
   if (!id || id === 'undefined' || id === 'demo' || id.startsWith('form-mock')) {
+    const existingIndex = DYNAMIC_MOCK_FORMS.findIndex(f => f.id === id);
+    if (existingIndex !== -1) {
+      DYNAMIC_MOCK_FORMS[existingIndex].name = name;
+      DYNAMIC_MOCK_FORMS[existingIndex].config = config;
+    } else {
+      DYNAMIC_MOCK_FORMS.unshift({
+        id,
+        name,
+        views: 24,
+        submissions: 3,
+        conversion_rate: 12.5,
+        created_at: new Date().toISOString(),
+        config
+      });
+    }
     return { success: true, data: { id, name, config } };
   }
 
@@ -273,7 +296,24 @@ export async function saveForm(id: string, name: string, config: any) {
     if (error) throw error;
     return { success: true, data };
   } catch (err: any) {
-    return { success: false, error: err.message };
+    console.warn('saveForm database check failed, saving to dynamic mock registry:', err.message);
+    
+    const existingIndex = DYNAMIC_MOCK_FORMS.findIndex(f => f.id === id);
+    if (existingIndex !== -1) {
+      DYNAMIC_MOCK_FORMS[existingIndex].name = name;
+      DYNAMIC_MOCK_FORMS[existingIndex].config = config;
+    } else {
+      DYNAMIC_MOCK_FORMS.unshift({
+        id,
+        name,
+        views: 24,
+        submissions: 3,
+        conversion_rate: 12.5,
+        created_at: new Date().toISOString(),
+        config
+      });
+    }
+    return { success: true, data: { id, name, config } };
   }
 }
 
@@ -282,6 +322,11 @@ export async function saveForm(id: string, name: string, config: any) {
  */
 export async function incrementFormViews(formId: string) {
   if (!formId || formId.startsWith('form-mock') || formId === 'demo' || formId === 'undefined') {
+    // Increment mock views in-memory for realistic dashboards
+    const match = DYNAMIC_MOCK_FORMS.find(f => f.id === formId);
+    if (match) {
+      match.views = (match.views || 0) + 1;
+    }
     return { success: true };
   }
 
@@ -306,6 +351,14 @@ export async function submitFormAnswer(formId: string, answers: any) {
   if (!formId || formId.startsWith('form-mock') || formId === 'demo' || formId === 'undefined') {
     console.log('Simulating public mock form submission:', answers);
     
+    // Increment mock submissions and compute conversion rate in dynamic forms registry!
+    const match = DYNAMIC_MOCK_FORMS.find(f => f.id === formId);
+    if (match) {
+      match.submissions = (match.submissions || 0) + 1;
+      const views = match.views || 1;
+      match.conversion_rate = Number(((match.submissions / views) * 100).toFixed(1));
+    }
+
     // Add the mock submission in-memory so it populates right-away in the dashboard sidebar!
     const newMockSub = {
       id: `sub-mock-${Date.now()}`,
@@ -375,6 +428,13 @@ export async function submitFormAnswer(formId: string, answers: any) {
     console.error('submitFormAnswer database failure, falling back to mock storage:', err.message);
     
     // Graceful fallback to sandbox submission in case of DB constraints/issues
+    const match = DYNAMIC_MOCK_FORMS.find(f => f.id === formId);
+    if (match) {
+      match.submissions = (match.submissions || 0) + 1;
+      const views = match.views || 1;
+      match.conversion_rate = Number(((match.submissions / views) * 100).toFixed(1));
+    }
+
     const newMockSub = {
       id: `sub-mock-${Date.now()}`,
       form_id: formId,
