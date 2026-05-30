@@ -3,6 +3,58 @@
 import { createClient } from '@/utils/supabase/server';
 import { v4 as uuidv4 } from 'uuid';
 
+async function getOrCreateWorkspace(supabase: any, userId: string): Promise<string> {
+  const { data: memberData } = await supabase
+    .from('workspace_members')
+    .select('workspace_id')
+    .eq('user_id', userId)
+    .limit(1)
+    .maybeSingle();
+
+  if (memberData?.workspace_id) {
+    return memberData.workspace_id;
+  }
+
+  // Auto-provision default workspace if missing (e.g. database trigger didn't run or timed out)
+  console.log('Workspace association not found. Running self-healing auto-provisioner for:', userId);
+  const { data: newWorkspace, error: workspaceError } = await supabase
+    .from('workspaces')
+    .insert({ name: 'My Workspace' })
+    .select('id')
+    .single();
+
+  if (workspaceError || !newWorkspace) {
+    // Fallback in case of unique constraints or permissions: check for any workspace in the DB
+    const { data: anyWs } = await supabase
+      .from('workspaces')
+      .select('id')
+      .limit(1)
+      .maybeSingle();
+
+    if (anyWs?.id) {
+      await supabase
+        .from('workspace_members')
+        .insert({
+          workspace_id: anyWs.id,
+          user_id: userId,
+          role: 'owner'
+        });
+      return anyWs.id;
+    }
+    throw new Error('Workspace auto-provisioning failed: ' + (workspaceError?.message || 'Unknown database state'));
+  }
+
+  await supabase
+    .from('workspace_members')
+    .insert({
+      workspace_id: newWorkspace.id,
+      user_id: userId,
+      role: 'owner'
+    });
+
+  return newWorkspace.id;
+}
+
 export async function getAgents() {
   const supabase = await createClient();
   
@@ -14,19 +66,12 @@ export async function getAgents() {
     const { data: userData, error: userError } = await supabase.auth.getUser();
     if (userError || !userData?.user) throw new Error('Not authenticated');
 
-    const { data: memberData } = await supabase
-        .from('workspace_members')
-        .select('workspace_id')
-        .eq('user_id', userData.user.id)
-        .limit(1)
-        .single();
-
-    if (!memberData) throw new Error('No workspace found');
+    const workspaceId = await getOrCreateWorkspace(supabase, userData.user.id);
 
     const { data, error } = await supabase
       .from('workspace_agents')
       .select('*')
-      .eq('workspace_id', memberData.workspace_id)
+      .eq('workspace_id', workspaceId)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -53,14 +98,7 @@ export async function createAgent(name: string, customConfig?: any) {
     const { data: userData, error: userError } = await supabase.auth.getUser();
     if (userError || !userData?.user) throw new Error('Not authenticated');
 
-    const { data: memberData } = await supabase
-        .from('workspace_members')
-        .select('workspace_id')
-        .eq('user_id', userData.user.id)
-        .limit(1)
-        .single();
-
-    if (!memberData) throw new Error('No workspace found');
+    const workspaceId = await getOrCreateWorkspace(supabase, userData.user.id);
 
     const defaultConfig = { 
       agentName: name, 
@@ -73,7 +111,7 @@ export async function createAgent(name: string, customConfig?: any) {
       .from('workspace_agents')
       .insert({ 
         id,
-        workspace_id: memberData.workspace_id, 
+        workspace_id: workspaceId, 
         name,
         config: customConfig || defaultConfig,
         created_at: new Date().toISOString(),
