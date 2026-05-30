@@ -88,7 +88,7 @@ async function getOrCreateWorkspace(supabase: any, userId: string): Promise<stri
  * Fetch all active forms in the user's workspace
  */
 export async function getForms() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: 'Unauthorized user.' };
 
@@ -101,10 +101,7 @@ export async function getForms() {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-
-    // Merge in mock fallbacks so dashboard forms look outstanding even on first sign-up!
-    const blended = [...(data || []), ...MOCK_FORMS];
-    return { success: true, data: blended };
+    return { success: true, data: data || [] };
   } catch (err: any) {
     console.warn('getForms database query failed. Returning mock library. Details:', err.message);
     return { success: true, data: MOCK_FORMS };
@@ -115,7 +112,7 @@ export async function getForms() {
  * Create a new form
  */
 export async function createForm(name: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: 'Unauthorized user.' };
 
@@ -162,7 +159,7 @@ export async function getFormById(id: string) {
   const mockMatch = MOCK_FORMS.find(f => f.id === id);
   if (mockMatch) return { success: true, data: mockMatch };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   try {
     const { data, error } = await supabase
       .from('lead_capture_forms')
@@ -188,7 +185,7 @@ export async function saveForm(id: string, name: string, config: any) {
     return { success: true, data: { id, name, config } };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   try {
     const { data, error } = await supabase
       .from('lead_capture_forms')
@@ -210,7 +207,7 @@ export async function saveForm(id: string, name: string, config: any) {
 export async function incrementFormViews(formId: string) {
   if (formId.startsWith('form-mock')) return { success: true };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   try {
     // Run direct RPC or raw decrement increment call securely
     const { data: form } = await supabase.from('lead_capture_forms').select('views').eq('id', formId).single();
@@ -233,7 +230,7 @@ export async function submitFormAnswer(formId: string, answers: any) {
     return { success: true };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   try {
     // 1. Save answers to public.form_submissions
     const { error: subError } = await supabase
@@ -303,7 +300,7 @@ export async function getFormSubmissions(formId: string) {
     return { success: true, data: filtered };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   try {
     const { data, error } = await supabase
       .from('form_submissions')

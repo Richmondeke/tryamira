@@ -218,6 +218,19 @@ export default function Page() {
             <div style={{ display: 'inline-block', width: '28px', height: '28px', border: '3px solid #6366f1', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '12px' }} />
             <div style={{ color: '#64748b', fontSize: '13px' }}>Loading forms database...</div>
           </div>
+        ) : forms.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '5rem 2rem', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ fontSize: '48px', marginBottom: '1rem' }}>📋</div>
+            <h4 style={{ fontSize: '16px', fontWeight: 600, color: '#1e293b', margin: '0 0 0.5rem 0' }}>No active lead capture forms</h4>
+            <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 1.5rem 0', maxWidth: '360px', lineHeight: 1.5 }}>
+              Create a custom form and share the link with your clients. Submitted responses will be automatically captured as leads in your CRM.
+            </p>
+            <button onClick={() => setShowModal(true)} style={{ backgroundColor: '#6366f1', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.6rem 1.25rem', fontSize: '13px', fontWeight: 500, cursor: 'pointer', transition: 'background 0.2s' }}
+                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4f46e5'}
+                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#6366f1'}>
+              + Create Your First Form
+            </button>
+          </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontFeatureSettings: '"tnum"' }}>
@@ -231,34 +244,26 @@ export default function Page() {
                 </tr>
               </thead>
               <tbody>
-                {forms.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} style={{ padding: '3rem 0', textAlign: 'center', color: '#94a3b8', fontSize: '13px' }}>
-                      No forms created yet. Build your first form to capture more leads.
-                    </td>
-                  </tr>
-                ) : (
-                  forms.map((form) => {
-                    const views = form.views || 0;
-                    const subCount = form.submissions || 0;
-                    const convRate = form.conversion_rate !== undefined ? `${form.conversion_rate}%` : (views > 0 ? `${((subCount / views) * 100).toFixed(1)}%` : '0%');
-                    return (
-                      <tr key={form.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                        <td style={{ padding: '1.25rem 0', fontSize: '13px', color: '#0f172a', fontWeight: 500 }}>{form.name}</td>
-                        <td style={{ padding: '1.25rem 0', fontSize: '13px', color: '#64748b' }}>{views.toLocaleString()}</td>
-                        <td style={{ padding: '1.25rem 0', fontSize: '13px', color: '#64748b' }}>{subCount.toLocaleString()}</td>
-                        <td style={{ padding: '1.25rem 0', fontSize: '13px', color: '#15be53', fontWeight: 500 }}>{convRate}</td>
-                        <td style={{ padding: '1.25rem 0', fontSize: '13px' }}>
-                          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                            <span style={{ color: '#6366f1', cursor: 'pointer', fontWeight: 500, transition: 'color 0.2s' }} onClick={() => router.push(`/dashboard/forms/${form.id}`)} onMouseOver={(e) => e.currentTarget.style.color = '#4f46e5'} onMouseOut={(e) => e.currentTarget.style.color = '#6366f1'}>Edit</span>
-                            <span style={{ color: '#6366f1', cursor: 'pointer', fontWeight: 500, transition: 'color 0.2s' }} onClick={() => openShareModal(form)} onMouseOver={(e) => e.currentTarget.style.color = '#4f46e5'} onMouseOut={(e) => e.currentTarget.style.color = '#6366f1'}>Share</span>
-                            <span style={{ color: '#6366f1', cursor: 'pointer', fontWeight: 500, transition: 'color 0.2s' }} onClick={() => openResultsModal(form)} onMouseOver={(e) => e.currentTarget.style.color = '#4f46e5'} onMouseOut={(e) => e.currentTarget.style.color = '#6366f1'}>Results</span>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
+                {forms.map((form) => {
+                  const views = form.views || 0;
+                  const subCount = form.submissions || 0;
+                  const convRate = form.conversion_rate !== undefined ? `${form.conversion_rate}%` : (views > 0 ? `${((subCount / views) * 100).toFixed(1)}%` : '0%');
+                  return (
+                    <tr key={form.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                      <td style={{ padding: '1.25rem 0', fontSize: '13px', color: '#0f172a', fontWeight: 500 }}>{form.name}</td>
+                      <td style={{ padding: '1.25rem 0', fontSize: '13px', color: '#64748b' }}>{views.toLocaleString()}</td>
+                      <td style={{ padding: '1.25rem 0', fontSize: '13px', color: '#64748b' }}>{subCount.toLocaleString()}</td>
+                      <td style={{ padding: '1.25rem 0', fontSize: '13px', color: '#15be53', fontWeight: 500 }}>{convRate}</td>
+                      <td style={{ padding: '1.25rem 0', fontSize: '13px' }}>
+                        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                          <span style={{ color: '#6366f1', cursor: 'pointer', fontWeight: 500, transition: 'color 0.2s' }} onClick={() => router.push(`/dashboard/forms/${form.id}`)} onMouseOver={(e) => e.currentTarget.style.color = '#4f46e5'} onMouseOut={(e) => e.currentTarget.style.color = '#6366f1'}>Edit</span>
+                          <span style={{ color: '#6366f1', cursor: 'pointer', fontWeight: 500, transition: 'color 0.2s' }} onClick={() => openShareModal(form)} onMouseOver={(e) => e.currentTarget.style.color = '#4f46e5'} onMouseOut={(e) => e.currentTarget.style.color = '#6366f1'}>Share</span>
+                          <span style={{ color: '#6366f1', cursor: 'pointer', fontWeight: 500, transition: 'color 0.2s' }} onClick={() => openResultsModal(form)} onMouseOver={(e) => e.currentTarget.style.color = '#4f46e5'} onMouseOut={(e) => e.currentTarget.style.color = '#6366f1'}>Results</span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
