@@ -3,48 +3,81 @@
 import { useState, useEffect } from 'react';
 import Modal from '../../../../components/ui/Modal';
 import Toast from '../../../../components/ui/Toast';
-import { getComposioStatus, initiateComposioConnection, removeComposioIntegration, saveIntegrationConfig } from '@/app/actions/integrations';
+import { 
+  getComposioApps, 
+  getComposioStatus, 
+  initiateComposioConnection, 
+  removeComposioIntegration, 
+  saveIntegrationConfig 
+} from '@/app/actions/integrations';
 
 export default function IntegrationsPage() {
   const [toast, setToast] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [connectingApp, setConnectingApp] = useState<any | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
-  
-  // Inputs
-  const [apiKey, setApiKey] = useState('');
-  const [webhookUrl, setWebhookUrl] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [integrations, setIntegrations] = useState<any[]>([]);
 
-  const [integrations, setIntegrations] = useState([
-    { id: 'hubspot', name: 'HubSpot', desc: 'Sync leads to your HubSpot CRM.', status: 'Not Installed', icon: '🟠', type: 'oauth' },
-    { id: 'salesforce', name: 'Salesforce', desc: 'Two-way sync for Salesforce records.', status: 'Not Installed', icon: '☁️', type: 'oauth' },
-    { id: 'zapier', name: 'Zapier', desc: 'Connect Amira to 5,000+ apps.', status: 'Not Installed', icon: '⚡', type: 'webhook' },
-    { id: 'stripe', name: 'Stripe', desc: 'Capture payments directly in chat.', status: 'Not Installed', icon: '💳', type: 'oauth' },
-    { id: 'slack', name: 'Slack', desc: 'Send notifications to Slack channels.', status: 'Not Installed', icon: '💬', type: 'oauth' },
-    { id: 'googlecalendar', name: 'Google Calendar', desc: 'Book meetings directly on your calendar.', status: 'Not Installed', icon: '📅', type: 'oauth' },
-    { id: 'zendesk', name: 'Zendesk', desc: 'Create and manage support tickets.', status: 'Not Installed', icon: '🎧', type: 'oauth' },
-    { id: 'mailchimp', name: 'Mailchimp', desc: 'Sync email subscribers automatically.', status: 'Not Installed', icon: '✉️', type: 'oauth' },
-    { id: 'shopify', name: 'Shopify', desc: 'Manage e-commerce orders and customers.', status: 'Not Installed', icon: '🛍️', type: 'oauth' },
-    { id: 'notion', name: 'Notion', desc: 'Sync data to Notion databases.', status: 'Not Installed', icon: '📝', type: 'oauth' },
-  ]);
+  // Function to load all integrations dynamically
+  const loadIntegrations = async () => {
+    try {
+      const appsRes = await getComposioApps();
+      const statusRes = await getComposioStatus();
+
+      if (appsRes.success && appsRes.data) {
+        const activeIds = statusRes.success && statusRes.data
+          ? statusRes.data.map((d: any) => d.provider.toLowerCase())
+          : [];
+
+        const mapped = appsRes.data.map((app: any) => ({
+          ...app,
+          status: activeIds.includes(app.id.toLowerCase()) ? 'Installed' : 'Not Installed'
+        }));
+
+        setIntegrations(mapped);
+      }
+    } catch (err) {
+      console.error('Failed to load integrations:', err);
+      setToast('Failed to sync integration status.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Load Composio connections
-    getComposioStatus().then(res => {
-      if (res.success && res.data) {
-        const activeIds = res.data.map((d: any) => d.provider);
-        setIntegrations(prev => prev.map(app => 
-          activeIds.includes(app.id) ? { ...app, status: 'Installed' } : app
-        ));
+    // 1. Check for OAuth callback parameters in URL
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const status = params.get('status');
+      const app = params.get('app');
+
+      if (status === 'success' && app) {
+        // Automatically save local DB status to make it active
+        saveIntegrationConfig(app, { connected: true }).then(() => {
+          // Find matching app name if possible
+          const cleanName = app.charAt(0).toUpperCase() + app.slice(1);
+          setToast(`🎉 Successfully authenticated! ${cleanName} is now connected.`);
+          
+          // Clear query parameters cleanly from URL without reloading
+          const url = new URL(window.location.href);
+          url.searchParams.delete('status');
+          url.searchParams.delete('app');
+          window.history.replaceState({}, '', url.pathname + url.search);
+          
+          // Reload integrations to display newly installed status
+          loadIntegrations();
+        });
+        return;
       }
-    });
+    }
+
+    loadIntegrations();
   }, []);
 
   const handleCardClick = (app: any) => {
     if (app.status !== 'Installed') {
       setConnectingApp(app);
-      setApiKey('');
-      setWebhookUrl('');
       setShowModal(true);
     }
   };
@@ -54,7 +87,7 @@ export default function IntegrationsPage() {
     const res = await removeComposioIntegration(appId);
     if (res.success) {
       setIntegrations(prev => prev.map(a => a.id === appId ? { ...a, status: 'Not Installed' } : a));
-      setToast(`${appName} disconnected.`);
+      setToast(`${appName} disconnected successfully.`);
     } else {
       setToast(`Failed to disconnect ${appName}.`);
     }
@@ -67,20 +100,21 @@ export default function IntegrationsPage() {
     setIsConnecting(true);
 
     try {
-      // 1. Ask Composio for an OAuth redirect URL
+      // 1. Request dynamic connection link from server action (which links directly to Composio SDK)
       const res = await initiateComposioConnection(connectingApp.id);
       
       if (res.success && res.redirectUrl) {
-        // Also save a mock state locally so the UI updates
+        // 2. Local fallback save state (just in case they close before callback redirects)
         await saveIntegrationConfig(connectingApp.id, { connected: true });
         
-        // 2. Redirect the user to the Composio OAuth flow
-        setToast(`Redirecting to ${connectingApp.name}...`);
+        setToast(`Redirecting to ${connectingApp.name} secure login...`);
+        
+        // 3. Perform redirect to Composio OAuth flows
         setTimeout(() => {
-          window.location.href = res.redirectUrl;
-        }, 1500);
+          window.location.href = res.redirectUrl as string;
+        }, 1200);
       } else {
-        setToast(`Failed to initiate ${connectingApp.name} connection.`);
+        setToast(`Failed to establish OAuth link with ${connectingApp.name}.`);
         setIsConnecting(false);
         setShowModal(false);
       }
@@ -97,25 +131,44 @@ export default function IntegrationsPage() {
       
       <Modal isOpen={showModal} onClose={() => !isConnecting && setShowModal(false)} title={`Install ${connectingApp?.name}`}>
         {isConnecting ? (
-          <div style={{ textAlign: 'center', padding: '2rem 0' }}>
-            <div style={{ color: 'var(--stripe-purple)', fontSize: '14px', fontWeight: 500 }}>Authorizing...</div>
-            <p style={{ color: 'var(--stripe-muted)', fontSize: '13px', marginTop: '0.5rem' }}>Securely connecting Amira to {connectingApp?.name}.</p>
+          <div style={{ textAlign: 'center', padding: '2.5rem 0' }}>
+            <div style={{ display: 'inline-block', width: '32px', height: '32px', border: '3px solid #6366f1', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '1rem' }} />
+            <div style={{ color: '#6366f1', fontSize: '14px', fontWeight: 600 }}>Secure Authorization</div>
+            <p style={{ color: '#94a3b8', fontSize: '13px', marginTop: '0.5rem', marginInline: 'auto', maxWidth: '320px' }}>
+              Redirecting you to the Composio OAuth portal to authorize {connectingApp?.name} securely...
+            </p>
           </div>
         ) : (
           <form onSubmit={performInstall}>
-            <p style={{ color: 'var(--stripe-body)', fontSize: '13px', marginBottom: '1.5rem', lineHeight: 1.5 }}>
-              Connect your <strong>{connectingApp?.name}</strong> account to sync data directly with your AI Agents.
+            <p style={{ color: '#cbd5e1', fontSize: '13px', marginBottom: '1.5rem', lineHeight: 1.5 }}>
+              Connect your <strong>{connectingApp?.name}</strong> account to allow Amira AI agents to sync and automate workflows inside your CRM.
             </p>
 
-            <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#f8fafc', borderRadius: '4px', border: '1px solid var(--stripe-border)' }}>
-              <p style={{ fontSize: '13px', color: 'var(--stripe-navy)', margin: 0, lineHeight: 1.5 }}>
-                Amira securely authenticates and connects your accounts. You will be redirected to the official {connectingApp?.name} login page to grant access.
-              </p>
+            <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 }}>
+                <span style={{ fontSize: '16px' }}>🛡️</span>
+                <span>
+                  <strong>Composio Verified Connection:</strong> Authentication takes place directly through secure OAuth. Amira does not store your credentials.
+                </span>
+              </div>
             </div>
 
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-              <button type="button" onClick={() => setShowModal(false)} style={{ padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid var(--stripe-border)', backgroundColor: '#fff', color: 'var(--stripe-navy)', cursor: 'pointer', fontWeight: 500 }}>Cancel</button>
-              <button type="submit" style={{ padding: '0.5rem 1rem', borderRadius: '4px', border: 'none', backgroundColor: '#6366f1', color: '#fff', cursor: 'pointer', fontWeight: 500 }}>
+              <button 
+                type="button" 
+                onClick={() => setShowModal(false)} 
+                style={{ padding: '0.5rem 1.25rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)', backgroundColor: 'transparent', color: '#cbd5e1', cursor: 'pointer', fontWeight: 500, transition: 'all 0.2s' }}
+                onMouseOver={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'; }}
+                onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                style={{ padding: '0.5rem 1.25rem', borderRadius: '6px', border: 'none', backgroundColor: '#6366f1', color: '#fff', cursor: 'pointer', fontWeight: 600, boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)', transition: 'all 0.2s' }}
+                onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#4f46e5'; }}
+                onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#6366f1'; }}
+              >
                 Connect {connectingApp?.name}
               </button>
             </div>
@@ -123,57 +176,141 @@ export default function IntegrationsPage() {
         )}
       </Modal>
 
-      <div style={{ marginBottom: '1.5rem' }}>
-        <h2 style={{ fontSize: '18px', fontWeight: 400, color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0' }}>Software Apps</h2>
-        <p style={{ color: 'var(--stripe-body)', fontSize: '13px', margin: 0 }}>Connect Amira with your existing software stack.</p>
+      <style jsx global>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+
+      <div style={{ marginBottom: '2rem' }}>
+        <h2 style={{ fontSize: '22px', fontWeight: 500, color: '#f8fafc', margin: '0 0 0.5rem 0' }}>Composio Integrations</h2>
+        <p style={{ color: '#94a3b8', fontSize: '13px', margin: 0 }}>
+          Enable multi-source syncing for your dialer, sync HubSpot CRM pipelines, import Google Contacts, and connect your workflow stack via Composio.
+        </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
-        {integrations.map((app, i) => {
-          const isInstalled = app.status === 'Installed';
-          return (
+      {loading ? (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
+          {[1, 2, 4, 5, 6].map((i) => (
             <div 
               key={i} 
-              onClick={() => handleCardClick(app)}
               style={{ 
-                backgroundColor: '#ffffff', 
-                border: '1px solid var(--stripe-border)', 
-                borderRadius: '6px', 
-                padding: '1.25rem', 
-                boxShadow: 'var(--stripe-shadow-ambient)',
-                cursor: isInstalled ? 'default' : 'pointer',
-                transition: 'box-shadow 0.2s',
-              }}
-              onMouseOver={(e) => { if (!isInstalled) e.currentTarget.style.boxShadow = '0 8px 24px rgba(50,50,93,0.1)'; }}
-              onMouseOut={(e) => { if (!isInstalled) e.currentTarget.style.boxShadow = 'var(--stripe-shadow-ambient)'; }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '8px', backgroundColor: '#f6f9fc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
-                  {app.icon}
-                </div>
+                width: 'calc(50% - 0.5rem)', 
+                height: '140px', 
+                backgroundColor: 'rgba(30, 41, 59, 0.5)', 
+                border: '1px solid rgba(255,255,255,0.04)', 
+                borderRadius: '8px', 
+                animation: 'pulse 1.5s infinite ease-in-out' 
+              }} 
+            />
+          ))}
+          <style jsx>{`
+            @keyframes pulse {
+              0%, 100% { opacity: 0.6; }
+              50% { opacity: 0.3; }
+            }
+          `}</style>
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+          {integrations.map((app, i) => {
+            const isInstalled = app.status === 'Installed';
+            return (
+              <div 
+                key={app.id || i} 
+                onClick={() => handleCardClick(app)}
+                style={{ 
+                  backgroundColor: isInstalled ? 'rgba(30, 41, 59, 0.4)' : 'rgba(15, 23, 42, 0.6)', 
+                  border: isInstalled ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid rgba(255,255,255,0.05)', 
+                  borderRadius: '10px', 
+                  padding: '1.5rem', 
+                  backdropFilter: 'blur(12px)',
+                  boxShadow: isInstalled ? '0 4px 20px rgba(99, 102, 241, 0.05)' : 'none',
+                  cursor: isInstalled ? 'default' : 'pointer',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+                onMouseOver={(e) => { 
+                  if (!isInstalled) {
+                    e.currentTarget.style.border = '1px solid rgba(255,255,255,0.12)';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 12px 24px -10px rgba(0,0,0,0.5)';
+                  }
+                }}
+                onMouseOut={(e) => { 
+                  if (!isInstalled) {
+                    e.currentTarget.style.border = '1px solid rgba(255,255,255,0.05)';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }
+                }}
+              >
+                {/* Visual Installed Accent */}
                 {isInstalled && (
-                  <button 
-                    onClick={(e) => handleUninstall(e, app.id, app.name)} 
-                    style={{ 
-                      backgroundColor: '#ffffff', 
-                      color: '#d92d20', 
-                      border: '1px solid #d92d20', 
-                      borderRadius: '4px', 
-                      padding: '0.35rem 0.75rem', 
-                      fontSize: '12px', 
-                      fontWeight: 500, 
-                      cursor: 'pointer'
-                    }}>
-                    Uninstall
-                  </button>
+                  <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', backgroundColor: '#6366f1' }} />
                 )}
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+                  <div style={{ 
+                    width: '46px', 
+                    height: '46px', 
+                    borderRadius: '10px', 
+                    backgroundColor: 'rgba(255,255,255,0.03)', 
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    fontSize: '22px' 
+                  }}>
+                    {app.icon && app.icon.startsWith('http') ? (
+                      <img src={app.icon || undefined} alt={app.name} style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
+                    ) : (
+                      app.icon || '🧩'
+                    )}
+                  </div>
+                  {isInstalled ? (
+                    <button 
+                      onClick={(e) => handleUninstall(e, app.id, app.name)} 
+                      style={{ 
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)', 
+                        color: '#f87171', 
+                        border: '1px solid rgba(239, 68, 68, 0.2)', 
+                        borderRadius: '6px', 
+                        padding: '0.4rem 0.9rem', 
+                        fontSize: '12px', 
+                        fontWeight: 600, 
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseOver={(e) => { e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.2)'; }}
+                      onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'; }}
+                    >
+                      Uninstall
+                    </button>
+                  ) : (
+                    <span style={{ 
+                      fontSize: '11px', 
+                      backgroundColor: 'rgba(255,255,255,0.03)', 
+                      border: '1px solid rgba(255,255,255,0.05)',
+                      padding: '0.25rem 0.6rem', 
+                      borderRadius: '12px', 
+                      color: '#64748b',
+                      fontWeight: 500
+                    }}>
+                      Not Active
+                    </span>
+                  )}
+                </div>
+                <h3 style={{ fontSize: '14px', color: '#f8fafc', margin: '0 0 0.5rem 0', fontWeight: 600 }}>{app.name}</h3>
+                <p style={{ fontSize: '12px', color: isInstalled ? '#cbd5e1' : '#64748b', margin: 0, lineHeight: 1.5 }}>
+                  {app.desc || `Integrate ${app.name} smoothly via secure Composio login.`}
+                </p>
               </div>
-              <h3 style={{ fontSize: '13px', color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', fontWeight: 500 }}>{app.name}</h3>
-              <p style={{ fontSize: '12px', color: isInstalled ? 'var(--stripe-body)' : '#9ca3af', margin: 0 }}>{app.desc}</p>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
