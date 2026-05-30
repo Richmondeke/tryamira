@@ -1619,85 +1619,320 @@ function AgentContent() {
 
   // --- STANDARD DIRECTORY VIEW ---
   return (
-    <div style={{ maxWidth: '1080px', margin: '0 auto', width: '100%' }}>
+    <div style={{ maxWidth: '1080px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '3rem' }}>
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <div>
-          <h1 style={{ fontSize: '20px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.25rem 0' }}>AI Agents</h1>
-          <p style={{ color: 'var(--stripe-body)', fontSize: '13px', margin: 0 }}>Manage your specialized AI employees.</p>
+      {/* ZONE A: ACTIVE AI EMPLOYEES (Always Top Zone) */}
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <div>
+            <h1 style={{ fontSize: '20px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.25rem 0', letterSpacing: '-0.5px' }}>
+              AI Employee Studio
+            </h1>
+            <p style={{ color: 'var(--stripe-body)', fontSize: '13px', margin: 0 }}>
+              Manage your active virtual workforce, or hire specialized digital employees below.
+            </p>
+          </div>
+          
+          {agents.length > 0 && (
+            <button 
+              onClick={handleCreateAgent} 
+              disabled={isCreating}
+              style={{ 
+                backgroundColor: '#533afd', 
+                color: '#ffffff', 
+                border: 'none', 
+                borderRadius: '4px', 
+                padding: '0.5rem 1.25rem', 
+                fontSize: '13px', 
+                fontWeight: 600, 
+                cursor: isCreating ? 'wait' : 'pointer', 
+                boxShadow: 'var(--stripe-shadow-action)',
+                opacity: isCreating ? 0.7 : 1
+              }}
+            >
+              {isCreating ? 'Creating...' : '+ Build Custom Agent'}
+            </button>
+          )}
         </div>
-        <button 
-          onClick={handleCreateAgent} 
-          disabled={isCreating}
-          style={{ 
-            backgroundColor: '#533afd', 
-            color: '#ffffff', 
-            border: 'none', 
-            borderRadius: '4px', 
-            padding: '0.5rem 1.25rem', 
-            fontSize: '13px', 
-            fontWeight: 500, 
-            cursor: isCreating ? 'wait' : 'pointer', 
-            boxShadow: 'var(--stripe-shadow-action)',
-            opacity: isCreating ? 0.7 : 1
+
+        {agents.length === 0 ? (
+          /* Premium welcome box when zero agents exist */
+          <div style={{ 
+            padding: '2.5rem 2rem', 
+            backgroundColor: '#ffffff', 
+            border: '1px solid var(--stripe-border)', 
+            borderRadius: '12px', 
+            textAlign: 'center', 
+            boxShadow: 'var(--stripe-shadow-ambient)',
+            background: 'linear-gradient(135deg, rgba(83, 58, 253, 0.02) 0%, rgba(83, 58, 253, 0.05) 100%)',
+            borderWidth: '1.5px'
           }}>
-          {isCreating ? 'Creating...' : '+ Create New Agent'}
-        </button>
+            <span style={{ fontSize: '32px', display: 'block', marginBottom: '0.75rem' }}>🤖</span>
+            <h3 style={{ fontSize: '15px', color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', fontWeight: 600 }}>
+              Deploy Your First AI Digital Employee
+            </h3>
+            <p style={{ fontSize: '13px', color: 'var(--stripe-body)', maxWidth: '580px', margin: '0 auto 1.5rem auto', lineHeight: 1.5 }}>
+              You don't have any active digital employees running yet. Choose a pre-built specialized template below or click "Build Custom Agent" to launch your first virtual worker in 60 seconds!
+            </p>
+            <button 
+              onClick={handleCreateAgent}
+              disabled={isCreating}
+              style={{ 
+                backgroundColor: '#533afd', 
+                border: 'none', 
+                borderRadius: '4px', 
+                padding: '0.6rem 1.25rem', 
+                fontSize: '13px', 
+                cursor: 'pointer', 
+                color: '#ffffff', 
+                fontWeight: 600,
+                boxShadow: '0 4px 12px rgba(83,58,253,0.15)'
+              }}
+            >
+              + Build Custom Agent
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+            {agents.map((agent, idx) => (
+              <div 
+                key={idx} 
+                onClick={() => router.push(`/dashboard/ai-agent/${agent.id}`)}
+                style={{ 
+                  backgroundColor: '#ffffff', 
+                  border: '1px solid var(--stripe-border)', 
+                  borderRadius: '10px', 
+                  padding: '1.5rem', 
+                  boxShadow: 'var(--stripe-shadow-ambient)',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease-in-out'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = 'var(--stripe-shadow-action)';
+                  e.currentTarget.style.borderColor = '#818cf8';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'var(--stripe-shadow-ambient)';
+                  e.currentTarget.style.borderColor = 'var(--stripe-border)';
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(83,58,253,0.1)', color: '#533afd', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+                    🤖
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: '14px', color: 'var(--stripe-navy)', margin: '0 0 0.25rem 0', fontWeight: 600 }}>{agent.name}</h3>
+                    <div style={{ fontSize: '11px', color: 'var(--stripe-muted)', fontWeight: 500 }}>
+                      {agent.config?.attachedWorkflows?.length || 0} Workflows Connected
+                    </div>
+                  </div>
+                </div>
+                <p style={{ fontSize: '12px', color: 'var(--stripe-body)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: 1.45 }}>
+                  {agent.config?.systemPrompt || 'No system prompt configured.'}
+                </p>
+                
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem', borderTop: '1px solid #f1f5f9', paddingTop: '0.75rem' }}>
+                  <span style={{ fontSize: '11px', color: '#533afd', fontWeight: 700 }}>Configure Employee →</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {agents.length === 0 ? (
-        <div style={{ padding: '3rem', backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', textAlign: 'center', boxShadow: 'var(--stripe-shadow-ambient)' }}>
-          <h3 style={{ fontSize: '14px', color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0' }}>No Agents Yet</h3>
-          <p style={{ fontSize: '13px', color: 'var(--stripe-body)', marginBottom: '1.5rem' }}>Create your first AI agent to start automating your workflows.</p>
-          <button 
-            onClick={handleCreateAgent}
-            disabled={isCreating}
-            style={{ backgroundColor: '#fff', border: '1px solid var(--stripe-border)', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '13px', cursor: 'pointer', color: 'var(--stripe-navy)', fontWeight: 500 }}
-          >
-            Create Agent
-          </button>
+      <hr style={{ border: 'none', borderTop: '1px solid var(--stripe-border)', margin: '0.5rem 0' }} />
+
+      {/* ZONE B: HIRE A SPECIALIZED WORKER (Pre-built Templates Deck, Always Bottom Zone) */}
+      <div>
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--stripe-navy)', margin: '0 0 0.25rem 0' }}>
+            Hire a Specialized Digital Employee
+          </h2>
+          <p style={{ color: 'var(--stripe-body)', fontSize: '13px', margin: 0 }}>
+            Choose a pre-trained agent matching your industry workflow. Deploys live in less than a minute.
+          </p>
         </div>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-          {agents.map((agent, idx) => (
-            <div 
-              key={idx} 
-              onClick={() => router.push(`/dashboard/ai-agent/${agent.id}`)}
-              style={{ 
-                backgroundColor: '#ffffff', 
-                border: '1px solid var(--stripe-border)', 
-                borderRadius: '6px', 
-                padding: '1.5rem', 
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
+          {/* Custom Creation Card link */}
+          <div 
+            onClick={handleCreateAgent}
+            style={{
+              backgroundColor: '#ffffff',
+              border: '1.5px dashed var(--stripe-border)',
+              borderRadius: '12px',
+              padding: '2rem',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              cursor: 'pointer',
+              minHeight: '440px',
+              transition: 'all 0.15s ease-in-out'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = '#533afd';
+              e.currentTarget.style.backgroundColor = 'rgba(83, 58, 253, 0.01)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'var(--stripe-border)';
+              e.currentTarget.style.backgroundColor = '#ffffff';
+            }}
+          >
+            <span style={{ fontSize: '36px', marginBottom: '1rem' }}>➕</span>
+            <h3 style={{ fontSize: '14.5px', color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', fontWeight: 700 }}>Build Custom Agent</h3>
+            <p style={{ fontSize: '12px', color: 'var(--stripe-muted)', textAlign: 'center', lineHeight: 1.5, maxWidth: '240px' }}>
+              Configure a virtual assistant from scratch with custom voices, prompts, and bespoke webhook actions.
+            </p>
+            <Button size="sm" style={{ marginTop: '1.25rem', backgroundColor: '#533afd', color: '#fff' }}>
+              Hire Custom Assistant
+            </Button>
+          </div>
+
+          {/* Render the 6 pre-built specialized templates */}
+          {templatesData.map((tpl) => (
+            <div
+              key={tpl.id}
+              style={{
+                backgroundColor: '#ffffff',
+                border: '1px solid var(--stripe-border)',
+                borderRadius: '12px',
                 boxShadow: 'var(--stripe-shadow-ambient)',
-                cursor: 'pointer',
-                transition: 'transform 0.1s, box-shadow 0.1s'
+                display: 'flex',
+                flexDirection: 'column',
+                height: '100%',
+                minHeight: '440px',
+                transition: 'all 0.15s ease-in-out',
+                overflow: 'hidden'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-2px)';
                 e.currentTarget.style.boxShadow = 'var(--stripe-shadow-action)';
+                e.currentTarget.style.borderColor = tpl.categoryColor;
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = 'var(--stripe-shadow-ambient)';
+                e.currentTarget.style.borderColor = 'var(--stripe-border)';
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(83,58,253,0.1)', color: '#533afd', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
-                  🤖
+              {/* Card Cover Header */}
+              <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--stripe-border)', background: `linear-gradient(135deg, ${tpl.categoryColor}08 0%, ${tpl.categoryColor}12 100%)` }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                  <span style={{
+                    fontSize: '10.5px',
+                    fontWeight: 700,
+                    color: tpl.categoryColor,
+                    backgroundColor: `${tpl.categoryColor}18`,
+                    padding: '2px 8px',
+                    borderRadius: '20px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}>
+                    {tpl.category}
+                  </span>
+                  <span style={{ fontSize: '11px', color: 'var(--stripe-muted)', backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', padding: '2px 8px', borderRadius: '4px', fontWeight: 500 }}>
+                    {tpl.callsHandled}
+                  </span>
                 </div>
-                <div>
-                  <h3 style={{ fontSize: '14px', color: 'var(--stripe-navy)', margin: '0 0 0.25rem 0', fontWeight: 500 }}>{agent.name}</h3>
-                  <div style={{ fontSize: '12px', color: 'var(--stripe-muted)' }}>{agent.config?.attachedWorkflows?.length || 0} Workflows</div>
+                <h3 style={{ fontSize: '14.5px', fontWeight: 700, color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0' }}>{tpl.name}</h3>
+                <p style={{ fontSize: '12px', color: 'var(--stripe-body)', margin: 0, lineHeight: 1.5 }}>{tpl.desc}</p>
+              </div>
+
+              {/* What it can do list */}
+              <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--stripe-border)', flex: 1 }}>
+                <div style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--stripe-label)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.65rem' }}>
+                  Specialized Capabilities
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {tpl.capabilities.map((cap, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                      <span style={{ color: '#10b981', fontSize: '12px', flexShrink: 0, fontWeight: 'bold' }}>✓</span>
+                      <span style={{ fontSize: '12px', color: 'var(--stripe-body)', lineHeight: 1.35 }}>{cap}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
-              <p style={{ fontSize: '12px', color: 'var(--stripe-body)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                {agent.config?.systemPrompt || 'No system prompt configured.'}
-              </p>
+
+              {/* Required Integrations */}
+              <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--stripe-border)' }}>
+                <div style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--stripe-label)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.5rem' }}>
+                  Workflow Integrations
+                </div>
+                <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                  {tpl.requiredIntegrations.map((int, i) => (
+                    <div 
+                      key={i} 
+                      title={int.reason}
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '0.25rem', 
+                        padding: '4px 8px', 
+                        backgroundColor: '#f8fafc', 
+                        border: '1px solid var(--stripe-border)',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        color: 'var(--stripe-navy)'
+                      }}
+                    >
+                      <span>{int.icon}</span>
+                      <span>{int.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Card Footer Actions */}
+              <div style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', backgroundColor: '#f8fafc' }}>
+                <button
+                  onClick={() => router.push(`/dashboard/ai-agent?template=${tpl.id}`)}
+                  style={{
+                    width: '100%',
+                    backgroundColor: '#533afd',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    padding: '0.6rem 1rem',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    letterSpacing: '0.1px',
+                    display: 'block',
+                    boxShadow: '0 2px 4px rgba(83, 58, 253, 0.1)'
+                  }}
+                >
+                  Hire specialized worker →
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => router.push(`/dashboard/ai-agent?template=${tpl.id}&preview=true`)}
+                  style={{
+                    width: '100%',
+                    backgroundColor: 'transparent',
+                    color: 'var(--stripe-muted)',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '0.35rem',
+                    fontSize: '11.5px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.color = '#533afd'}
+                  onMouseLeave={e => e.currentTarget.style.color = 'var(--stripe-muted)'}
+                >
+                  Preview profile details
+                </button>
+              </div>
             </div>
           ))}
         </div>
-      )}
+      </div>
       
       {/* Persistent global audio node for stable previews */}
       <audio id="voice-preview-player" style={{ display: 'none' }} />
