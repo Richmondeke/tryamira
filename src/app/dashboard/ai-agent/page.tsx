@@ -8,6 +8,7 @@ import Toast from '@/components/ui/Toast';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import Modal from '@/components/ui/Modal';
+import SuccessConfirmation from '@/components/ui/SuccessConfirmation';
 import Vapi from '@vapi-ai/web';
 
 
@@ -272,7 +273,15 @@ function AgentContent() {
   const isPreview = searchParams.get('preview') === 'true';
 
   const [agents, setAgents] = useState<any[]>([]);
+  const [billingTier, setBillingTier] = useState<'starter' | 'pro' | 'team' | 'enterprise'>('starter');
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem('amira_billing_tier');
+      if (cached) setBillingTier(cached as 'starter' | 'pro' | 'team' | 'enterprise');
+    }
+  }, []);
   const [isCreating, setIsCreating] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
@@ -286,6 +295,7 @@ function AgentContent() {
   // Custom Cloned Voice State
   const [voices, setVoices] = useState(initialVoicesList);
   const [showCloneModal, setShowCloneModal] = useState(false);
+  const [isCloneSuccess, setIsCloneSuccess] = useState(false);
   const [clonedVoiceName, setClonedVoiceName] = useState('');
   const [clonedVoiceFile, setClonedVoiceFile] = useState<string | null>(null);
   const [isCloning, setIsCloning] = useState(false);
@@ -916,9 +926,7 @@ function AgentContent() {
         setVoices(prevVoices => [newClonedVoice, ...prevVoices]);
         setCustomVoice(newVoiceId);
         setIsCloning(false);
-        setShowCloneModal(false);
-        setClonedVoiceName('');
-        setClonedVoiceFile(null);
+        setIsCloneSuccess(true);
         setToast({ message: '🎉 Voice successfully cloned at ElevenLabs and ready to speak!', type: 'success' });
       }, 300);
     } else {
@@ -1023,6 +1031,26 @@ function AgentContent() {
   };
 
   const handleCreateAgent = async () => {
+    let limit = 1;
+    let limitName = 'Starter';
+    if (billingTier === 'pro') {
+      limit = 5;
+      limitName = 'Pro';
+    } else if (billingTier === 'team') {
+      limit = 15;
+      limitName = 'Team';
+    } else if (billingTier === 'enterprise') {
+      limit = Infinity;
+      limitName = 'Enterprise';
+    }
+
+    if (agents.length >= limit) {
+      setToast({ 
+        message: `👤 ${limitName} Plan limit reached! Upgrade your plan in Account Settings to create more than ${limit} custom Voice AI Employees.`, 
+        type: 'error' 
+      });
+      return;
+    }
     setIsCreating(true);
     const res = await createAgent('New Agent');
     if (res.success && res.data) {
@@ -1068,6 +1096,26 @@ function AgentContent() {
 
   const handleGoLive = async () => {
     if (!selectedTemplate) return;
+    let limit = 1;
+    let limitName = 'Starter';
+    if (billingTier === 'pro') {
+      limit = 5;
+      limitName = 'Pro';
+    } else if (billingTier === 'team') {
+      limit = 15;
+      limitName = 'Team';
+    } else if (billingTier === 'enterprise') {
+      limit = Infinity;
+      limitName = 'Enterprise';
+    }
+
+    if (agents.length >= limit) {
+      setToast({ 
+        message: `👤 ${limitName} Plan limit reached! Upgrade your plan in Account Settings to create more than ${limit} custom Voice AI Employees.`, 
+        type: 'error' 
+      });
+      return;
+    }
     setIsCreating(true);
 
     const activeWorkflows = Object.entries(connectedIntegrations)

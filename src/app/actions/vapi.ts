@@ -3,6 +3,10 @@
 import { createClient } from '@/utils/supabase/server';
 import { v4 as uuidv4 } from 'uuid';
 
+function isKeyEmpty(key: string | undefined): boolean {
+  return !key || key === 'undefined' || key === 'null' || key.trim() === '';
+}
+
 export async function updateInboundAgent(
   assistantId: string,
   voice: string,
@@ -12,7 +16,7 @@ export async function updateInboundAgent(
 ) {
   const apiKey = process.env.VAPI_PRIVATE_API_KEY;
 
-  if (!apiKey || !assistantId) {
+  if (isKeyEmpty(apiKey) || !assistantId) {
     console.warn('VAPI_PRIVATE_API_KEY or VAPI_ASSISTANT_ID is not set in environment variables.');
     return { success: false, error: 'Vapi is not configured.' };
   }
@@ -73,7 +77,7 @@ export async function updateInboundAgent(
 
 export async function getVapiCalls() {
   const apiKey = process.env.VAPI_PRIVATE_API_KEY;
-  if (!apiKey) {
+  if (isKeyEmpty(apiKey)) {
     console.warn('VAPI_PRIVATE_API_KEY is not set. Returning mock calls.');
     return [];
   }
@@ -108,7 +112,7 @@ export async function triggerOutboundCall(
 ) {
   const apiKey = process.env.VAPI_PRIVATE_API_KEY;
 
-  if (!apiKey || !assistantId || !phoneNumberId) {
+  if (isKeyEmpty(apiKey) || !assistantId || !phoneNumberId) {
     console.warn('VAPI_PRIVATE_API_KEY, VAPI_ASSISTANT_ID, or VAPI_PHONE_NUMBER_ID is not set.');
     return { success: false, error: 'Vapi is not configured.' };
   }
@@ -168,7 +172,7 @@ export async function createVapiSipTrunk(params: {
   gateways?: string[];
 }) {
   const apiKey = process.env.VAPI_PRIVATE_API_KEY;
-  if (!apiKey) {
+  if (isKeyEmpty(apiKey)) {
     console.warn('VAPI_PRIVATE_API_KEY is not set. Simulating SIP trunk creation.');
     return { 
       success: true, 
@@ -254,7 +258,7 @@ export async function syncVapiRAG(
     }
   }
 
-  if (!apiKey) {
+  if (isKeyEmpty(apiKey)) {
     console.warn('VAPI_PRIVATE_API_KEY not set. Simulating RAG syncing.');
     return {
       success: true,
@@ -338,7 +342,7 @@ export async function uploadClonedVoice(
 ) {
   const elevenApiKey = process.env.ELEVEN_LABS_API_KEY;
 
-  if (!elevenApiKey) {
+  if (isKeyEmpty(elevenApiKey)) {
     console.warn('ELEVEN_LABS_API_KEY is not set. Simulating neural cloning upload.');
     return {
       success: true,
@@ -434,7 +438,7 @@ export async function triggerCampaignDialer(params: {
   // 2. Loop and trigger outbound call API over Vapi using schedulePlan.earliestAt
   const results = [];
   for (const lead of params.leads) {
-    if (!apiKey) {
+    if (isKeyEmpty(apiKey)) {
       results.push({ leadName: lead.name, success: true, simulated: true });
       continue;
     }
@@ -541,7 +545,7 @@ export async function getElevenLabsVoices() {
   const headers: Record<string, string> = {
     'Accept': 'application/json'
   };
-  if (apiKey) {
+  if (!isKeyEmpty(apiKey)) {
     headers['xi-api-key'] = apiKey;
   }
 

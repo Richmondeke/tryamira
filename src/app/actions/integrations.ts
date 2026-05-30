@@ -75,7 +75,12 @@ export async function getComposioApps() {
 
 export async function getComposioStatus() {
   const apiKey = process.env.COMPOSIO_API_KEY;
-  if (!apiKey) {
+  const isKeyEmpty = !apiKey || 
+                     apiKey === 'undefined' || 
+                     apiKey === 'null' || 
+                     apiKey.trim() === '';
+
+  if (isKeyEmpty) {
     console.warn('COMPOSIO_API_KEY not set. Simulating Composio status fetch.');
     // Check locally in Supabase if URL is defined
     const supabase = await createClient();
@@ -116,7 +121,12 @@ export async function initiateComposioConnection(appName: string) {
   const origin = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const callbackUrl = `${origin}/dashboard/integrations/apps?status=success&app=${appName}`;
 
-  if (!apiKey) {
+  const isKeyEmpty = !apiKey || 
+                     apiKey === 'undefined' || 
+                     apiKey === 'null' || 
+                     apiKey.trim() === '';
+
+  if (isKeyEmpty) {
     console.warn('COMPOSIO_API_KEY not set. Simulating OAuth redirect.');
     // Simulate a redirect back to our callback success URL
     return { 
@@ -145,7 +155,12 @@ export async function initiateComposioConnection(appName: string) {
 
 export async function removeComposioIntegration(appName: string) {
   const apiKey = process.env.COMPOSIO_API_KEY;
-  if (!apiKey) {
+  const isKeyEmpty = !apiKey || 
+                     apiKey === 'undefined' || 
+                     apiKey === 'null' || 
+                     apiKey.trim() === '';
+
+  if (isKeyEmpty) {
     console.warn('COMPOSIO_API_KEY not set. Simulating disconnect.');
     // Also remove from supabase mock
     if (process.env.NEXT_PUBLIC_SUPABASE_URL) {

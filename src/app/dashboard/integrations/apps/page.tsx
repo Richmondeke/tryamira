@@ -16,6 +16,15 @@ export default function IntegrationsPage() {
   const [showModal, setShowModal] = useState(false);
   const [connectingApp, setConnectingApp] = useState<any | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [billingTier, setBillingTier] = useState<'starter' | 'pro' | 'team' | 'enterprise'>('starter');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem('amira_billing_tier');
+      if (cached) setBillingTier(cached as 'starter' | 'pro' | 'team' | 'enterprise');
+    }
+  }, []);
+
   const [integrations, setIntegrations] = useState<any[]>(() => {
     if (typeof window !== 'undefined') {
       const cached = localStorage.getItem('amira_cached_integrations');
@@ -97,6 +106,13 @@ export default function IntegrationsPage() {
 
   const handleCardClick = (app: any) => {
     if (app.status !== 'Installed') {
+      const isCRM = ['hubspot', 'salesforce'].includes(app.id?.toLowerCase()) || 
+                    app.name?.toLowerCase().includes('hubspot') || 
+                    app.name?.toLowerCase().includes('salesforce');
+      if (isCRM && (billingTier === 'starter' || billingTier === 'pro')) {
+        setToast("🔌 CRM Integrations (HubSpot, Salesforce) are restricted on the Starter & Pro Plans. Upgrade to the Team Plan to connect your pipelines.");
+        return;
+      }
       setConnectingApp(app);
       setShowModal(true);
     }

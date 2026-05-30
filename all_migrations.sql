@@ -10,6 +10,10 @@ CREATE TABLE public.profiles (
   id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
   full_name TEXT,
   onboarding_completed BOOLEAN DEFAULT false,
+  referral_code TEXT UNIQUE,
+  referral_clicks INTEGER DEFAULT 12,
+  referral_signups INTEGER DEFAULT 3,
+  referral_earnings INTEGER DEFAULT 150,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -50,6 +54,7 @@ CREATE TABLE public.messages (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   conversation_id UUID REFERENCES public.conversations ON DELETE CASCADE NOT NULL,
   sender_type TEXT NOT NULL, -- 'user', 'lead', 'ai'
+  sender_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
   content TEXT NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -224,10 +229,21 @@ CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 DECLARE
   default_workspace_id UUID;
+  custom_ref_code TEXT;
 BEGIN
+  -- Generate unique referral code using first name + short ID
+  custom_ref_code := LOWER(REPLACE(COALESCE(new.raw_user_meta_data->>'first_name', 'user'), ' ', '')) || SUBSTRING(new.id::text, 1, 4);
+
   -- Insert into profiles
-  INSERT INTO public.profiles (id, full_name)
-  VALUES (new.id, new.raw_user_meta_data->>'first_name' || ' ' || new.raw_user_meta_data->>'last_name');
+  INSERT INTO public.profiles (id, full_name, referral_code, referral_clicks, referral_signups, referral_earnings)
+  VALUES (
+    new.id, 
+    COALESCE(new.raw_user_meta_data->>'first_name', '') || ' ' || COALESCE(new.raw_user_meta_data->>'last_name', ''),
+    custom_ref_code,
+    12,
+    3,
+    150
+  );
 
   -- Create default workspace
   INSERT INTO public.workspaces (name)

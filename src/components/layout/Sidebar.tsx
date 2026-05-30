@@ -32,8 +32,15 @@ const navItems: Record<string, NavItem[]> = {
 
 export function Sidebar({ closeMobileMenu }: { closeMobileMenu?: () => void }) {
   const pathname = usePathname();
-  // Keep track of which sections are collapsed. By default, none are.
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const [billingTier, setBillingTier] = useState<'starter' | 'pro' | 'team' | 'enterprise'>('starter');
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem('amira_billing_tier') as 'starter' | 'pro' | 'team' | 'enterprise';
+      if (cached) setBillingTier(cached);
+    }
+  }, []);
 
   const toggleSection = (section: string) => {
     setCollapsedSections(prev => ({
@@ -133,44 +140,100 @@ export function Sidebar({ closeMobileMenu }: { closeMobileMenu?: () => void }) {
       </nav>
 
       {/* Premium Upgrade Widget */}
-      <div style={{
-        padding: '1.25rem',
-        margin: '0 1rem 1.5rem 1rem',
-        borderRadius: '12px',
-        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(79, 70, 229, 0.15) 100%)',
-        border: '1px solid rgba(99, 102, 241, 0.25)',
-        boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.2)',
-        backdropFilter: 'blur(4px)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.75rem'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '16px' }}>⚡</span>
-          <div style={{ fontSize: '13px', fontWeight: 600, color: '#ffffff', letterSpacing: '0.3px' }}>Upgrade to Pro</div>
+      {billingTier === 'starter' && (
+        <div style={{
+          padding: '1.25rem',
+          margin: '0 1rem 1.5rem 1rem',
+          borderRadius: '12px',
+          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(79, 70, 229, 0.15) 100%)',
+          border: '1px solid rgba(99, 102, 241, 0.25)',
+          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.2)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.75rem'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '16px' }}>⚡</span>
+            <div style={{ fontSize: '13px', fontWeight: 600, color: '#ffffff', letterSpacing: '0.3px' }}>Upgrade Workspace</div>
+          </div>
+          <p style={{ fontSize: '11px', color: '#94a3b8', margin: 0, lineHeight: 1.4 }}>
+            Unlock unlimited AI conversations, local Safaricom/MTN SIP trunks, and outbound dialer campaigns.
+          </p>
+          <Link 
+            href="/dashboard/account?tab=upgrade"
+            style={{
+              display: 'block',
+              textAlign: 'center',
+              backgroundColor: '#6366f1',
+              color: '#ffffff',
+              textDecoration: 'none',
+              fontSize: '12px',
+              fontWeight: 600,
+              padding: '0.5rem 1rem',
+              borderRadius: '6px',
+              boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
+              transition: 'all 0.2s ease-in-out'
+            }}
+          >
+            Upgrade Now
+          </Link>
         </div>
-        <p style={{ fontSize: '11px', color: '#94a3b8', margin: 0, lineHeight: 1.4 }}>
-          Unlock unlimited AI chats, local carrier E1 SIP trunks, and white-labeling dashboards.
-        </p>
-        <Link 
-          href="/dashboard/account?tab=upgrade"
-          style={{
-            display: 'block',
-            textAlign: 'center',
-            backgroundColor: '#6366f1',
-            color: '#ffffff',
-            textDecoration: 'none',
-            fontSize: '12px',
-            fontWeight: 600,
-            padding: '0.5rem 1rem',
-            borderRadius: '6px',
-            boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
-            transition: 'all 0.2s ease-in-out'
-          }}
-        >
-          Upgrade Now
-        </Link>
-      </div>
+      )}
+
+      {(billingTier === 'pro' || billingTier === 'team') && (
+        <div style={{
+          padding: '1rem',
+          margin: '0 1rem 1.5rem 1rem',
+          borderRadius: '12px',
+          background: 'rgba(255, 255, 255, 0.03)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.5rem'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '14px' }}>👑</span>
+            <div style={{ fontSize: '12px', fontWeight: 600, color: '#ffffff' }}>
+              {billingTier === 'pro' ? 'Pro Workspace' : 'Team Workspace'}
+            </div>
+          </div>
+          <p style={{ fontSize: '10px', color: '#94a3b8', margin: 0 }}>
+            Enjoy premium localized telephony and deep Composio integrations.
+          </p>
+          <Link 
+            href="/dashboard/account?tab=upgrade"
+            style={{
+              fontSize: '10px',
+              color: '#a5b4fc',
+              textDecoration: 'underline',
+              fontWeight: 500,
+              cursor: 'pointer'
+            }}
+          >
+            Modify subscription limits
+          </Link>
+        </div>
+      )}
+
+      {billingTier === 'enterprise' && (
+        <div style={{
+          padding: '1rem',
+          margin: '0 1rem 1.5rem 1rem',
+          borderRadius: '12px',
+          background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0.5) 100%)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px'
+        }}>
+          <span style={{ fontSize: '18px' }}>🏢</span>
+          <div>
+            <div style={{ fontSize: '12px', fontWeight: 700, color: '#ffffff' }}>Enterprise Active</div>
+            <div style={{ fontSize: '9px', color: '#94a3b8', marginTop: '2px' }}>99.9% Support SLA</div>
+          </div>
+        </div>
+      )}
 
     </aside>
   );

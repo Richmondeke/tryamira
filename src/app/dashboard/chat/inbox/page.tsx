@@ -18,6 +18,7 @@ const MOCK_MESSAGES: Record<string, any[]> = {
     { id: 2, sender_type: 'ai', content: 'Hi James! Welcome to Amira. How can I help you today?', created_at: '' },
     { id: 3, sender_type: 'lead', content: 'What are your office hours?', created_at: '' },
     { id: 4, sender_type: 'ai', content: 'We are open Monday to Friday, 9am – 6pm EST. Is there anything specific I can help you with?', created_at: '' },
+    { id: 5, sender_type: 'user', sender_name: 'Sarah Jenkins', content: 'Hello sir', created_at: '' },
   ],
   'mock-2': [
     { id: 1, sender_type: 'lead', content: 'I need to reschedule my appointment from Thursday.', created_at: '' },
@@ -61,6 +62,7 @@ export default function ChatPage() {
   const [filter, setFilter] = useState('All');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [useLiveData, setUseLiveData] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
     const fetchConversations = async () => {
@@ -82,6 +84,19 @@ export default function ChatPage() {
       }
     };
     fetchConversations();
+
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', user.id)
+          .single();
+        setCurrentUser({ id: user.id, full_name: profile?.full_name || 'You' });
+      }
+    };
+    fetchUser();
   }, []);
 
   useEffect(() => {
@@ -92,7 +107,7 @@ export default function ChatPage() {
     if (!activeChatId) return;
     const fetchMessages = async () => {
       const { data, error } = await supabase
-        .from('messages').select('*')
+        .from('messages').select('*, profiles(full_name)')
         .eq('conversation_id', activeChatId)
         .order('created_at', { ascending: true });
       if (!error && data) setMessages(data);
@@ -100,7 +115,14 @@ export default function ChatPage() {
     fetchMessages();
     const channel = supabase.channel(`messages-${activeChatId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${activeChatId}` },
-        (payload) => setMessages(prev => [...prev, payload.new]))
+        async (payload) => {
+          let profiles = null;
+          if (payload.new.sender_id) {
+            const { data } = await supabase.from('profiles').select('full_name').eq('id', payload.new.sender_id).single();
+            profiles = data;
+          }
+          setMessages(prev => [...prev, { ...payload.new, profiles }]);
+        })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [activeChatId, useLiveData]);
@@ -117,7 +139,12 @@ export default function ChatPage() {
       setInputValue('');
       return;
     }
-    const { error } = await supabase.from('messages').insert({ conversation_id: activeChatId, sender_type: 'user', content: inputValue });
+    const { error } = await supabase.from('messages').insert({ 
+      conversation_id: activeChatId, 
+      sender_type: 'user', 
+      sender_id: currentUser?.id,
+      content: inputValue 
+    });
     if (!error) setInputValue('');
     else setToast('Error sending message');
   };
@@ -244,7 +271,10 @@ export default function ChatPage() {
                         {msg.content}
                       </div>
                       <div style={{ fontSize: '11px', color: 'var(--stripe-muted)', marginTop: '0.25rem', textAlign: isOutbound ? 'right' : 'left', paddingLeft: isOutbound ? 0 : '0.25rem' }}>
-                        {isAI ? '🤖 AI Agent' : isOutbound ? 'You' : activeChatData.name}
+                        {isAI ? '🤖 AI Agent' : isOutbound ? (
+                          msg.sender_name ? (msg.sender_name === currentUser?.full_name ? 'You' : msg.sender_name) :
+                          msg.profiles?.full_name ? (msg.profiles.full_name === currentUser?.full_name ? 'You' : msg.profiles.full_name) : 'You'
+                        ) : activeChatData.name}
                       </div>
                     </div>
                   );
