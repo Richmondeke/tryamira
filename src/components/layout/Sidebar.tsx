@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useUserProfile } from '@/contexts/UserProfileContext';
+import { createClient } from '@/utils/supabase/client';
 
 
 
@@ -16,12 +17,12 @@ interface NavItem {
 
 const navItems: Record<string, NavItem[]> = {
   MAIN: [
-    { name: 'Overview', href: '/dashboard' },
-    { name: 'Chat', href: '/dashboard/chat' },
-    { name: 'Analytics', href: '/dashboard/analytics' },
-    { name: 'Leads', href: '/dashboard/leads' },
-    { name: 'AI Agent', href: '/dashboard/ai-agent' },
-    { name: 'Forms', href: '/dashboard/forms' },
+    { name: 'Overview',   href: '/dashboard' },
+    { name: 'Agent',      href: '/dashboard/ai-agent' },
+    { name: 'Chat',       href: '/dashboard/chat' },
+    { name: 'Leads',      href: '/dashboard/leads' },
+    { name: 'Forms',      href: '/dashboard/forms' },
+    { name: 'Analytics',  href: '/dashboard/analytics' },
   ],
   SETUP: [
     { name: 'Tutorials', href: '/dashboard/tutorials' },
@@ -41,6 +42,7 @@ interface SidebarUser {
 
 export function Sidebar({ closeMobileMenu }: { closeMobileMenu?: () => void }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
   const [isDemoMode, setIsDemoMode] = useState(false);
 
@@ -69,6 +71,12 @@ export function Sidebar({ closeMobileMenu }: { closeMobileMenu?: () => void }) {
     setIsDemoMode(next);
     localStorage.setItem('amira_demo_mode', String(next));
     window.location.reload();
+  };
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push('/login');
   };
 
 
@@ -229,7 +237,7 @@ export function Sidebar({ closeMobileMenu }: { closeMobileMenu?: () => void }) {
             </div>
           </div>
           <p style={{ fontSize: '10px', color: '#94a3b8', margin: 0 }}>
-            Enjoy premium localized telephony and deep Composio integrations.
+            Enjoy premium localized telephony and deep app integrations.
           </p>
           <Link 
             href="/dashboard/account?tab=upgrade"
@@ -344,6 +352,46 @@ export function Sidebar({ closeMobileMenu }: { closeMobileMenu?: () => void }) {
           </button>
         </div>
       )}
+
+      {/* ── Logout ── */}
+      <button
+        onClick={handleLogout}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          width: '100%',
+          padding: '0.85rem 1.25rem',
+          borderTop: '1px solid rgba(255,255,255,0.06)',
+          background: 'none',
+          border: 'none',
+          borderTop: '1px solid rgba(255,255,255,0.06)',
+          cursor: 'pointer',
+          textAlign: 'left',
+          transition: 'background 0.15s ease',
+          color: '#94a3b8',
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.08)';
+          e.currentTarget.style.color = '#f87171';
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.backgroundColor = 'transparent';
+          e.currentTarget.style.color = '#94a3b8';
+        }}
+      >
+        {/* Door/exit SVG icon */}
+        <svg
+          width="16" height="16" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+          style={{ flexShrink: 0 }}
+        >
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+          <polyline points="16 17 21 12 16 7" />
+          <line x1="21" y1="12" x2="9" y2="12" />
+        </svg>
+        <span style={{ fontSize: '12px', fontWeight: 500 }}>Log Out</span>
+      </button>
 
     </aside>
 
