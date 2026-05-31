@@ -6,6 +6,7 @@ import Toast from '../../../components/ui/Toast';
 import { createClient } from '../../../utils/supabase/client';
 import { triggerCampaignDialer } from '@/app/actions/vapi';
 import { getComposioStatus } from '@/app/actions/integrations';
+import { useDemoMode } from '@/contexts/DemoModeContext';
 
 // Mock CRM/Integration lists when Composio has no active credentials connected yet
 const DEMO_CRM_LISTS: Record<string, Array<{ name: string; phone: string; email: string }>> = {
@@ -30,6 +31,7 @@ const DEMO_CRM_LISTS: Record<string, Array<{ name: string; phone: string; email:
 };
 
 export default function LeadsPage() {
+  const { isDemoMode } = useDemoMode();
   const [search, setSearch] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null);
@@ -79,7 +81,7 @@ export default function LeadsPage() {
   const [isCrmLoading, setIsCrmLoading] = useState(false);
 
   // Outbound Campaigns List Panel
-  const [campaignsList, setCampaignsList] = useState<any[]>([
+  const MOCK_CAMPAIGNS = [
     { 
       id: "c-1", 
       name: "Q2 MedSpa Botox Qualifier", 
@@ -100,7 +102,11 @@ export default function LeadsPage() {
       agent: "sales-qualifier",
       createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() 
     }
-  ]);
+  ];
+  
+  const [campaignsList, setCampaignsList] = useState<any[]>([]);
+  
+  const displayCampaigns = isDemoMode ? [...campaignsList, ...MOCK_CAMPAIGNS] : campaignsList;
 
   // Drawer Details State
   const [selectedCampaignRun, setSelectedCampaignRun] = useState<any | null>(null);
@@ -436,7 +442,6 @@ export default function LeadsPage() {
           call.duration = "1m 20s";
           call.cost = 0.18;
           
-          // Increment main list values
           setCampaignsList(cList => cList.map(c => {
             if (c.id === selectedCampaignRun.id) {
               const updatedCost = parseFloat((c.cost + 0.18).toFixed(2));
@@ -1065,7 +1070,7 @@ export default function LeadsPage() {
               }}
             >
               {isLaunchingCampaign ? 'Queuing & Connecting Trunks...' : parsedLeads.length === 0 ? 'Select target contacts to activate' : '🚀 Launch Outbound Campaign Dialer'}
-            </button>
+                    </button>
           </form>
           </div>
 
@@ -1073,9 +1078,12 @@ export default function LeadsPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <div style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '8px', padding: '1.5rem', boxShadow: 'var(--stripe-shadow-ambient)' }}>
               <h4 style={{ fontSize: '13px', color: 'var(--stripe-navy)', margin: '0 0 1.25rem 0', fontWeight: 600 }}>Active Dialer Runs</h4>
-              
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {campaignsList.map((campaign) => (
+                {displayCampaigns.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '2rem 1rem', border: '1px dashed var(--stripe-border)', borderRadius: '6px' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--stripe-muted)' }}>No campaigns running. Launch one to get started.</span>
+                  </div>
+                ) : displayCampaigns.map((campaign) => (
                   <div 
                     key={campaign.id} 
                     onClick={() => setSelectedCampaignRun(campaign)}

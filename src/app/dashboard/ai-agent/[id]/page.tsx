@@ -1015,23 +1015,44 @@ export default function AgentBuilderPage() {
           <h1 style={{ fontSize: '20px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.25rem 0' }}>{agentName}</h1>
           <p style={{ color: 'var(--stripe-body)', fontSize: '13px', margin: 0 }}>Configure this agent's brain and workflows.</p>
         </div>
-        <button 
-          onClick={handleSave} 
-          disabled={isSaving}
-          style={{ 
-            backgroundColor: '#4caf50', 
-            color: '#ffffff', 
-            border: 'none', 
-            borderRadius: '6px', 
-            padding: '0.6rem 1.5rem', 
-            fontSize: '13px', 
-            fontWeight: 600, 
-            cursor: isSaving ? 'wait' : 'pointer', 
-            boxShadow: 'var(--stripe-shadow-action)',
-            opacity: isSaving ? 0.7 : 1
-          }}>
-          {isSaving ? 'Saving...' : 'Save Configuration'}
-        </button>
+        <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <button 
+            type="button"
+            onClick={() => router.push(`/dashboard/ai-agent/${params.id}/chat`)}
+            style={{ 
+              backgroundColor: '#f0f9ff', 
+              color: '#0369a1', 
+              border: '1px solid #7dd3fc', 
+              borderRadius: '6px', 
+              padding: '0.6rem 1.5rem', 
+              fontSize: '13px', 
+              fontWeight: 600, 
+              cursor: 'pointer',
+              transition: 'all 0.15s ease'
+            }}
+            onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#e0f2fe'; }}
+            onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#f0f9ff'; }}
+          >
+            💬 Test Agent Chat
+          </button>
+          <button 
+            onClick={handleSave} 
+            disabled={isSaving}
+            style={{ 
+              backgroundColor: '#4caf50', 
+              color: '#ffffff', 
+              border: 'none', 
+              borderRadius: '6px', 
+              padding: '0.6rem 1.5rem', 
+              fontSize: '13px', 
+              fontWeight: 600, 
+              cursor: isSaving ? 'wait' : 'pointer', 
+              boxShadow: 'var(--stripe-shadow-action)',
+              opacity: isSaving ? 0.7 : 1
+            }}>
+            {isSaving ? 'Saving...' : 'Save Configuration'}
+          </button>
+        </div>
       </div>
 
       {/* CORE CONFIGURATION LAYOUT (2fr 1fr Grid) */}
