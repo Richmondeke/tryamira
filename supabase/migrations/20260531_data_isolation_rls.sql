@@ -7,15 +7,6 @@
 -- from call.metadata.workspace_id (tagged at call creation time).
 -- ============================================================================
 
--- Helper function to get all workspace_ids for the current user
--- (Users can be members of multiple workspaces in future)
-CREATE OR REPLACE FUNCTION auth.user_workspace_ids()
-RETURNS SETOF uuid LANGUAGE sql STABLE AS $$
-  SELECT workspace_id::uuid
-  FROM public.workspace_members
-  WHERE user_id = auth.uid()
-$$;
-
 -- ── 1. workspace_agents ────────────────────────────────────────────────────
 ALTER TABLE public.workspace_agents ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "workspace_agents_own_workspace" ON public.workspace_agents;

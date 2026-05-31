@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 
 /**
  * VAPI Webhook endpoint — receives call lifecycle events.
@@ -13,7 +13,10 @@ export async function POST(req: NextRequest) {
 
     if (!message) return NextResponse.json({ ok: true });
 
-    const supabase = await createClient();
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
     const { type, call } = message;
 
     if (!call) return NextResponse.json({ ok: true });

@@ -4,37 +4,70 @@ import { useState, useEffect } from 'react';
 import Modal from '../../../../components/ui/Modal';
 import Toast from '../../../../components/ui/Toast';
 import { createClient } from '../../../../utils/supabase/client';
-import { updateInboundAgent, triggerOutboundCall } from '@/app/actions/vapi';
+import { updateInboundAgent, triggerCampaignDialer, getCampaigns, getCampaignCalls } from '@/app/actions/vapi';
 
 export default function PhoneAgentPage() {
   const [activeTab, setActiveTab] = useState<'inbound' | 'outbound'>('inbound');
   const [showCampaignModal, setShowCampaignModal] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [provisionedNumber, setProvisionedNumber] = useState<string | null>(null);
+  
+  // Phone numbers provisioned
+  const [phoneNumbers, setPhoneNumbers] = useState<{number: string, id: string}[]>([]);
+  const [selectedPhone, setSelectedPhone] = useState<string>('');
+
+  // Campaigns & Calls
+  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [loadingCampaigns, setLoadingCampaigns] = useState(true);
+  
+  // Selected Campaign Details Modal
+  const [selectedCampaign, setSelectedCampaign] = useState<any | null>(null);
+  const [campaignCalls, setCampaignCalls] = useState<any[]>([]);
+  const [loadingCalls, setLoadingCalls] = useState(false);
+  const [selectedCallTranscript, setSelectedCallTranscript] = useState<string | null>(null);
 
   const [leadStats, setLeadStats] = useState({ total: 0, hot: 0, warm: 0, cold: 0 });
   const supabase = createClient();
 
   useEffect(() => {
-    async function loadLeadStats() {
-      if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return;
-      const { data } = await supabase.from('leads').select('status');
-      if (data && data.length > 0) {
+    async function loadInitialData() {
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+        setLoadingCampaigns(false);
+        return;
+      }
+      
+      // Load Leads Stats
+      const { data: leadsData } = await supabase.from('leads').select('status');
+      if (leadsData && leadsData.length > 0) {
         setLeadStats({
-          total: data.length,
-          hot: data.filter((d: any) => d.status === 'hot').length,
-          warm: data.filter((d: any) => d.status === 'warm').length,
-          cold: data.filter((d: any) => d.status === 'cold').length,
+          total: leadsData.length,
+          hot: leadsData.filter((d: any) => d.status?.toLowerCase() === 'hot').length,
+          warm: leadsData.filter((d: any) => d.status?.toLowerCase() === 'warm').length,
+          cold: leadsData.filter((d: any) => d.status?.toLowerCase() === 'cold').length,
         });
       }
-    }
-    loadLeadStats();
-  }, [supabase]);
 
-  const [campaigns, setCampaigns] = useState([
-    { id: 1, name: 'Cold Calling List A', audience: 'Cold Leads', status: 'Completed', callsMade: 1008, conversions: '4%' }
-  ]);
+      // Load Phone numbers from integrations
+      const { data: integData } = await supabase.from('workspace_integrations').select('*').in('provider', ['twilio', 'vapi']);
+      const numbers: {number: string, id: string}[] = [];
+      integData?.forEach(i => {
+        if (i.config?.phoneNumber) numbers.push({ number: i.config.phoneNumber, id: i.id });
+        if (i.config?.phoneNumbers && Array.isArray(i.config.phoneNumbers)) {
+          i.config.phoneNumbers.forEach((p: any) => numbers.push({ number: p.number, id: p.id }));
+        }
+      });
+      setPhoneNumbers(numbers);
+      if (numbers.length > 0) setSelectedPhone(numbers[0].number);
+
+      // Load Campaigns
+      const camps = await getCampaigns();
+      if (camps.success) {
+        setCampaigns(camps.data);
+      }
+      setLoadingCampaigns(false);
+    }
+    loadInitialData();
+  }, [supabase]);
 
   const handleLaunchCampaign = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -45,24 +78,40 @@ export default function PhoneAgentPage() {
     const goal = formData.get('goal') as string;
     const scheduledTime = formData.get('scheduledTime') as string;
     
-    // In a real app, you would fetch the leads for this audience and loop through them.
-    // We mock triggering one call as an example integration:
-    const mockLeadPhone = "+15551234567"; // Replace with actual lead phone number
+    // Fetch leads for this audience
+    let leadsQuery = supabase.from('leads').select('*');
+    if (audience !== 'All Leads') {
+      const statusFilter = audience.replace(' Leads', '').toLowerCase();
+      leadsQuery = leadsQuery.eq('status', statusFilter);
+    }
+    const { data: audienceLeads } = await leadsQuery;
+    const leadsToCall = audienceLeads || [];
+
+    if (leadsToCall.length === 0) {
+      setToast('No leads found for this audience. Please add leads first.');
+      setIsLoading(false);
+      return;
+    }
     
-    // We pass placeholder IDs if env vars are missing, the server action will gracefully handle it
-    await triggerOutboundCall('dummy-assistant-id', 'dummy-phone-id', mockLeadPhone, goal, scheduledTime || undefined);
+    // Trigger Dialing via Server Action
+    const res = await triggerCampaignDialer({
+      campaignName: name,
+      agentId: 'dummy-assistant-id', // Would be selected in UI ideally
+      phoneNumberId: 'dummy-phone-id', // Would be selected from DB
+      leads: leadsToCall,
+      prompt: goal,
+      scheduledTime: scheduledTime || undefined
+    });
     
-    setCampaigns([
-      {
-        id: Date.now(),
-        name,
-        audience,
-        status: 'In Progress',
-        callsMade: 0,
-        conversions: '0%'
-      },
-      ...campaigns
-    ]);
+    if (res.success) {
+      setToast(`Campaign "${name}" successfully launched!`);
+      setShowCampaignModal(false);
+      // Reload campaigns
+      const camps = await getCampaigns();
+      if (camps.success) setCampaigns(camps.data);
+    } else {
+      setToast(`Failed to launch campaign: ${res.error}`);
+    }
     
     setShowCampaignModal(false);
     setIsLoading(false);
@@ -86,14 +135,14 @@ export default function PhoneAgentPage() {
     setToast('Inbound AI Voice Settings updated. The agent is now active on your numbers.');
   };
 
-  const handleProvisionNumber = () => {
-    setIsLoading(true);
-    // Mock provisioning delay
-    setTimeout(() => {
-      setProvisionedNumber("+1 (555) 987-6543");
-      setIsLoading(false);
-      setToast('Phone number successfully provisioned!');
-    }, 1500);
+  const handleViewCampaign = async (campaign: any) => {
+    setSelectedCampaign(campaign);
+    setLoadingCalls(true);
+    const callsRes = await getCampaignCalls(campaign.id);
+    if (callsRes.success) {
+      setCampaignCalls(callsRes.data);
+    }
+    setLoadingCalls(false);
   };
 
   return (
@@ -148,16 +197,23 @@ export default function PhoneAgentPage() {
           
           <form onSubmit={handleSaveInbound} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '12px', color: 'var(--stripe-label)', marginBottom: '4px' }}>Amira Phone Number</label>
-              {provisionedNumber ? (
+              <label style={{ display: 'block', fontSize: '12px', color: 'var(--stripe-label)', marginBottom: '4px' }}>Agent Phone Number</label>
+              {phoneNumbers.length > 0 ? (
                 <>
-                  <input type="text" readOnly value={provisionedNumber} style={{ width: '100%', maxWidth: '300px', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px', backgroundColor: '#f6f9fc', color: 'var(--stripe-navy)' }} />
-                  <p style={{ fontSize: '11px', color: 'var(--stripe-muted)', marginTop: '4px' }}>Forward your existing numbers to this to activate the AI.</p>
+                  <select 
+                    value={selectedPhone} 
+                    onChange={e => setSelectedPhone(e.target.value)} 
+                    style={{ width: '100%', maxWidth: '300px', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px' }}
+                  >
+                    {phoneNumbers.map((p, i) => <option key={i} value={p.number}>{p.number}</option>)}
+                  </select>
+                  <p style={{ fontSize: '11px', color: 'var(--stripe-muted)', marginTop: '4px' }}>Select an imported number from your Integrations.</p>
                 </>
               ) : (
-                <button type="button" onClick={handleProvisionNumber} disabled={isLoading} style={{ padding: '0.5rem 1rem', backgroundColor: '#f6f9fc', color: 'var(--stripe-navy)', border: '1px solid var(--stripe-border)', borderRadius: '4px', cursor: isLoading ? 'not-allowed' : 'pointer', fontWeight: 500, fontSize: '13px' }}>
-                  {isLoading ? 'Provisioning...' : 'Provision Phone Number'}
-                </button>
+                <>
+                  <input type="text" readOnly value="No numbers found" style={{ width: '100%', maxWidth: '300px', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px', backgroundColor: '#f6f9fc', color: 'var(--stripe-navy)' }} />
+                  <p style={{ fontSize: '11px', color: 'var(--stripe-muted)', marginTop: '4px' }}>Configure your phone numbers in Integrations & Channels first.</p>
+                </>
               )}
             </div>
             
@@ -248,34 +304,104 @@ export default function PhoneAgentPage() {
                 </tr>
               </thead>
               <tbody>
-                {campaigns.length === 0 ? (
+                {loadingCampaigns ? (
+                  <tr>
+                    <td colSpan={5} style={{ padding: '2rem', textAlign: 'center', color: 'var(--stripe-label)', fontSize: '13px' }}>
+                      Loading campaigns...
+                    </td>
+                  </tr>
+                ) : campaigns.length === 0 ? (
                   <tr>
                     <td colSpan={5} style={{ padding: '2rem', textAlign: 'center', color: 'var(--stripe-label)', fontSize: '13px' }}>
                       No campaigns running. Launch one to get started.
                     </td>
                   </tr>
                 ) : (
-                  campaigns.map(campaign => (
-                    <tr key={campaign.id} style={{ borderBottom: '1px solid var(--stripe-border)' }}>
-                      <td style={{ padding: '1rem 1.5rem', fontSize: '13px', color: 'var(--stripe-navy)', fontWeight: 500 }}>{campaign.name}</td>
-                      <td style={{ padding: '1rem 1.5rem', fontSize: '13px', color: 'var(--stripe-body)' }}>{campaign.audience}</td>
-                      <td style={{ padding: '1rem 1.5rem' }}>
-                        <span style={{ 
-                          backgroundColor: campaign.status === 'In Progress' ? 'rgba(247,144,9,0.1)' : 'rgba(18,183,106,0.1)',
-                          color: campaign.status === 'In Progress' ? '#b54708' : '#027a48',
-                          padding: '2px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 500 
-                        }}>
-                          {campaign.status}
-                        </span>
-                      </td>
-                      <td style={{ padding: '1rem 1.5rem', fontSize: '13px', color: 'var(--stripe-navy)' }}>{campaign.callsMade}</td>
-                      <td style={{ padding: '1rem 1.5rem', fontSize: '13px', color: 'var(--stripe-success-text)' }}>{campaign.conversions}</td>
-                    </tr>
-                  ))
+                  campaigns.map(campaign => {
+                    const content = campaign.content ? JSON.parse(campaign.content) : {};
+                    const callsMade = content.leadsCount || 0;
+                    return (
+                      <tr 
+                        key={campaign.id} 
+                        onClick={() => handleViewCampaign(campaign)}
+                        style={{ borderBottom: '1px solid var(--stripe-border)', cursor: 'pointer', transition: 'background-color 0.2s' }}
+                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      >
+                        <td style={{ padding: '1rem 1.5rem', fontSize: '13px', color: 'var(--stripe-navy)', fontWeight: 500 }}>{campaign.name}</td>
+                        <td style={{ padding: '1rem 1.5rem', fontSize: '13px', color: 'var(--stripe-body)' }}>{content.leadsCount || 0} leads</td>
+                        <td style={{ padding: '1rem 1.5rem' }}>
+                          <span style={{ 
+                            backgroundColor: campaign.status === 'Running' ? 'rgba(247,144,9,0.1)' : 'rgba(18,183,106,0.1)',
+                            color: campaign.status === 'Running' ? '#b54708' : '#027a48',
+                            padding: '2px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 500 
+                          }}>
+                            {campaign.status}
+                          </span>
+                        </td>
+                        <td style={{ padding: '1rem 1.5rem', fontSize: '13px', color: 'var(--stripe-navy)' }}>{callsMade}</td>
+                        <td style={{ padding: '1rem 1.5rem', fontSize: '13px', color: 'var(--stripe-success-text)' }}>—</td>
+                      </tr>
+                    )
+                  })
                 )}
               </tbody>
             </table>
           </div>
+
+          {/* Campaign Details Modal */}
+          {selectedCampaign && (
+            <Modal isOpen={!!selectedCampaign} onClose={() => { setSelectedCampaign(null); setSelectedCallTranscript(null); }} title={selectedCampaign.name}>
+              <div style={{ padding: '1rem 0' }}>
+                <h3 style={{ fontSize: '14px', margin: '0 0 1rem 0', color: 'var(--stripe-navy)' }}>Campaign Calls</h3>
+                
+                {loadingCalls ? (
+                  <p style={{ fontSize: '13px', color: 'var(--stripe-label)' }}>Loading calls...</p>
+                ) : campaignCalls.length === 0 ? (
+                  <p style={{ fontSize: '13px', color: 'var(--stripe-label)', padding: '1rem', backgroundColor: '#f9fafb', borderRadius: '4px' }}>No calls recorded yet for this campaign. They may still be queued or in progress.</p>
+                ) : (
+                  <div style={{ border: '1px solid var(--stripe-border)', borderRadius: '6px', overflow: 'hidden' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontFeatureSettings: '"tnum", "ss01"' }}>
+                      <thead>
+                        <tr style={{ backgroundColor: '#f6f9fc', borderBottom: '1px solid var(--stripe-border)' }}>
+                          <th style={{ padding: '0.75rem 1rem', fontSize: '11px', color: 'var(--stripe-label)', fontWeight: 600 }}>STATUS</th>
+                          <th style={{ padding: '0.75rem 1rem', fontSize: '11px', color: 'var(--stripe-label)', fontWeight: 600 }}>DURATION</th>
+                          <th style={{ padding: '0.75rem 1rem', fontSize: '11px', color: 'var(--stripe-label)', fontWeight: 600 }}>COST</th>
+                          <th style={{ padding: '0.75rem 1rem', fontSize: '11px', color: 'var(--stripe-label)', fontWeight: 600 }}>TRANSCRIPT</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {campaignCalls.map(call => (
+                          <tr key={call.id} style={{ borderBottom: '1px solid var(--stripe-border)' }}>
+                            <td style={{ padding: '0.75rem 1rem', fontSize: '13px', color: call.status === 'ended' ? '#027a48' : '#b54708' }}>{call.status}</td>
+                            <td style={{ padding: '0.75rem 1rem', fontSize: '13px' }}>{call.duration_seconds}s</td>
+                            <td style={{ padding: '0.75rem 1rem', fontSize: '13px' }}>${call.cost?.toFixed(3) || '0.000'}</td>
+                            <td style={{ padding: '0.75rem 1rem', fontSize: '13px' }}>
+                              {call.transcript ? (
+                                <button onClick={() => setSelectedCallTranscript(call.transcript)} style={{ color: '#4caf50', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>View</button>
+                              ) : 'N/A'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {selectedCallTranscript && (
+                  <div style={{ marginTop: '2rem', padding: '1rem', backgroundColor: '#f6f9fc', borderRadius: '6px', border: '1px solid var(--stripe-border)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                      <h4 style={{ margin: 0, fontSize: '13px', color: 'var(--stripe-navy)' }}>Call Transcript</h4>
+                      <button onClick={() => setSelectedCallTranscript(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', color: 'var(--stripe-muted)' }}>Close</button>
+                    </div>
+                    <pre style={{ whiteSpace: 'pre-wrap', fontSize: '12px', color: 'var(--stripe-body)', margin: 0, fontFamily: 'inherit' }}>
+                      {selectedCallTranscript}
+                    </pre>
+                  </div>
+                )}
+              </div>
+            </Modal>
+          )}
         </>
       )}
     </div>

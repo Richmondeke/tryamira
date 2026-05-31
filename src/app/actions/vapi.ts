@@ -478,8 +478,8 @@ export async function triggerCampaignDialer(params: {
             name: lead.name
           },
           assistantId: params.agentId,
-          // Tag with workspace_id so webhook can route events to the right user
-          metadata: { workspace_id: workspaceId },
+          // Tag with workspace_id and campaign_id so webhook can route events to the right user and campaign
+          metadata: { workspace_id: workspaceId, campaign_id: campaignId },
           assistant: {
             model: {
               messages: [
@@ -609,3 +609,49 @@ export const getElevenLabsVoices = unstable_cache(
   ['elevenlabs-voices'],
   { revalidate: 21600 } // 6 hours
 );
+
+// ── GET CAMPAIGNS FOR DASHBOARD ──────────────────────────────────────────────
+export async function getCampaigns() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, data: [] };
+
+  const workspaceId = await getWorkspaceId(supabase, user.id);
+
+  const { data, error } = await supabase
+    .from('campaigns')
+    .select('*')
+    .eq('workspace_id', workspaceId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error("getCampaigns error:", error);
+    return { success: false, data: [] };
+  }
+
+  return { success: true, data: data || [] };
+}
+
+export async function getCampaignCalls(campaignId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, data: [] };
+
+  const workspaceId = await getWorkspaceId(supabase, user.id);
+
+  // vapi_calls stores the webhook raw payload which has metadata.campaign_id
+  const { data, error } = await supabase
+    .from('vapi_calls')
+    .select('*')
+    .eq('workspace_id', workspaceId)
+    .contains('raw', { metadata: { campaign_id: campaignId } })
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error("getCampaignCalls error:", error);
+    return { success: false, data: [] };
+  }
+
+  return { success: true, data: data || [] };
+}
+
