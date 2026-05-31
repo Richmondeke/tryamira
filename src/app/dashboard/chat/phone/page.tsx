@@ -5,8 +5,10 @@ import Modal from '../../../../components/ui/Modal';
 import Toast from '../../../../components/ui/Toast';
 import { createClient } from '../../../../utils/supabase/client';
 import { updateInboundAgent, triggerCampaignDialer, getCampaigns, getCampaignCalls } from '@/app/actions/vapi';
+import { useDemoMode } from '@/contexts/DemoModeContext';
 
 export default function PhoneAgentPage() {
+  const { isDemoMode } = useDemoMode();
   const [activeTab, setActiveTab] = useState<'inbound' | 'outbound'>('inbound');
   const [showCampaignModal, setShowCampaignModal] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -307,7 +309,7 @@ export default function PhoneAgentPage() {
                 // For live production, we'd need to fetch actual answered calls per campaign. 
                 // We'll simulate answered calls as a percentage of total contacts if we don't have the live count here yet, 
                 // or just show a default for demo mode as requested.
-                const simulatedAnswered = Math.floor(totalContacts * 0.8);
+                const simulatedAnswered = isDemoMode ? Math.floor(totalContacts * 0.8) : 0;
                 
                 const isRunning = campaign.status === 'Running';
                 
@@ -358,7 +360,7 @@ export default function PhoneAgentPage() {
             <Modal isOpen={!!selectedCampaign} onClose={() => { setSelectedCampaign(null); setSelectedCallTranscript(null); }} title="" maxWidth="800px">
               {(() => {
                 const content = selectedCampaign.content ? JSON.parse(selectedCampaign.content) : {};
-                const totalContacts = content.leadsCount || Math.max(8, campaignCalls.length);
+                const totalContacts = content.leadsCount || (isDemoMode ? Math.max(8, campaignCalls.length) : campaignCalls.length);
                 const dialedCount = campaignCalls.length;
                 const progressVal = Math.min(100, Math.round((dialedCount / (totalContacts || 1)) * 100));
                 
@@ -393,7 +395,7 @@ export default function PhoneAgentPage() {
                         <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--stripe-navy)' }}>{dialedCount} / {totalContacts} Contacts</span>
                       </div>
                       <div style={{ width: '100%', height: '8px', backgroundColor: '#e2e8f0', borderRadius: '4px', overflow: 'hidden', marginBottom: '0.75rem' }}>
-                        <div style={{ width: \`\${progressVal || 15}%\`, height: '100%', backgroundColor: '#4caf50', borderRadius: '4px', transition: 'width 0.5s ease-out' }}></div>
+                        <div style={{ width: \`\${progressVal || (isDemoMode ? 15 : 0)}%\`, height: '100%', backgroundColor: '#4caf50', borderRadius: '4px', transition: 'width 0.5s ease-out' }}></div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#4caf50', fontWeight: 500 }}>
                         <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#4caf50', animation: 'pulse 2s infinite' }}></div>
@@ -485,34 +487,42 @@ export default function PhoneAgentPage() {
                               )
                             }) : (
                               // Demo mode rows if no live calls exist
-                              [
-                                { name: 'Kemi Balogun', phone: '+2348030000001', status: 'Answered', color: '#027a48', bg: 'rgba(18,183,106,0.1)', dur: '1m 55s', hasTranscript: true },
-                                { name: 'Sarah Jenkins', phone: '+2348030000002', status: 'Answered', color: '#027a48', bg: 'rgba(18,183,106,0.1)', dur: '1m 10s', hasTranscript: true },
-                                { name: 'Adewale Okafor', phone: '+2348039991201', status: 'No Answer', color: '#475467', bg: '#f1f5f9', dur: '0s', hasTranscript: false },
-                                { name: 'Linda Vance', phone: '+14159820011', status: 'Voicemail', color: '#475467', bg: '#f1f5f9', dur: '0m 22s', hasTranscript: true },
-                                { name: 'Chief Olumide', phone: '+2348055554321', status: 'Answered', color: '#027a48', bg: 'rgba(18,183,106,0.1)', dur: '2m 15s', hasTranscript: true },
-                                { name: 'Marcus Sterling', phone: '+12128930192', status: 'Queued', color: '#64748b', bg: '#f8fafc', dur: '0s', hasTranscript: false },
-                                { name: 'Brian O\\'Connor', phone: '+13109923849', status: 'Queued', color: '#64748b', bg: '#f8fafc', dur: '0s', hasTranscript: false },
-                                { name: 'Fatima Musa', phone: '+2348187654321', status: 'Queued', color: '#64748b', bg: '#f8fafc', dur: '0s', hasTranscript: false },
-                              ].map((mock, idx) => (
-                                <tr key={idx} style={{ borderBottom: '1px solid var(--stripe-border)', backgroundColor: '#fff' }}>
-                                  <td style={{ padding: '0.85rem 1rem' }}>
-                                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--stripe-navy)' }}>{mock.name}</div>
-                                    <div style={{ fontSize: '11px', color: 'var(--stripe-muted)', marginTop: '2px' }}>{mock.phone}</div>
-                                  </td>
-                                  <td style={{ padding: '0.85rem 1rem' }}>
-                                    <span style={{ backgroundColor: mock.bg, color: mock.color, padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 600 }}>{mock.status}</span>
-                                  </td>
-                                  <td style={{ padding: '0.85rem 1rem', fontSize: '13px', color: 'var(--stripe-navy)', fontFeatureSettings: '"tnum"' }}>{mock.dur}</td>
-                                  <td style={{ padding: '0.85rem 1rem', fontSize: '13px' }}>
-                                    {mock.hasTranscript ? (
-                                      <button onClick={() => setSelectedCallTranscript("Simulated transcript... \\nAgent: Hello, is this " + mock.name + "?")} style={{ color: '#4caf50', background: '#f6f9fc', border: '1px solid var(--stripe-border)', borderRadius: '4px', padding: '4px 12px', cursor: 'pointer', fontSize: '12px', fontWeight: 600, transition: 'all 0.2s' }}>View &rarr;</button>
-                                    ) : (
-                                      <span style={{ color: 'var(--stripe-muted)' }}>-</span>
-                                    )}
+                              isDemoMode ? (
+                                [
+                                  { name: 'Kemi Balogun', phone: '+2348030000001', status: 'Answered', color: '#027a48', bg: 'rgba(18,183,106,0.1)', dur: '1m 55s', hasTranscript: true },
+                                  { name: 'Sarah Jenkins', phone: '+2348030000002', status: 'Answered', color: '#027a48', bg: 'rgba(18,183,106,0.1)', dur: '1m 10s', hasTranscript: true },
+                                  { name: 'Adewale Okafor', phone: '+2348039991201', status: 'No Answer', color: '#475467', bg: '#f1f5f9', dur: '0s', hasTranscript: false },
+                                  { name: 'Linda Vance', phone: '+14159820011', status: 'Voicemail', color: '#475467', bg: '#f1f5f9', dur: '0m 22s', hasTranscript: true },
+                                  { name: 'Chief Olumide', phone: '+2348055554321', status: 'Answered', color: '#027a48', bg: 'rgba(18,183,106,0.1)', dur: '2m 15s', hasTranscript: true },
+                                  { name: 'Marcus Sterling', phone: '+12128930192', status: 'Queued', color: '#64748b', bg: '#f8fafc', dur: '0s', hasTranscript: false },
+                                  { name: 'Brian O\\'Connor', phone: '+13109923849', status: 'Queued', color: '#64748b', bg: '#f8fafc', dur: '0s', hasTranscript: false },
+                                  { name: 'Fatima Musa', phone: '+2348187654321', status: 'Queued', color: '#64748b', bg: '#f8fafc', dur: '0s', hasTranscript: false },
+                                ].map((mock, idx) => (
+                                  <tr key={idx} style={{ borderBottom: '1px solid var(--stripe-border)', backgroundColor: '#fff' }}>
+                                    <td style={{ padding: '0.85rem 1rem' }}>
+                                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--stripe-navy)' }}>{mock.name}</div>
+                                      <div style={{ fontSize: '11px', color: 'var(--stripe-muted)', marginTop: '2px' }}>{mock.phone}</div>
+                                    </td>
+                                    <td style={{ padding: '0.85rem 1rem' }}>
+                                      <span style={{ backgroundColor: mock.bg, color: mock.color, padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 600 }}>{mock.status}</span>
+                                    </td>
+                                    <td style={{ padding: '0.85rem 1rem', fontSize: '13px', color: 'var(--stripe-navy)', fontFeatureSettings: '"tnum"' }}>{mock.dur}</td>
+                                    <td style={{ padding: '0.85rem 1rem', fontSize: '13px' }}>
+                                      {mock.hasTranscript ? (
+                                        <button onClick={() => setSelectedCallTranscript("Simulated transcript... \\nAgent: Hello, is this " + mock.name + "?")} style={{ color: '#4caf50', background: '#f6f9fc', border: '1px solid var(--stripe-border)', borderRadius: '4px', padding: '4px 12px', cursor: 'pointer', fontSize: '12px', fontWeight: 600, transition: 'all 0.2s' }}>View &rarr;</button>
+                                      ) : (
+                                        <span style={{ color: 'var(--stripe-muted)' }}>-</span>
+                                      )}
+                                    </td>
+                                  </tr>
+                                ))
+                              ) : (
+                                <tr>
+                                  <td colSpan={4} style={{ padding: '2rem', textAlign: 'center', color: 'var(--stripe-label)', fontSize: '13px' }}>
+                                    No calls queued or completed yet.
                                   </td>
                                 </tr>
-                              ))
+                              )
                             )}
                           </tbody>
                         </table>
