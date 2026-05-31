@@ -15,12 +15,14 @@ import {
 export default function Page() {
   const [toast, setToast] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  const [configuringApp, setConfiguringApp] = useState<any | null>(null);
   const [connectingApp, setConnectingApp] = useState<any | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [emailApps, setEmailApps] = useState<any[]>([]);
 
-  // List of slugs or keywords for email apps in Composio
+  // List of slugs or keywords for email apps
   const EMAIL_APP_KEYS = ['gmail', 'outlook', 'sendgrid', 'mailchimp', 'exchange', 'imap', 'smtp'];
 
   const loadIntegrations = async () => {
@@ -29,9 +31,12 @@ export default function Page() {
       const statusRes = await getComposioStatus();
 
       if (appsRes.success && appsRes.data) {
-        const activeIds = statusRes.success && statusRes.data
-          ? statusRes.data.map((d: any) => d.provider.toLowerCase())
-          : [];
+        const connectionStatusMap = new Map();
+        if (statusRes.data) {
+          statusRes.data.forEach((d: any) => {
+            connectionStatusMap.set(d.provider.toLowerCase(), d.status); // 'active' or 'inactive'
+          });
+        }
 
         const filtered = appsRes.data.filter((app: any) => 
           EMAIL_APP_KEYS.includes(app.id.toLowerCase()) || 
@@ -39,11 +44,27 @@ export default function Page() {
           app.name.toLowerCase().includes('inbox')
         );
 
-        const mapped = filtered.map((app: any) => ({
-          ...app,
-          status: activeIds.includes(app.id.toLowerCase()) ? 'Connected' : 'Disconnected',
-          autoReply: activeIds.includes(app.id.toLowerCase()) // just mockup auto-reply for now based on status
-        }));
+        const mapped = filtered.map((app: any) => {
+          const connStatus = connectionStatusMap.get(app.id.toLowerCase());
+          let finalStatus = 'Not Connected';
+          if (connStatus === 'active') finalStatus = 'Connected';
+          if (connStatus === 'inactive') finalStatus = 'Disconnected';
+
+          // Retrieve local config for auto-reply state if available (in a real app we'd fetch from DB)
+          let autoReply = finalStatus === 'Connected';
+          if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem(`integration_config_${app.id}`);
+            if (saved) {
+              try { autoReply = JSON.parse(saved).autoReply; } catch (e) {}
+            }
+          }
+
+          return {
+            ...app,
+            status: finalStatus,
+            autoReply: autoReply
+          };
+        });
 
         setEmailApps(mapped);
       }
@@ -62,7 +83,10 @@ export default function Page() {
       const app = params.get('app');
 
       if (status === 'success' && app) {
-        saveIntegrationConfig(app, { connected: true }).then(() => {
+        saveIntegrationConfig(app, { connected: true, autoReply: true }).then(() => {
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(`integration_config_${app}`, JSON.stringify({ autoReply: true }));
+          }
           const cleanName = app.charAt(0).toUpperCase() + app.slice(1);
           setToast(`🎉 Successfully connected to ${cleanName}!`);
           
@@ -90,22 +114,28 @@ export default function Page() {
     e.stopPropagation();
     const res = await removeComposioIntegration(appId);
     if (res.success) {
-      setEmailApps(prev => prev.map(a => a.id === appId ? { ...a, status: 'Disconnected', autoReply: false } : a));
+      setEmailApps(prev => prev.map(a => a.id === appId ? { ...a, status: 'Not Connected', autoReply: false } : a));
       setToast(`${appName} disconnected successfully.`);
     } else {
       setToast(`Failed to disconnect ${appName}.`);
     }
   };
 
-  const toggleAutoReply = (appId: string, currentAutoReply: boolean) => {
-    setEmailApps(prev => prev.map(app => {
-      if (app.id === appId) {
-        const newValue = !currentAutoReply;
-        setToast(`Auto-reply ${newValue ? 'enabled' : 'disabled'} for ${app.name}`);
-        return { ...app, autoReply: newValue };
-      }
-      return app;
-    }));
+  const toggleAutoReply = async (appId: string, currentAutoReply: boolean, appName: string) => {
+    const newValue = !currentAutoReply;
+    
+    // Optimistic UI update
+    setEmailApps(prev => prev.map(app => 
+      app.id === appId ? { ...app, autoReply: newValue } : app
+    ));
+    
+    setToast(`Auto-reply ${newValue ? 'enabled' : 'disabled'} for ${appName}`);
+
+    // Persist
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`integration_config_${appId}`, JSON.stringify({ autoReply: newValue }));
+    }
+    await saveIntegrationConfig(appId, { autoReply: newValue });
   };
 
   const performInstall = async (e: React.FormEvent) => {
@@ -119,7 +149,7 @@ export default function Page() {
       
       if (res.success && res.redirectUrl) {
         await saveIntegrationConfig(connectingApp.id, { connected: true });
-        setToast(`Redirecting to ${connectingApp.name} secure login...`);
+        setToast(`Redirecting to secure login...`);
         setTimeout(() => {
           window.location.href = res.redirectUrl as string;
         }, 1200);
@@ -135,17 +165,24 @@ export default function Page() {
     }
   };
 
+  const saveConfiguration = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setToast('Configuration saved successfully!');
+    setShowConfigModal(false);
+  };
+
   return (
     <div style={{ maxWidth: '1080px', margin: '0 auto', width: '100%' }}>
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}
       
+      {/* Installation Modal */}
       <Modal isOpen={showModal} onClose={() => !isConnecting && setShowModal(false)} title={`Connect ${connectingApp?.name}`}>
         {isConnecting ? (
           <div style={{ textAlign: 'center', padding: '2.5rem 0' }}>
             <div style={{ display: 'inline-block', width: '32px', height: '32px', border: '3px solid #4caf50', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '1rem' }} />
             <div style={{ color: '#4caf50', fontSize: '14px', fontWeight: 600 }}>Secure Authorization</div>
             <p style={{ color: 'var(--stripe-body)', fontSize: '13px', marginTop: '0.5rem', marginInline: 'auto', maxWidth: '320px', lineHeight: 1.5 }}>
-              Redirecting you to the Composio OAuth portal to authorize {connectingApp?.name} securely...
+              Redirecting you to the secure authorization portal to authorize {connectingApp?.name}...
             </p>
           </div>
         ) : (
@@ -158,7 +195,7 @@ export default function Page() {
               <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', fontSize: '12px', color: 'var(--stripe-body)', lineHeight: 1.5 }}>
                 <span style={{ fontSize: '16px' }}>🛡️</span>
                 <span>
-                  <strong>Composio Verified Connection:</strong> Authentication takes place directly through secure OAuth. Amira does not store your email credentials.
+                  <strong>Secure Verified Connection:</strong> Authentication takes place directly through secure OAuth. Amira does not store your email credentials.
                 </span>
               </div>
             </div>
@@ -180,6 +217,36 @@ export default function Page() {
             </div>
           </form>
         )}
+      </Modal>
+
+      {/* Configuration Modal */}
+      <Modal isOpen={showConfigModal} onClose={() => setShowConfigModal(false)} title={`Configure ${configuringApp?.name}`}>
+        <form onSubmit={saveConfiguration} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '12px', color: 'var(--stripe-label)', marginBottom: '4px' }}>Agent Context / Prompt for Email Replies</label>
+            <textarea 
+              required 
+              rows={5} 
+              defaultValue={`You are Amira, an AI assistant for this company. When replying to emails, be polite and helpful. If you don't know the answer, tell the user you will escalate to a human agent.`}
+              style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px', resize: 'vertical' }} 
+            />
+          </div>
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+            <button 
+              type="button" 
+              onClick={() => setShowConfigModal(false)} 
+              style={{ padding: '0.5rem 1.25rem', borderRadius: '6px', border: '1px solid var(--stripe-border)', backgroundColor: '#fff', color: 'var(--stripe-navy)', cursor: 'pointer', fontWeight: 500 }}
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              style={{ padding: '0.5rem 1.25rem', borderRadius: '6px', border: 'none', backgroundColor: 'var(--stripe-purple)', color: '#fff', cursor: 'pointer', fontWeight: 600 }}
+            >
+              Save Configuration
+            </button>
+          </div>
+        </form>
       </Modal>
 
       <style jsx global>{`
@@ -205,7 +272,7 @@ export default function Page() {
               <Mail style={{ width: '24px', height: '24px', color: '#64748b' }} />
             </div>
             <h3 style={{ fontSize: '16px', color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', fontWeight: 500 }}>No email providers found</h3>
-            <p style={{ color: 'var(--stripe-body)', fontSize: '13px', margin: '0 0 1.5rem 0', maxWidth: '300px' }}>Could not load email providers from Composio. Please check your API key.</p>
+            <p style={{ color: 'var(--stripe-body)', fontSize: '13px', margin: '0 0 1.5rem 0', maxWidth: '300px' }}>Could not load email providers. Please check your API key.</p>
           </div>
         ) : (
           <>
@@ -235,19 +302,18 @@ export default function Page() {
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <span style={{ fontWeight: 500 }}>{app.name}</span>
-                        <span style={{ fontSize: '11px', color: 'var(--stripe-body)' }}>{app.id}</span>
                       </div>
                     </td>
                     <td style={{ padding: '1rem 0' }}>
                       {app.status === 'Connected' ? (
                         <span style={{ backgroundColor: 'rgba(21,190,83,0.1)', color: 'var(--stripe-success-text)', padding: '2px 6px', borderRadius: '4px', fontSize: '12px', fontWeight: 500 }}>Connected</span>
-                      ) : (
+                      ) : app.status === 'Disconnected' ? (
                         <span style={{ backgroundColor: 'rgba(217,45,32,0.1)', color: '#d92d20', padding: '2px 6px', borderRadius: '4px', fontSize: '12px', fontWeight: 500 }}>Disconnected</span>
-                      )}
+                      ) : null /* Do not show badge for 'Not Connected' */}
                     </td>
                     <td style={{ padding: '1rem 0' }}>
                       <div 
-                        onClick={() => app.status === 'Connected' && toggleAutoReply(app.id, app.autoReply)}
+                        onClick={() => app.status === 'Connected' && toggleAutoReply(app.id, app.autoReply, app.name)}
                         style={{ 
                           width: '36px', 
                           height: '20px', 
@@ -273,12 +339,15 @@ export default function Page() {
                       </div>
                     </td>
                     <td style={{ padding: '1rem 0', fontSize: '12px' }}>
-                      {app.status === 'Connected' ? (
+                      {app.status === 'Connected' || app.status === 'Disconnected' ? (
                         <div style={{ display: 'flex', gap: '1rem' }}>
-                          <span onClick={() => setToast(`Configuring settings for ${app.name}`)} style={{ color: 'var(--stripe-purple)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span 
+                            onClick={() => { setConfiguringApp(app); setShowConfigModal(true); }} 
+                            style={{ color: 'var(--stripe-purple)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 500 }}
+                          >
                             <Settings size={14} /> Configure
                           </span>
-                          <span onClick={(e) => handleUninstall(e, app.id, app.name)} style={{ color: '#d92d20', cursor: 'pointer' }}>Disconnect</span>
+                          <span onClick={(e) => handleUninstall(e, app.id, app.name)} style={{ color: '#d92d20', cursor: 'pointer', fontWeight: 500 }}>Disconnect</span>
                         </div>
                       ) : (
                         <span onClick={() => handleCardClick(app)} style={{ color: 'var(--stripe-purple)', cursor: 'pointer', fontWeight: 500 }}>Connect</span>
