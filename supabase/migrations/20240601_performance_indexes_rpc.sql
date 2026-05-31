@@ -24,7 +24,6 @@ DECLARE
   v_start_month    TIMESTAMPTZ := DATE_TRUNC('month', v_now);
   v_start_last_mo  TIMESTAMPTZ := DATE_TRUNC('month', v_now - INTERVAL '1 month');
   v_end_last_mo    TIMESTAMPTZ := DATE_TRUNC('month', v_now) - INTERVAL '1 second';
-  v_seven_days_ago TIMESTAMPTZ := v_now - INTERVAL '7 days';
 
   v_total_leads         BIGINT;
   v_leads_this_month    BIGINT;
@@ -36,56 +35,62 @@ DECLARE
   v_open_conv           BIGINT;
   v_resolved_conv       BIGINT;
 
+  v_has_inbox           BOOLEAN;
+  v_has_webchat         BOOLEAN;
   v_has_channel         BOOLEAN;
   v_has_agent           BOOLEAN;
 
-  v_lead_trend          BIGINT[];
-  v_conv_trend          BIGINT[];
-  v_activities          JSON;
+  -- Scalar temps used for array element assignment (PL/pgSQL requirement)
+  v_lead_count     BIGINT;
+  v_conv_count     BIGINT;
 
-  i INT;
+  v_lead_trend     BIGINT[] := ARRAY[0,0,0,0,0,0,0];
+  v_conv_trend     BIGINT[] := ARRAY[0,0,0,0,0,0,0];
+  v_activities     JSON;
+
+  i           INT;
   v_day_start TIMESTAMPTZ;
   v_day_end   TIMESTAMPTZ;
 BEGIN
-  -- ── Leads ─────────────────────────────────────────────────
-  SELECT COUNT(*) INTO v_total_leads FROM public.leads;
+  -- ── Leads ─────────────────────────────────────────────────────────────────
+  SELECT COUNT(*) INTO v_total_leads      FROM public.leads;
   SELECT COUNT(*) INTO v_leads_this_month FROM public.leads WHERE created_at >= v_start_month;
   SELECT COUNT(*) INTO v_leads_last_month FROM public.leads WHERE created_at >= v_start_last_mo AND created_at <= v_end_last_mo;
-  SELECT COUNT(*) INTO v_converted_leads FROM public.leads WHERE status = 'converted';
+  SELECT COUNT(*) INTO v_converted_leads  FROM public.leads WHERE status = 'converted';
 
-  -- ── Conversations ─────────────────────────────────────────
-  SELECT COUNT(*) INTO v_total_conv FROM public.conversations;
-  SELECT COUNT(*) INTO v_conv_this_month FROM public.conversations WHERE created_at >= v_start_month;
-  SELECT COUNT(*) INTO v_open_conv FROM public.conversations WHERE status = 'AI Active';
-  SELECT COUNT(*) INTO v_resolved_conv FROM public.conversations WHERE status = 'Resolved';
+  -- ── Conversations ──────────────────────────────────────────────────────────
+  SELECT COUNT(*) INTO v_total_conv       FROM public.conversations;
+  SELECT COUNT(*) INTO v_conv_this_month  FROM public.conversations WHERE created_at >= v_start_month;
+  SELECT COUNT(*) INTO v_open_conv        FROM public.conversations WHERE status = 'AI Active';
+  SELECT COUNT(*) INTO v_resolved_conv    FROM public.conversations WHERE status = 'Resolved';
 
-  -- ── Setup Checklist ───────────────────────────────────────
-  SELECT EXISTS(
-    SELECT 1 FROM public.email_inboxes LIMIT 1
-  ) OR EXISTS(
-    SELECT 1 FROM public.webchat_configs LIMIT 1
-  ) INTO v_has_channel;
+  -- ── Setup Checklist ────────────────────────────────────────────────────────
+  -- PL/pgSQL: each EXISTS goes into its own scalar, then combine with OR
+  SELECT EXISTS(SELECT 1 FROM public.email_inboxes  LIMIT 1) INTO v_has_inbox;
+  SELECT EXISTS(SELECT 1 FROM public.webchat_configs LIMIT 1) INTO v_has_webchat;
+  v_has_channel := v_has_inbox OR v_has_webchat;
 
   SELECT EXISTS(SELECT 1 FROM public.workspace_agents LIMIT 1) INTO v_has_agent;
 
-  -- ── 7-day trends ──────────────────────────────────────────
-  v_lead_trend := ARRAY[0,0,0,0,0,0,0];
-  v_conv_trend := ARRAY[0,0,0,0,0,0,0];
-
-  FOR i IN 0..6 LOOP
-    v_day_start := DATE_TRUNC('day', v_now) - (INTERVAL '1 day' * (6 - i));
+  -- ── 7-day daily trends ─────────────────────────────────────────────────────
+  -- PL/pgSQL requires SELECT...INTO scalar, then assign to array element.
+  -- Direct: SELECT COUNT(*) INTO v_arr[i] is invalid syntax (line 67 error).
+  FOR i IN 1..7 LOOP
+    v_day_start := DATE_TRUNC('day', v_now) - (INTERVAL '1 day' * (7 - i));
     v_day_end   := v_day_start + INTERVAL '1 day';
 
-    SELECT COUNT(*) INTO v_lead_trend[i+1]
+    SELECT COUNT(*) INTO v_lead_count
     FROM public.leads
     WHERE created_at >= v_day_start AND created_at < v_day_end;
+    v_lead_trend[i] := v_lead_count;
 
-    SELECT COUNT(*) INTO v_conv_trend[i+1]
+    SELECT COUNT(*) INTO v_conv_count
     FROM public.conversations
     WHERE created_at >= v_day_start AND created_at < v_day_end;
+    v_conv_trend[i] := v_conv_count;
   END LOOP;
 
-  -- ── Recent Activities ─────────────────────────────────────
+  -- ── Recent Activities ──────────────────────────────────────────────────────
   SELECT COALESCE(JSON_AGG(a ORDER BY a.created_at DESC), '[]'::JSON)
   INTO v_activities
   FROM (
@@ -94,24 +99,25 @@ BEGIN
     LIMIT 6
   ) a;
 
-  -- ── Return JSON ───────────────────────────────────────────
+  -- ── Return JSON ────────────────────────────────────────────────────────────
   RETURN JSON_BUILD_OBJECT(
-    'total_leads',          v_total_leads,
-    'leads_this_month',     v_leads_this_month,
-    'leads_last_month',     v_leads_last_month,
-    'converted_leads',      v_converted_leads,
-    'total_conversations',  v_total_conv,
-    'conv_this_month',      v_conv_this_month,
-    'open_conversations',   v_open_conv,
+    'total_leads',            v_total_leads,
+    'leads_this_month',       v_leads_this_month,
+    'leads_last_month',       v_leads_last_month,
+    'converted_leads',        v_converted_leads,
+    'total_conversations',    v_total_conv,
+    'conv_this_month',        v_conv_this_month,
+    'open_conversations',     v_open_conv,
     'resolved_conversations', v_resolved_conv,
-    'has_channel',          v_has_channel,
-    'has_agent',            v_has_agent,
-    'lead_trend',           v_lead_trend,
-    'conv_trend',           v_conv_trend,
-    'activities',           v_activities
+    'has_channel',            v_has_channel,
+    'has_agent',              v_has_agent,
+    'lead_trend',             v_lead_trend,
+    'conv_trend',             v_conv_trend,
+    'activities',             v_activities
   );
 END;
 $$;
+
 
 -- Grant execute to authenticated users
 GRANT EXECUTE ON FUNCTION public.get_dashboard_metrics(UUID) TO authenticated;
