@@ -95,8 +95,8 @@ export async function getForms() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      console.warn('getForms: User not authenticated. Returning mock forms library.');
-      return { success: true, data: DYNAMIC_MOCK_FORMS };
+      console.warn('getForms: User not authenticated.');
+      return { success: true, data: [] };
     }
 
     const workspaceId = await getOrCreateWorkspace(supabase, user.id);
@@ -109,10 +109,11 @@ export async function getForms() {
     if (error) throw error;
     return { success: true, data: data || [] };
   } catch (err: any) {
-    console.warn('getForms database query failed. Returning mock library. Details:', err.message);
-    return { success: true, data: DYNAMIC_MOCK_FORMS };
+    console.warn('getForms database query failed:', err.message);
+    return { success: false, data: [], error: err.message };
   }
 }
+
 
 /**
  * Create a new form
@@ -122,19 +123,7 @@ export async function createForm(name: string) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      console.warn('createForm: User not authenticated. Returning local mock form.');
-      const mockForm = {
-        id: `form-mock-${Date.now()}`,
-        workspace_id: 'mock-ws',
-        name,
-        views: 0,
-        submissions: 0,
-        conversion_rate: 0,
-        created_at: new Date().toISOString(),
-        config: { ...DEFAULT_CONFIG, title: name }
-      };
-      DYNAMIC_MOCK_FORMS.unshift(mockForm);
-      return { success: true, data: mockForm };
+      return { success: false, error: 'Not authenticated' };
     }
 
     const workspaceId = await getOrCreateWorkspace(supabase, user.id);
@@ -147,6 +136,7 @@ export async function createForm(name: string) {
         views: 0,
         submissions: 0,
         conversion_rate: 0,
+        status: 'draft',   // Always starts as draft
         config: initialConfig
       })
       .select('*')
@@ -156,21 +146,46 @@ export async function createForm(name: string) {
     return { success: true, data };
   } catch (err: any) {
     console.error('createForm failed:', err.message);
-    // Local mock creation
-    const mockForm = {
-      id: `form-mock-${Date.now()}`,
-      workspace_id: 'mock-ws',
-      name,
-      views: 0,
-      submissions: 0,
-      conversion_rate: 0,
-      created_at: new Date().toISOString(),
-      config: { ...DEFAULT_CONFIG, title: name }
-    };
-    DYNAMIC_MOCK_FORMS.unshift(mockForm);
-    return { success: true, data: mockForm };
+    return { success: false, error: err.message };
   }
 }
+
+/**
+ * Publish a draft form — makes it publicly accessible
+ */
+export async function publishForm(id: string) {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from('lead_capture_forms')
+      .update({ status: 'published', published_at: new Date().toISOString() })
+      .eq('id', id)
+      .select('*')
+      .single();
+    if (error) throw error;
+    return { success: true, data };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Archive a form
+ */
+export async function archiveForm(id: string) {
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from('lead_capture_forms')
+      .update({ status: 'archived' })
+      .eq('id', id);
+    if (error) throw error;
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
 
 /**
  * Fetch a form by its ID with full UUID syntax safety and dynamic mock resolver
@@ -421,9 +436,30 @@ export async function submitFormAnswer(formId: string, answers: any) {
       if (agentId && phone) {
         console.log(`🤖 [AMIRA ENGINE] Triggering automated voice outbound campaign for agent ${agentId} contacting ${phone}...`);
       }
+
+      // 6. Fire real-time notification events (leadName/phone/email already declared above)
+      await supabase.from('notifications').insert({
+        workspace_id: form.workspace_id,
+        type: 'form_submission',
+        title: `New form submission on "${form.name}"`,
+        body: `${leadName}${answers.email ? ` · ${answers.email}` : ''}${phone ? ` · ${phone}` : ''}`,
+        metadata: { form_id: formId, form_name: form.name, answers },
+        read: false,
+      });
+
+      // 7. Also fire lead_captured notification
+      await supabase.from('notifications').insert({
+        workspace_id: form.workspace_id,
+        type: 'lead_captured',
+        title: `New lead captured: ${leadName}`,
+        body: `Via "${form.name}" form${phone ? ` · ${phone}` : ''}`,
+        metadata: { form_id: formId, name: leadName, email: answers.email, phone },
+        read: false,
+      });
     }
 
     return { success: true };
+
   } catch (err: any) {
     console.error('submitFormAnswer database failure, falling back to mock storage:', err.message);
     

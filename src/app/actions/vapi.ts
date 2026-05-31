@@ -361,8 +361,8 @@ export async function uploadClonedVoice(
     const response = await fetch('https://api.elevenlabs.io/v1/voices/add', {
       method: 'POST',
       headers: {
-        'xi-api-key': elevenApiKey
-      },
+        'xi-api-key': elevenApiKey as string
+      } as HeadersInit,
       body: formData
     });
 
@@ -546,7 +546,7 @@ export async function getElevenLabsVoices() {
     'Accept': 'application/json'
   };
   if (!isKeyEmpty(apiKey)) {
-    headers['xi-api-key'] = apiKey;
+    headers['xi-api-key'] = apiKey as string;
   }
 
   try {

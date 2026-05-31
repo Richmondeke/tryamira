@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { createClient } from '@/utils/supabase/client';
+
 
 interface NavItem {
   name: string;
@@ -25,22 +27,66 @@ const navItems: Record<string, NavItem[]> = {
     { name: 'Webchat & Widget', href: '/dashboard/webchat-setup' },
     { name: 'Integrations & Channels', href: '/dashboard/integrations' },
   ],
-  ACCOUNT: [
-    { name: 'Account Settings', href: '/dashboard/account' }
-  ]
 };
+
+interface SidebarUser {
+  fullName: string;
+  initials: string;
+  email: string;
+  plan: string;
+  role: string;
+}
+
 
 export function Sidebar({ closeMobileMenu }: { closeMobileMenu?: () => void }) {
   const pathname = usePathname();
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
   const [billingTier, setBillingTier] = useState<'starter' | 'pro' | 'team' | 'enterprise'>('starter');
+  const [isDemoMode, setIsDemoMode] = useState(false);
+  const [sidebarUser, setSidebarUser] = useState<SidebarUser | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       const cached = localStorage.getItem('amira_billing_tier') as 'starter' | 'pro' | 'team' | 'enterprise';
       if (cached) setBillingTier(cached);
+      setIsDemoMode(localStorage.getItem('amira_demo_mode') === 'true');
     }
+
+    const supabase = createClient();
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return;
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name, plan, role')
+        .eq('id', user.id)
+        .single();
+
+      const fullName = profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+      const initials = fullName.split(' ').slice(0, 2).map((w: string) => w[0]?.toUpperCase() || '').join('');
+      setSidebarUser({
+        fullName,
+        initials,
+        email: user.email || '',
+        plan: profile?.plan || 'Starter',
+        role: profile?.role || 'user',
+      });
+      if (profile?.plan) {
+        const tier = profile.plan.toLowerCase() as 'starter' | 'pro' | 'team' | 'enterprise';
+        if (['starter','pro','team','enterprise'].includes(tier)) {
+          setBillingTier(tier);
+          localStorage.setItem('amira_billing_tier', tier);
+        }
+      }
+    });
   }, []);
+
+  const toggleDemoMode = () => {
+    const next = !isDemoMode;
+    setIsDemoMode(next);
+    localStorage.setItem('amira_demo_mode', String(next));
+    window.location.reload();
+  };
+
 
   const toggleSection = (section: string) => {
     setCollapsedSections(prev => ({
@@ -235,6 +281,87 @@ export function Sidebar({ closeMobileMenu }: { closeMobileMenu?: () => void }) {
         </div>
       )}
 
+      {/* ── User Profile Block ── */}
+      <Link
+        href="/dashboard/account"
+        onClick={() => closeMobileMenu?.()}
+        style={{
+          display: 'flex', alignItems: 'center', gap: '10px',
+          padding: '1rem 1.25rem',
+          margin: '0 0 0 0',
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+          textDecoration: 'none',
+          transition: 'background 0.15s ease',
+        }}
+        onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)')}
+        onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
+      >
+        <div style={{
+          width: '36px', height: '36px', borderRadius: '8px',
+          background: 'linear-gradient(135deg, #6366f1 0%, #533afd 100%)',
+          color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontWeight: 700, fontSize: '13px', flexShrink: 0,
+        }}>
+          {sidebarUser?.initials || '…'}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: '12px', fontWeight: 600, color: '#ffffff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {sidebarUser?.fullName || '…'}
+          </div>
+          <div style={{ fontSize: '10px', color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {sidebarUser?.email || ''}
+          </div>
+        </div>
+        {sidebarUser?.role === 'admin' && (
+          <span style={{
+            fontSize: '9px', fontWeight: 700, color: '#6366f1',
+            backgroundColor: 'rgba(99,102,241,0.15)',
+            border: '1px solid rgba(99,102,241,0.3)',
+            padding: '2px 5px', borderRadius: '4px', flexShrink: 0,
+          }}>
+            ADMIN
+          </span>
+        )}
+      </Link>
+
+      {/* ── Admin Demo Mode Toggle ── */}
+      {sidebarUser?.role === 'admin' && (
+        <div style={{
+          padding: '0.75rem 1.25rem',
+          borderTop: '1px solid rgba(255,255,255,0.06)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '14px' }}>🎭</span>
+            <div>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: isDemoMode ? '#f59e0b' : '#94a3b8' }}>
+                {isDemoMode ? 'Demo Mode ON' : 'Demo Mode'}
+              </div>
+              <div style={{ fontSize: '9px', color: '#64748b' }}>Admin only · investor preview</div>
+            </div>
+          </div>
+          <button
+            onClick={toggleDemoMode}
+            style={{
+              width: '36px', height: '20px', borderRadius: '10px', border: 'none',
+              backgroundColor: isDemoMode ? '#f59e0b' : 'rgba(255,255,255,0.15)',
+              cursor: 'pointer', position: 'relative', transition: 'background 0.2s ease',
+              flexShrink: 0,
+            }}
+          >
+            <span style={{
+              position: 'absolute', top: '2px',
+              left: isDemoMode ? '18px' : '2px',
+              width: '16px', height: '16px', borderRadius: '8px',
+              backgroundColor: '#ffffff',
+              transition: 'left 0.2s ease',
+              display: 'block',
+            }} />
+          </button>
+        </div>
+      )}
+
     </aside>
+
   );
 }

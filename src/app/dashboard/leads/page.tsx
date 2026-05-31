@@ -416,7 +416,7 @@ export default function LeadsPage() {
           clearSimulation();
           // Update campaign run completed in list
           setCampaignsList(cList => cList.map(c => c.id === selectedCampaignRun.id ? { ...c, status: 'Finished', completed: c.queued, cost: c.queued * 0.16 } : c));
-          setSelectedCampaignRun(prevRun => ({ ...prevRun, status: 'Finished', completed: prevRun.queued, cost: prevRun.queued * 0.16 }));
+          setSelectedCampaignRun((prevRun: any) => ({ ...prevRun, status: 'Finished', completed: prevRun.queued, cost: prevRun.queued * 0.16 }));
           setToast({ message: "🎉 Campaign run completed successfully!", type: "success" });
           return prev;
         }
@@ -445,7 +445,7 @@ export default function LeadsPage() {
             return c;
           }));
           
-          setSelectedCampaignRun(prevRun => {
+          setSelectedCampaignRun((prevRun: any) => {
             const updatedCost = parseFloat((prevRun.cost + 0.18).toFixed(2));
             return { ...prevRun, completed: prevRun.completed + 1, cost: updatedCost };
           });

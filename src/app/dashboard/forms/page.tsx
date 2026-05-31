@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Modal from '../../../components/ui/Modal';
 import Toast from '../../../components/ui/Toast';
-import { getForms, createForm, getFormSubmissions } from '@/app/actions/forms';
+import { getForms, createForm, getFormSubmissions, publishForm } from '@/app/actions/forms';
+
 
 export default function Page() {
   const router = useRouter();
@@ -57,9 +58,10 @@ export default function Page() {
       const res = await createForm(name);
       if (res.success && res.data) {
         setShowModal(false);
-        router.push(`/dashboard/forms/${res.data.id}`);
+        setToast('Form created as Draft. Publish it when ready.');
+        setForms(prev => [res.data, ...prev]);
       } else {
-        setToast('Failed to create form in live database.');
+        setToast(res.error || 'Failed to create form.');
       }
     } catch (err) {
       console.error('handleCreateForm client exception:', err);
@@ -68,6 +70,21 @@ export default function Page() {
       setLoading(false);
     }
   };
+
+  const handlePublish = async (formId: string) => {
+    try {
+      const res = await publishForm(formId);
+      if (res.success) {
+        setForms(prev => prev.map(f => f.id === formId ? { ...f, status: 'published', published_at: new Date().toISOString() } : f));
+        setToast('Form published! The public link is now live.');
+      } else {
+        setToast('Failed to publish form.');
+      }
+    } catch {
+      setToast('Error publishing form.');
+    }
+  };
+
 
   const openShareModal = (form: any) => {
     setSelectedForm(form);
@@ -431,22 +448,40 @@ export default function Page() {
                   const views = form.views || 0;
                   const subCount = form.submissions || 0;
                   const convRate = form.conversion_rate !== undefined ? `${form.conversion_rate}%` : (views > 0 ? `${((subCount / views) * 100).toFixed(1)}%` : '0%');
+                  const status = form.status || 'published';
+                  const statusColor = status === 'draft' ? '#f59e0b' : status === 'archived' ? '#94a3b8' : '#10b981';
+                  const statusBg = status === 'draft' ? '#fff7ed' : status === 'archived' ? '#f8fafc' : '#f0fdf4';
                   return (
                     <tr key={form.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '1.25rem 0', fontSize: '13px', color: '#0f172a', fontWeight: 500 }}>{form.name}</td>
+                      <td style={{ padding: '1.25rem 0', fontSize: '13px', color: '#0f172a', fontWeight: 500 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          {form.name}
+                          <span style={{
+                            fontSize: '10px', fontWeight: 600, padding: '2px 7px', borderRadius: '999px',
+                            color: statusColor, backgroundColor: statusBg,
+                            border: `1px solid ${statusColor}40`,
+                          }}>
+                            {status.charAt(0).toUpperCase() + status.slice(1)}
+                          </span>
+                        </div>
+                      </td>
                       <td style={{ padding: '1.25rem 0', fontSize: '13px', color: '#64748b' }}>{views.toLocaleString()}</td>
                       <td style={{ padding: '1.25rem 0', fontSize: '13px', color: '#64748b' }}>{subCount.toLocaleString()}</td>
                       <td style={{ padding: '1.25rem 0', fontSize: '13px', color: '#15be53', fontWeight: 500 }}>{convRate}</td>
                       <td style={{ padding: '1.25rem 0', fontSize: '13px' }}>
                         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                          <span style={{ color: '#6366f1', cursor: 'pointer', fontWeight: 500, transition: 'color 0.2s' }} onClick={() => router.push(`/dashboard/forms/${form.id}`)} onMouseOver={(e) => e.currentTarget.style.color = '#4f46e5'} onMouseOut={(e) => e.currentTarget.style.color = '#6366f1'}>Edit</span>
-                          <span style={{ color: '#6366f1', cursor: 'pointer', fontWeight: 500, transition: 'color 0.2s' }} onClick={() => openShareModal(form)} onMouseOver={(e) => e.currentTarget.style.color = '#4f46e5'} onMouseOut={(e) => e.currentTarget.style.color = '#6366f1'}>Share</span>
-                          <span style={{ color: '#6366f1', cursor: 'pointer', fontWeight: 500, transition: 'color 0.2s' }} onClick={() => openResultsModal(form)} onMouseOver={(e) => e.currentTarget.style.color = '#4f46e5'} onMouseOut={(e) => e.currentTarget.style.color = '#6366f1'}>Results</span>
+                          <span style={{ color: '#6366f1', cursor: 'pointer', fontWeight: 500 }} onClick={() => router.push(`/dashboard/forms/${form.id}`)}>Edit</span>
+                          {status === 'draft' && (
+                            <span style={{ color: '#10b981', cursor: 'pointer', fontWeight: 500 }} onClick={() => handlePublish(form.id)}>Publish</span>
+                          )}
+                          <span style={{ color: '#6366f1', cursor: 'pointer', fontWeight: 500 }} onClick={() => openShareModal(form)}>Share</span>
+                          <span style={{ color: '#6366f1', cursor: 'pointer', fontWeight: 500 }} onClick={() => openResultsModal(form)}>Results</span>
                         </div>
                       </td>
                     </tr>
                   );
                 })}
+
               </tbody>
             </table>
           </div>

@@ -131,7 +131,7 @@ export default function FormBuilderPage({ params }: { params: { id: string } }) 
         setToast('Form saved and published successfully!');
         setShowShareModal(true);
       } else {
-        setToast(res.error || 'Failed to save form config.');
+        setToast((res as any).error || 'Failed to save form config.');
       }
     } catch (err: any) {
       setToast('Connection error occurred.');

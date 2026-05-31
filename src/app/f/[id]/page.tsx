@@ -30,7 +30,7 @@ export default function PublicFormPage({ params }: { params: { id: string } }) {
         // 2. Increment views securely in background
         incrementFormViews(params.id);
       } else {
-        setError(res.error || 'Failed to locate lead capture form.');
+        setError((res as any).error || 'Failed to locate lead capture form.');
       }
       setLoading(false);
     }
@@ -65,7 +65,7 @@ export default function PublicFormPage({ params }: { params: { id: string } }) {
     if (res.success) {
       setSubmitted(true);
     } else {
-      alert(`Error submitting form: ${res.error || 'Unknown error'}`);
+      alert(`Error submitting form: ${(res as any).error || 'Unknown error'}`);
     }
   };
 

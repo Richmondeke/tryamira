@@ -160,6 +160,8 @@ export async function updateAgent(id: string, config: any) {
 
   try {
     const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
     const { error } = await supabase
       .from('workspace_agents')
       .update({ 
@@ -173,6 +175,21 @@ export async function updateAgent(id: string, config: any) {
       console.warn('Update failed, ignoring for demo.', error);
       return { success: true }; 
     }
+
+    // Fire agent_updated notification (non-fatal)
+    if (user) {
+      try {
+        await supabase.from('notifications').insert({
+          workspace_id: user.id,
+          type: 'agent_updated',
+          title: `AI Agent "${config.agentName || 'Agent'}" configuration saved`,
+          body: 'Personality, system prompt, and voice settings have been updated.',
+          metadata: { agent_id: id, agent_name: config.agentName },
+          read: false,
+        });
+      } catch { /* non-fatal */ }
+    }
+
     
     return { success: true };
   } catch (err: any) {
@@ -180,3 +197,4 @@ export async function updateAgent(id: string, config: any) {
     return { success: true }; // Graceful fallback
   }
 }
+

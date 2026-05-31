@@ -55,19 +55,20 @@ export async function getComposioApps() {
     const MAX_PAGES = 11; // v3 returns up to 1043 apps across 11 pages
 
     do {
-      const url = cursor
+      const url: string = cursor
         ? `${COMPOSIO_BASE}/toolkits?limit=100&cursor=${cursor}`
         : `${COMPOSIO_BASE}/toolkits?limit=100&page=${page}`;
       
-      const res = await fetch(url, { headers });
+      const res: Response = await fetch(url, { headers });
       if (!res.ok) throw new Error(`Composio v3 API error: ${res.status}`);
       
-      const json = await res.json();
+      const json: any = await res.json();
       const items = json.items || [];
       allApps = allApps.concat(items);
       
       cursor = json.next_cursor || null;
       page++;
+
       
       // Stop if no more pages
       if (!cursor || page > MAX_PAGES) break;
