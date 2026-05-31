@@ -308,41 +308,87 @@ export default function OverviewPage() {
         {/* Checklist sub-cards */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', position: 'relative', zIndex: 2 }}>
           {[
-            { label: 'Connect a messaging channel', done: checklistStates.channelConnected, icon: (color: string) => (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 16V9a4 4 0 0 0-4-4H6M6 9l-3 3 3 3M18 15l3 3-3 3" />
-              </svg>
-            ), href: '/dashboard/integrations/channels' },
-            { label: 'Configure your AI agent', done: checklistStates.agentConfigured, icon: (color: string) => (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="11" width="18" height="10" rx="2" />
-                <circle cx="12" cy="5" r="2" />
-                <path d="M12 7v4M8 16h.01M16 16h.01" />
-              </svg>
-            ), href: '/dashboard/ai-agent' },
-            { label: 'Add training data (FAQs, products...)', done: checklistStates.trainingAdded, icon: (color: string) => (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44 2.5 2.5 0 0 1 0-3.12 3 3 0 0 1 0-4.88 2.5 2.5 0 0 1 0-3.12A2.5 2.5 0 0 1 9.5 2Z" />
-                <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44 2.5 2.5 0 0 0 0-3.12 3 3 0 0 0 0-4.88 2.5 2.5 0 0 0 0-3.12A2.5 2.5 0 0 0 14.5 2Z" />
-              </svg>
-            ), href: '/dashboard/ai-agent' },
-            { label: 'Capture your first lead', done: checklistStates.leadCaptured, icon: (color: string) => (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <polyline points="16 11 18 13 22 9" />
-              </svg>
-            ), href: '/dashboard/leads' },
-            { label: 'Receive your first message', done: checklistStates.messageReceived, icon: (color: string) => (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-              </svg>
-            ), href: '/dashboard/chat' },
-            { label: 'Start your 14-day free trial — no credit card required', done: checklistStates.trialStarted, icon: (color: string) => (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-              </svg>
-            ), href: '/dashboard/upgrade', isAction: true },
+            { 
+              label: 'Connect your first channel', 
+              done: checklistStates.channelConnected,
+              href: '/dashboard/integrations/channels',
+              icon: (color: string) => (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  {/* Phone handset — voice/channel */}
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+                </svg>
+              )
+            },
+            { 
+              label: 'Configure your AI Agent', 
+              done: checklistStates.agentConfigured,
+              href: '/dashboard/ai-agent',
+              icon: (color: string) => (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  {/* CPU / AI chip */}
+                  <rect x="9" y="9" width="6" height="6" />
+                  <rect x="2" y="2" width="20" height="20" rx="2.5" />
+                  <path d="M9 2v7M15 2v7M9 15v7M15 15v7M2 9h7M2 15h7M15 9h7M15 15h7" />
+                </svg>
+              )
+            },
+            { 
+              label: 'Train your agent with FAQs & knowledge', 
+              done: checklistStates.trainingAdded,
+              href: '/dashboard/ai-agent',
+              icon: (color: string) => (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  {/* Database / knowledge base */}
+                  <ellipse cx="12" cy="5" rx="9" ry="3" />
+                  <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+                  <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+                </svg>
+              )
+            },
+            { 
+              label: 'Capture your first qualified lead', 
+              done: checklistStates.leadCaptured,
+              href: '/dashboard/leads',
+              icon: (color: string) => (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  {/* Crosshair / target */}
+                  <circle cx="12" cy="12" r="10" />
+                  <circle cx="12" cy="12" r="4" />
+                  <line x1="22" y1="12" x2="18" y2="12" />
+                  <line x1="6" y1="12" x2="2" y2="12" />
+                  <line x1="12" y1="6" x2="12" y2="2" />
+                  <line x1="12" y1="22" x2="12" y2="18" />
+                </svg>
+              )
+            },
+            { 
+              label: 'Receive your first AI conversation', 
+              done: checklistStates.messageReceived,
+              href: '/dashboard/chat',
+              icon: (color: string) => (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  {/* Two overlapping speech bubbles — conversation */}
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  <line x1="8" y1="10" x2="16" y2="10" />
+                  <line x1="8" y1="14" x2="12" y2="14" />
+                </svg>
+              )
+            },
+            { 
+              label: 'Go Live — activate your paid plan', 
+              done: checklistStates.trialStarted,
+              href: '/dashboard/account?tab=upgrade',
+              isAction: true,
+              icon: (color: string) => (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  {/* Rocket */}
+                  <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+                  <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+                  <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+                  <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+                </svg>
+              )
+            },
           ].map((item, i) => {
             const activeColor = item.isAction ? '#533afd' : '#0f172a';
             const displayColor = item.done ? '#94a3b8' : activeColor;
@@ -467,22 +513,174 @@ export default function OverviewPage() {
         ))}
       </div>
 
-      {/* Quick Actions */}
+      {/* Quick Actions — product-aligned 8-tile grid */}
       <div style={{ marginBottom: '1.5rem' }}>
-        <h3 style={{ fontSize: '13px', color: 'var(--stripe-navy)', margin: '0 0 0.75rem 0', fontWeight: 500 }}>Quick Actions</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+          <h3 style={{ fontSize: '13px', color: 'var(--stripe-navy)', margin: 0, fontWeight: 500 }}>Quick Actions</h3>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
           {[
-            { label: 'Open Inbox', icon: '💬', link: '/dashboard/chat', color: '#e0f2fe' },
-            { label: 'WebChat', icon: '🌐', link: '/dashboard/webchat-setup', color: '#fce7f3' },
-            { label: 'Add Lead', icon: '👤', link: '/dashboard/leads', color: '#dcfce7' },
-            { label: 'New Form', icon: '📝', link: '/dashboard/forms', color: '#ffedd5' },
-            { label: 'Train AI', icon: '🧠', link: '/dashboard/ai-agent', color: '#ede9fe' },
-            { label: 'Analytics', icon: '📊', link: '/dashboard/analytics', color: '#f3e8ff' },
+            {
+              label: 'Hire an Agent',
+              sub: 'Deploy a new AI employee',
+              link: '/dashboard/ai-agent',
+              highlight: true,
+              color: '#ede9fe',
+              accentColor: '#533afd',
+              icon: (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#533afd" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <line x1="19" y1="8" x2="19" y2="14" />
+                  <line x1="22" y1="11" x2="16" y2="11" />
+                </svg>
+              )
+            },
+            {
+              label: 'Open Inbox',
+              sub: 'View live conversations',
+              link: '/dashboard/chat/inbox',
+              color: '#e0f2fe',
+              accentColor: '#0284c7',
+              icon: (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0284c7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  <line x1="8" y1="10" x2="16" y2="10" />
+                  <line x1="8" y1="14" x2="12" y2="14" />
+                </svg>
+              )
+            },
+            {
+              label: 'Launch Campaign',
+              sub: 'Start outbound call run',
+              link: '/dashboard/chat/phone',
+              color: '#fce7f3',
+              accentColor: '#db2777',
+              icon: (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#db2777" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+              )
+            },
+            {
+              label: 'Add a Lead',
+              sub: 'Manually create a contact',
+              link: '/dashboard/leads',
+              color: '#dcfce7',
+              accentColor: '#16a34a',
+              icon: (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <polyline points="16 11 18 13 22 9" />
+                </svg>
+              )
+            },
+            {
+              label: 'Create a Form',
+              sub: 'Capture leads from your site',
+              link: '/dashboard/forms',
+              color: '#ffedd5',
+              accentColor: '#ea580c',
+              icon: (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ea580c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <line x1="8" y1="9" x2="16" y2="9" />
+                  <line x1="8" y1="13" x2="16" y2="13" />
+                  <line x1="8" y1="17" x2="12" y2="17" />
+                </svg>
+              )
+            },
+            {
+              label: 'Voice Calls',
+              sub: 'Manage call channels',
+              link: '/dashboard/integrations/phone',
+              color: '#fef3c7',
+              accentColor: '#d97706',
+              icon: (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+                </svg>
+              )
+            },
+            {
+              label: 'Integrations',
+              sub: 'Connect CRM & apps',
+              link: '/dashboard/integrations/apps',
+              color: '#f0fdf4',
+              accentColor: '#15803d',
+              icon: (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#15803d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="2" width="6" height="6" rx="1" />
+                  <rect x="16" y="2" width="6" height="6" rx="1" />
+                  <rect x="2" y="16" width="6" height="6" rx="1" />
+                  <rect x="16" y="16" width="6" height="6" rx="1" />
+                  <path d="M8 5h8M5 8v8M19 8v8M8 19h8" />
+                </svg>
+              )
+            },
+            {
+              label: 'Analytics',
+              sub: 'View performance reports',
+              link: '/dashboard/analytics',
+              color: '#f3e8ff',
+              accentColor: '#7c3aed',
+              icon: (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="20" x2="18" y2="10" />
+                  <line x1="12" y1="20" x2="12" y2="4" />
+                  <line x1="6" y1="20" x2="6" y2="14" />
+                  <line x1="2" y1="20" x2="22" y2="20" />
+                </svg>
+              )
+            },
           ].map((action, i) => (
             <Link href={action.link} key={i} style={{ textDecoration: 'none' }}>
-              <div style={{ backgroundColor: '#fff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '1.25rem 0.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', boxShadow: 'var(--stripe-shadow-ambient)', cursor: 'pointer', textAlign: 'center' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '8px', backgroundColor: action.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>{action.icon}</div>
-                <span style={{ fontSize: '12px', color: 'var(--stripe-navy)', fontWeight: 500 }}>{action.label}</span>
+              <div
+                style={{
+                  backgroundColor: action.highlight ? '#533afd' : '#fff',
+                  border: action.highlight ? 'none' : '1px solid var(--stripe-border)',
+                  borderRadius: '8px',
+                  padding: '1rem',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '0.75rem',
+                  boxShadow: action.highlight ? '0 4px 14px rgba(83,58,253,0.25)' : 'var(--stripe-shadow-ambient)',
+                  cursor: 'pointer',
+                  transition: 'all 0.18s ease',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = action.highlight
+                    ? '0 8px 20px rgba(83,58,253,0.35)'
+                    : '0 6px 16px rgba(0,0,0,0.08)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = action.highlight
+                    ? '0 4px 14px rgba(83,58,253,0.25)'
+                    : 'var(--stripe-shadow-ambient)';
+                }}
+              >
+                <div style={{
+                  width: '36px', height: '36px', borderRadius: '8px',
+                  backgroundColor: action.highlight ? 'rgba(255,255,255,0.15)' : action.color,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                }}>
+                  {action.highlight
+                    ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <line x1="19" y1="8" x2="19" y2="14" />
+                        <line x1="22" y1="11" x2="16" y2="11" />
+                      </svg>
+                    : action.icon
+                  }
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: '12.5px', fontWeight: 600, color: action.highlight ? '#fff' : 'var(--stripe-navy)', lineHeight: 1.2, marginBottom: '3px' }}>{action.label}</div>
+                  <div style={{ fontSize: '11px', color: action.highlight ? 'rgba(255,255,255,0.7)' : 'var(--stripe-muted)', lineHeight: 1.3 }}>{action.sub}</div>
+                </div>
               </div>
             </Link>
           ))}

@@ -265,27 +265,6 @@ export function Topbar({ toggleMobileMenu }: { toggleMobileMenu?: () => void }) 
             )}
           </div>
 
-          <div style={{ height: '24px', width: '1px', backgroundColor: 'var(--stripe-border)', margin: '0 0.5rem' }} />
-
-          {/* Account Button → links to /dashboard/account */}
-          <Link href="/dashboard/account" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-              <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--stripe-navy)', lineHeight: 1 }}>
-                {user?.fullName || '…'}
-              </span>
-              <span style={{ fontSize: '11px', color: 'var(--stripe-body)', marginTop: '2px', textTransform: 'capitalize' }}>
-                {user?.plan ? `${user.plan} Plan` : ''}
-              </span>
-            </div>
-            <div style={{
-              width: '32px', height: '32px', borderRadius: '6px',
-              background: 'var(--stripe-purple)', color: 'white',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontWeight: 'bold', fontSize: '12px',
-            }}>
-              {user?.initials || '…'}
-            </div>
-          </Link>
         </div>
       </header>
 
