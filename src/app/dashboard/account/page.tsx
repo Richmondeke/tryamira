@@ -7,7 +7,7 @@ import Toast from '@/components/ui/Toast';
 import SuccessConfirmation from '@/components/ui/SuccessConfirmation';
 import { createClient } from '@/utils/supabase/client';
 import { inviteTeamMember, getTeamMembers } from '@/app/actions/team';
-import { createKorapayCheckout } from '@/app/actions/billing';
+import { createKorapayCheckout, getBillingData, createPlanCheckout, createTopupCheckout } from '@/app/actions/billing';
 import { createVapiSipTrunk } from '@/app/actions/vapi';
 
 function AccountSettingsInner() {
@@ -17,18 +17,22 @@ function AccountSettingsInner() {
 
   const [activeTab, setActiveTab] = useState(initialTab);
   const [toast, setToast] = useState<string | null>(null);
-  
-  // Billing plan state (Prepaid Flat Tiers)
+
+  // ── Live billing state ──────────────────────────────────────────────────
   const [billingTier, setBillingTier] = useState<'starter' | 'pro' | 'team' | 'enterprise'>('starter');
   const [targetUpgradeTier, setTargetUpgradeTier] = useState<'pro' | 'team' | 'enterprise'>('pro');
+  const [callCredits, setCallCredits] = useState<number>(0);
+  const [invoices, setInvoices] = useState<any[]>([]);
+  const [userId, setUserId] = useState<string>('');
+  const [userEmail, setUserEmail] = useState<string>('');
+  const [billingLoaded, setBillingLoaded] = useState(false);
+  const [topupAmount, setTopupAmount] = useState<number>(5000); // NGN
+  const [showTopupModal, setShowTopupModal] = useState(false);
+  const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
+  const [showPaymentFailed, setShowPaymentFailed] = useState(false);
+  const [paymentSuccessType, setPaymentSuccessType] = useState<'subscription' | 'topup'>('subscription');
+  const [paidPlan, setPaidPlan] = useState<string>('');
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const cached = localStorage.getItem('amira_billing_tier') as 'starter' | 'pro' | 'team' | 'enterprise';
-      if (cached) setBillingTier(cached);
-    }
-  }, []);
-  
   // Modals & loading states
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -37,6 +41,7 @@ function AccountSettingsInner() {
   const [isProcessingBilling, setIsProcessingBilling] = useState(false);
   const [isProcessingUpgrade, setIsProcessingUpgrade] = useState(false);
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+  const [isTopupLoading, setIsTopupLoading] = useState(false);
 
   // Settings & Team States
   const [activeSettingsTab, setActiveSettingsTab] = useState('general');
@@ -84,6 +89,88 @@ function AccountSettingsInner() {
     router.replace(url.pathname + url.search);
   };
 
+  // ── Load live billing data ────────────────────────────────────────────────
+  useEffect(() => {
+    getBillingData().then((data) => {
+      if (data) {
+        setBillingTier(data.plan as any);
+        setCallCredits(data.callCredits);
+        setInvoices(data.invoices);
+        setUserId(data.userId);
+        setUserEmail(data.userEmail);
+        // Keep localStorage in sync for sidebar badge
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('amira_billing_tier', data.plan);
+        }
+      }
+      setBillingLoaded(true);
+    });
+  }, []);
+
+  // ── Handle redirect back from Korapay payment ──────────────────────────
+  useEffect(() => {
+    const payment = searchParams.get('payment');
+    const plan = searchParams.get('plan');
+    const amount = searchParams.get('amount');
+
+    if (payment === 'success' && plan) {
+      setPaymentSuccessType('subscription');
+      setPaidPlan(plan);
+      setShowPaymentSuccess(true);
+      // Refresh billing data to reflect new plan from DB
+      getBillingData().then((data) => {
+        if (data) {
+          setBillingTier(data.plan as any);
+          setCallCredits(data.callCredits);
+          setInvoices(data.invoices);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('amira_billing_tier', data.plan);
+          }
+        }
+      });
+      // Clean up URL
+      const url = new URL(window.location.href);
+      url.searchParams.delete('payment');
+      url.searchParams.delete('plan');
+      router.replace(url.pathname + url.search);
+    } else if (payment === 'topup_success') {
+      setPaymentSuccessType('topup');
+      setShowPaymentSuccess(true);
+      getBillingData().then((data) => {
+        if (data) setCallCredits(data.callCredits);
+      });
+      const url = new URL(window.location.href);
+      url.searchParams.delete('payment');
+      url.searchParams.delete('amount');
+      router.replace(url.pathname + url.search);
+    } else if (payment === 'failed') {
+      setShowPaymentFailed(true);
+      const url = new URL(window.location.href);
+      url.searchParams.delete('payment');
+      router.replace(url.pathname + url.search);
+    }
+  }, [searchParams]);
+
+  const fetchReferralData = async () => {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return;
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('referral_code, referral_clicks, referral_signups, referral_earnings')
+        .eq('id', user.id)
+        .single();
+      if (profile) {
+        const code = profile.referral_code || `user${user.id.substring(0, 4)}`;
+        setRefLink(`https://heyamira.com/ref/${code}`);
+        setRefClicks(profile.referral_clicks ?? 12);
+        setRefSignups(profile.referral_signups ?? 3);
+        setRefEarned(profile.referral_earnings ?? 150);
+      }
+    }
+  };
+
   useEffect(() => {
     getTeamMembers(1).then(setTeamMembers);
     const fetchWorkspace = async () => {
@@ -96,26 +183,6 @@ function AccountSettingsInner() {
       }
     };
     fetchWorkspace();
-
-    const fetchReferralData = async () => {
-      if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return;
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('referral_code, referral_clicks, referral_signups, referral_earnings')
-          .eq('id', user.id)
-          .single();
-        if (profile) {
-          const code = profile.referral_code || `user${user.id.substring(0, 4)}`;
-          setRefLink(`https://heyamira.com/ref/${code}`);
-          setRefClicks(profile.referral_clicks ?? 12);
-          setRefSignups(profile.referral_signups ?? 3);
-          setRefEarned(profile.referral_earnings ?? 150);
-        }
-      }
-    };
     fetchReferralData();
   }, []);
 
@@ -204,25 +271,63 @@ function AccountSettingsInner() {
     setToast(`${setting} preference updated.`);
   };
 
-  const handleCheckoutKorapay = () => {
+  // ── Manage Billing portal (Korapay subscription portal) ─────────────────
+  const handleCheckoutKorapay = async () => {
+    if (!userId || !userEmail) {
+      setToast('Please wait — loading your billing profile...');
+      return;
+    }
     setIsCheckoutLoading(true);
-    setTimeout(() => {
+    try {
+      // Open Korapay customer portal for subscription management
+      // For paid plans, redirect to manage billing
+      const priceNGN = billingTier === 'pro' ? 45000 : billingTier === 'team' ? 135000 : billingTier === 'enterprise' ? 450000 : 0;
+      if (priceNGN === 0) {
+        setToast('Upgrade to a paid plan to enable billing management.');
+        setIsCheckoutLoading(false);
+        return;
+      }
+      await createKorapayCheckout(1, priceNGN, userEmail);
+    } catch (e: any) {
+      setToast(e.message || 'Failed to open billing portal.');
       setIsCheckoutLoading(false);
-      setToast('Simulated Korapay checkout opened successfully.');
-    }, 1200);
+    }
   };
 
-  const processUpgrade = () => {
+  // ── Add Call Credits top-up ──────────────────────────────────────────────
+  const handleTopup = async () => {
+    if (!userId || !userEmail) {
+      setToast('Please wait — loading your billing profile...');
+      return;
+    }
+    setIsTopupLoading(true);
+    try {
+      await createTopupCheckout(topupAmount, userEmail, userId);
+    } catch (e: any) {
+      setToast(e.message || 'Failed to start top-up. Please try again.');
+      setIsTopupLoading(false);
+    }
+  };
+
+  // ── Initiate plan upgrade via real Korapay checkout ─────────────────────
+  const processUpgrade = async () => {
+    if (!userId || !userEmail) {
+      setToast('Please wait — loading your billing profile...');
+      return;
+    }
     setIsProcessingUpgrade(true);
-    setTimeout(() => {
-      setIsProcessingUpgrade(false);
+    try {
+      await createPlanCheckout(targetUpgradeTier, userEmail, userId);
+      // If no redirect happened (dev/demo mode), simulate success
       setBillingTier(targetUpgradeTier);
       if (typeof window !== 'undefined') {
         localStorage.setItem('amira_billing_tier', targetUpgradeTier);
       }
       setIsUpgradeSuccess(true);
-      setToast(`🎉 Successfully upgraded to the ${targetUpgradeTier === 'pro' ? 'Pro Tier' : targetUpgradeTier === 'team' ? 'Team Plan' : 'Enterprise Plan'}!`);
-    }, 2000);
+    } catch (e: any) {
+      setToast(e.message || 'Payment failed. Please try again.');
+      setIsProcessingUpgrade(false);
+    }
   };
 
   // Nav styles matching Stripe theme
@@ -569,19 +674,19 @@ function AccountSettingsInner() {
                 </div>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <button 
-                    onClick={() => {
-                      if (billingTier === 'starter') {
-                        setToast("Please upgrade to a Premium Plan to enable subscription billing configurations.");
-                      } else {
-                        handleCheckoutKorapay();
-                      }
-                    }} 
-                    disabled={isCheckoutLoading} 
-                    style={{ width: '100%', backgroundColor: '#ffffff', color: 'var(--stripe-navy)', border: '1px solid var(--stripe-border)', borderRadius: '4px', padding: '0.6rem', fontSize: '12px', fontWeight: 500, cursor: isCheckoutLoading ? 'wait' : 'pointer' }}
-                  >
-                    {isCheckoutLoading ? 'Connecting...' : 'Manage Billing (Korapay)'}
-                  </button>
+                  <button
+                  onClick={() => {
+                    if (billingTier === 'starter') {
+                      setToast('Please upgrade to a paid plan to enable billing management.');
+                    } else {
+                      handleCheckoutKorapay();
+                    }
+                  }}
+                  disabled={isCheckoutLoading}
+                  style={{ width: '100%', backgroundColor: '#ffffff', color: 'var(--stripe-navy)', border: '1px solid var(--stripe-border)', borderRadius: '4px', padding: '0.6rem', fontSize: '12px', fontWeight: 500, cursor: isCheckoutLoading ? 'wait' : 'pointer' }}
+                >
+                  {isCheckoutLoading ? 'Connecting...' : 'Manage Billing'}
+                </button>
                   {billingTier === 'starter' ? (
                     <button 
                       onClick={() => handleTabChange('upgrade')}
@@ -606,23 +711,34 @@ function AccountSettingsInner() {
                   <div>
                     <div style={{ fontSize: '11px', color: 'var(--stripe-label)', fontWeight: 500, marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Call Credits Wallet</div>
                     <div style={{ fontSize: '20px', color: 'var(--stripe-navy)', fontWeight: 300, letterSpacing: '-0.48px', marginBottom: '0.5rem', fontFamily: 'monospace' }}>
-                      $150.00
+                      {billingLoaded ? `$${callCredits.toFixed(2)}` : '—'}
                     </div>
                     <div style={{ fontSize: '12px', color: 'var(--stripe-body)' }}>Pay-as-you-go call credit wallet</div>
                   </div>
-                  <span style={{ backgroundColor: 'rgba(99,102,241,0.1)', color: '#6366f1', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600 }}>Active Wallet</span>
+                  <span style={{ backgroundColor: callCredits > 0 ? 'rgba(16,185,129,0.1)' : 'rgba(99,102,241,0.1)', color: callCredits > 0 ? '#10b981' : '#6366f1', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600 }}>
+                    {callCredits > 0 ? 'Active Wallet' : 'Top Up Required'}
+                  </span>
                 </div>
-                
-                <button 
-                  onClick={() => {
-                    setToast("Opening Korapay to secure your outbound wallet top-up...");
-                    setTimeout(() => {
-                      handleCheckoutKorapay();
-                    }, 1200);
-                  }}
-                  style={{ width: '100%', backgroundColor: '#6366f1', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.6rem', fontSize: '12px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 12px rgba(99,102,241,0.15)' }}
+
+                {/* Topup amount selector */}
+                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
+                  {[5000, 10000, 25000, 50000].map((amt) => (
+                    <button
+                      key={amt}
+                      onClick={() => setTopupAmount(amt)}
+                      style={{ padding: '4px 10px', fontSize: '11px', borderRadius: '4px', border: `1px solid ${topupAmount === amt ? 'var(--stripe-purple)' : 'var(--stripe-border)'}`, backgroundColor: topupAmount === amt ? 'rgba(99,102,241,0.08)' : '#fff', color: topupAmount === amt ? 'var(--stripe-purple)' : 'var(--stripe-navy)', fontWeight: topupAmount === amt ? 600 : 400, cursor: 'pointer' }}
+                    >
+                      ₦{amt.toLocaleString()}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={handleTopup}
+                  disabled={isTopupLoading}
+                  style={{ width: '100%', backgroundColor: '#6366f1', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.6rem', fontSize: '12px', fontWeight: 600, cursor: isTopupLoading ? 'wait' : 'pointer', boxShadow: '0 4px 12px rgba(99,102,241,0.15)', opacity: isTopupLoading ? 0.7 : 1 }}
                 >
-                  + Add Call Credits (Topup)
+                  {isTopupLoading ? 'Redirecting to payment...' : `+ Add ₦${topupAmount.toLocaleString()} Call Credits`}
                 </button>
               </div>
 
@@ -656,40 +772,71 @@ function AccountSettingsInner() {
               </div>
             </div>
 
-            {/* Invoices List */}
+            {/* Invoice History — live from DB */}
             <div style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '1.5rem', boxShadow: 'var(--stripe-shadow-ambient)' }}>
               <h3 style={{ fontSize: '13px', color: 'var(--stripe-navy)', margin: '0 0 1rem 0', fontWeight: 600 }}>Invoice History</h3>
               <p style={{ fontSize: '12px', color: 'var(--stripe-body)', marginBottom: '1rem' }}>
                 You are currently on the <strong>{billingTier === 'starter' ? 'Starter Plan' : billingTier === 'pro' ? 'Pro Plan' : billingTier === 'team' ? 'Team Plan' : 'Enterprise Plan'}</strong> subscription.
               </p>
-              
-              <div style={{ padding: '1rem', backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0', marginBottom: '1rem' }}>
-                <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--stripe-navy)', marginBottom: '4px' }}>Next invoice</div>
-                <div style={{ fontSize: '12px', color: 'var(--stripe-body)' }}>
-                  {billingTier === 'starter' ? '₦0.00' : billingTier === 'pro' ? '₦45,000.00 due on June 1st, 2026' : billingTier === 'team' ? '₦135,000.00 due on June 1st, 2026' : '₦450,000.00 due on June 1st, 2026'}
+
+              {!billingLoaded ? (
+                <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--stripe-muted)', fontSize: '12px' }}>Loading invoices...</div>
+              ) : invoices.length === 0 ? (
+                <div style={{ padding: '1rem', backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0', marginBottom: '1rem' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--stripe-navy)', marginBottom: '4px' }}>No invoices yet</div>
+                  <div style={{ fontSize: '12px', color: 'var(--stripe-body)' }}>Your billing history will appear here after your first payment.</div>
                 </div>
-              </div>
-              <button 
-                onClick={async () => {
-                  setIsProcessingBilling(true);
-                  try {
-                    const priceInCents = billingTier === 'pro' ? 4900 : billingTier === 'team' ? 14900 : billingTier === 'enterprise' ? 49900 : 0;
-                    if (priceInCents === 0) {
-                      setToast("Sandbox environment active. Upgrade subscription tier first.");
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
+                  {invoices.map((inv: any) => (
+                    <div key={inv.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1rem', backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                      <div>
+                        <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--stripe-navy)' }}>
+                          {inv.type === 'topup' ? 'Call Credits Top-up' : `${inv.plan ? inv.plan.charAt(0).toUpperCase() + inv.plan.slice(1) : ''} Plan Subscription`}
+                        </div>
+                        <div style={{ fontSize: '11px', color: 'var(--stripe-muted)', marginTop: '2px' }}>
+                          {new Date(inv.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} · Ref: {inv.reference.substring(0, 20)}...
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--stripe-navy)', fontFamily: 'monospace' }}>₦{Number(inv.amount).toLocaleString()}</div>
+                        <span style={{ fontSize: '10px', fontWeight: 600, padding: '2px 6px', borderRadius: '3px', backgroundColor: inv.status === 'paid' ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)', color: inv.status === 'paid' ? '#10b981' : '#f59e0b' }}>
+                          {inv.status.toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <button
+                  onClick={async () => {
+                    setIsProcessingBilling(true);
+                    try {
+                      if (billingTier === 'starter') {
+                        setToast('Upgrade to a paid plan to manage subscriptions.');
+                        setIsProcessingBilling(false);
+                        return;
+                      }
+                      await createKorapayCheckout(1, billingTier === 'pro' ? 45000 : billingTier === 'team' ? 135000 : 450000, userEmail);
+                    } catch (e: any) {
+                      setToast(e.message);
                       setIsProcessingBilling(false);
-                      return;
                     }
-                    await createKorapayCheckout(1, priceInCents, "user@example.com");
-                  } catch (e: any) {
-                    setToast(e.message);
-                    setIsProcessingBilling(false);
-                  }
-                }}
-                disabled={isProcessingBilling}
-                style={{ backgroundColor: '#fff', color: 'var(--stripe-navy)', border: '1px solid var(--stripe-border)', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '12px', fontWeight: 500, cursor: isProcessingBilling ? 'wait' : 'pointer' }}
-              >
-                {isProcessingBilling ? 'Processing...' : 'Manage Subscriptions via Korapay'}
-              </button>
+                  }}
+                  disabled={isProcessingBilling}
+                  style={{ backgroundColor: '#fff', color: 'var(--stripe-navy)', border: '1px solid var(--stripe-border)', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '12px', fontWeight: 500, cursor: isProcessingBilling ? 'wait' : 'pointer' }}
+                >
+                  {isProcessingBilling ? 'Processing...' : 'Manage Subscriptions'}
+                </button>
+                <button
+                  onClick={() => { getBillingData().then(d => { if (d) { setInvoices(d.invoices); setCallCredits(d.callCredits); } }); setToast('Invoice history refreshed'); }}
+                  style={{ backgroundColor: '#fff', color: 'var(--stripe-muted)', border: '1px solid var(--stripe-border)', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '12px', cursor: 'pointer' }}
+                >
+                  ↻ Refresh
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -735,7 +882,43 @@ function AccountSettingsInner() {
         {/* TAB 6: UPGRADE COMPARISON */}
         {activeTab === 'upgrade' && (
           <div>
-            <Modal isOpen={showUpgradeModal} onClose={() => !isProcessingUpgrade && setShowUpgradeModal(false)} title={isUpgradeSuccess ? "Workspace Upgraded" : `Upgrade to ${targetUpgradeTier === 'pro' ? 'Pro Tier' : targetUpgradeTier === 'team' ? 'Team Plan' : 'Enterprise Plan'}`}>
+            {/* Payment Success Modal */}
+          <Modal isOpen={showPaymentSuccess} onClose={() => setShowPaymentSuccess(false)} title={paymentSuccessType === 'topup' ? 'Credits Added!' : 'Plan Upgraded!'}>
+            <SuccessConfirmation
+              title={paymentSuccessType === 'topup' ? 'Call Credits Added Successfully' : `Upgraded to ${paidPlan ? paidPlan.charAt(0).toUpperCase() + paidPlan.slice(1) : ''} Plan!`}
+              subtitle={paymentSuccessType === 'topup' ? 'Your call credit wallet has been topped up. You can now make outbound calls.' : 'Your workspace has been upgraded. All plan features are now active.'}
+              icon={paymentSuccessType === 'topup' ? '💳' : '👑'}
+              features={paymentSuccessType === 'topup' ? [
+                'Credits reflected in your wallet immediately',
+                'Use credits for outbound AI call campaigns',
+                'Wallet auto-topped when balance is low'
+              ] : [
+                'All plan features unlocked immediately',
+                'Your invoice has been recorded',
+                'Connect your phone lines and start calling'
+              ]}
+              ctaText='Go to Dashboard'
+              onCtaClick={() => { setShowPaymentSuccess(false); router.push('/dashboard'); }}
+              secondaryCtaText='View Invoice History'
+              onSecondaryClick={() => { setShowPaymentSuccess(false); handleTabChange('billing'); }}
+            />
+          </Modal>
+
+          {/* Payment Failed Modal */}
+          <Modal isOpen={showPaymentFailed} onClose={() => setShowPaymentFailed(false)} title='Payment Failed'>
+            <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
+              <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>⚠️</div>
+              <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--stripe-navy)', marginBottom: '0.5rem' }}>Payment could not be completed</h3>
+              <p style={{ fontSize: '12.5px', color: 'var(--stripe-body)', lineHeight: 1.6, marginBottom: '1.5rem' }}>Your card was not charged. Please check your payment details and try again, or contact support if the issue persists.</p>
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+                <button onClick={() => setShowPaymentFailed(false)} style={{ padding: '0.5rem 1.25rem', borderRadius: '4px', border: '1px solid var(--stripe-border)', backgroundColor: '#fff', color: 'var(--stripe-navy)', cursor: 'pointer', fontSize: '12px' }}>Dismiss</button>
+                <button onClick={() => { setShowPaymentFailed(false); handleTabChange('upgrade'); }} style={{ padding: '0.5rem 1.25rem', borderRadius: '4px', border: 'none', backgroundColor: 'var(--stripe-purple)', color: '#fff', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}>Try Again</button>
+              </div>
+            </div>
+          </Modal>
+
+          {/* Upgrade Confirmation Modal */}
+          <Modal isOpen={showUpgradeModal} onClose={() => !isProcessingUpgrade && setShowUpgradeModal(false)} title={isUpgradeSuccess ? 'Workspace Upgraded' : `Upgrade to ${targetUpgradeTier === 'pro' ? 'Pro Tier' : targetUpgradeTier === 'team' ? 'Team Plan' : 'Enterprise Plan'}`}>
               {isUpgradeSuccess ? (
                 <SuccessConfirmation
                   title={`Workspace Upgraded to ${targetUpgradeTier === 'pro' ? 'Pro Tier' : targetUpgradeTier === 'team' ? 'Team Plan' : 'Enterprise Plan'}!`}
@@ -782,11 +965,14 @@ function AccountSettingsInner() {
               ) : (
                 <div>
                   <p style={{ color: 'var(--stripe-body)', fontSize: '12.5px', marginBottom: '1.5rem', lineHeight: 1.5 }}>
-                    You are about to upgrade your workspace to the <strong>{targetUpgradeTier === 'pro' ? 'Pro Tier' : targetUpgradeTier === 'team' ? 'Team Plan' : 'Enterprise Plan'}</strong> for <strong>{targetUpgradeTier === 'pro' ? '$49/month' : targetUpgradeTier === 'team' ? '$149/month' : '$499/month'}</strong> (₦{targetUpgradeTier === 'pro' ? '45,000' : targetUpgradeTier === 'team' ? '135,000' : '450,000'}/mo). Your primary payment details ending in **4242 will be billed.
+                    You are about to upgrade your workspace to the <strong>{targetUpgradeTier === 'pro' ? 'Pro Tier' : targetUpgradeTier === 'team' ? 'Team Plan' : 'Enterprise Plan'}</strong> for <strong>₦{targetUpgradeTier === 'pro' ? '45,000' : targetUpgradeTier === 'team' ? '135,000' : '450,000'}/mo</strong>. You will be redirected to our secure payment page to complete the transaction.
                   </p>
+                  <div style={{ padding: '0.75rem 1rem', backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0', marginBottom: '1.25rem', fontSize: '12px', color: 'var(--stripe-muted)' }}>
+                    🔒 Secured by Korapay · No card details stored on our servers
+                  </div>
                   <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
                     <button onClick={() => setShowUpgradeModal(false)} style={{ padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid var(--stripe-border)', backgroundColor: '#fff', color: 'var(--stripe-navy)', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>Cancel</button>
-                    <button onClick={processUpgrade} style={{ padding: '0.5rem 1.25rem', borderRadius: '4px', border: 'none', backgroundColor: 'var(--stripe-purple)', color: '#fff', cursor: 'pointer', fontSize: '12px', fontWeight: 600, boxShadow: 'var(--stripe-shadow-action)' }}>Confirm Payment</button>
+                    <button onClick={processUpgrade} disabled={isProcessingUpgrade} style={{ padding: '0.5rem 1.25rem', borderRadius: '4px', border: 'none', backgroundColor: 'var(--stripe-purple)', color: '#fff', cursor: isProcessingUpgrade ? 'wait' : 'pointer', fontSize: '12px', fontWeight: 600, boxShadow: 'var(--stripe-shadow-action)', opacity: isProcessingUpgrade ? 0.7 : 1 }}>Pay Now — Redirecting to Korapay</button>
                   </div>
                 </div>
               )}
@@ -824,7 +1010,15 @@ function AccountSettingsInner() {
                 {billingTier === 'starter' ? (
                   <button disabled style={{ width: '100%', padding: '0.55rem', backgroundColor: '#f6f9fc', color: 'var(--stripe-muted)', border: '1px solid var(--stripe-border)', borderRadius: '4px', fontWeight: 600, fontSize: '11.5px', cursor: 'not-allowed' }}>Current Plan</button>
                 ) : (
-                  <button onClick={() => { setBillingTier('starter'); localStorage.setItem('amira_billing_tier', 'starter'); setToast('Downgraded to Sandbox Starter Tier'); }} style={{ width: '100%', padding: '0.55rem', backgroundColor: '#ffffff', color: 'var(--stripe-navy)', border: '1px solid var(--stripe-border)', borderRadius: '4px', fontWeight: 600, fontSize: '11.5px', cursor: 'pointer' }}>Downgrade</button>
+                  <button
+                    onClick={async () => {
+                      if (!userId || !userEmail) { setToast('Loading profile...'); return; }
+                      setIsCheckoutLoading(true);
+                      try { await createPlanCheckout('pro', userEmail, userId); }
+                      catch (e: any) { setToast(e.message); setIsCheckoutLoading(false); }
+                    }}
+                    style={{ width: '100%', padding: '0.55rem', backgroundColor: '#ffffff', color: 'var(--stripe-navy)', border: '1px solid var(--stripe-border)', borderRadius: '4px', fontWeight: 600, fontSize: '11.5px', cursor: 'pointer' }}
+                  >Downgrade to Starter</button>
                 )}
               </div>
 
@@ -850,7 +1044,11 @@ function AccountSettingsInner() {
                 {billingTier === 'pro' ? (
                   <button disabled style={{ width: '100%', padding: '0.55rem', backgroundColor: '#f6f9fc', color: 'var(--stripe-muted)', border: '1px solid var(--stripe-border)', borderRadius: '4px', fontWeight: 600, fontSize: '11.5px', cursor: 'not-allowed' }}>Current Plan</button>
                 ) : (
-                  <button onClick={() => { setTargetUpgradeTier('pro'); setIsUpgradeSuccess(false); setShowUpgradeModal(true); }} style={{ width: '100%', padding: '0.55rem', backgroundColor: '#6366f1', backgroundImage: 'linear-gradient(135deg, #6366f1, #4f46e5)', color: '#ffffff', border: 'none', borderRadius: '4px', fontWeight: 600, fontSize: '11.5px', cursor: 'pointer', boxShadow: '0 2px 8px rgba(99, 102, 241, 0.2)' }}>Upgrade to Pro</button>
+                  <button
+                    onClick={() => { setTargetUpgradeTier('pro'); setIsUpgradeSuccess(false); setShowUpgradeModal(true); }}
+                    disabled={isCheckoutLoading}
+                    style={{ width: '100%', padding: '0.55rem', backgroundColor: '#6366f1', backgroundImage: 'linear-gradient(135deg, #6366f1, #4f46e5)', color: '#ffffff', border: 'none', borderRadius: '4px', fontWeight: 600, fontSize: '11.5px', cursor: 'pointer', boxShadow: '0 2px 8px rgba(99, 102, 241, 0.2)' }}
+                  >Upgrade to Pro — ₦45,000/mo</button>
                 )}
               </div>
 
@@ -876,7 +1074,11 @@ function AccountSettingsInner() {
                 {billingTier === 'team' ? (
                   <button disabled style={{ width: '100%', padding: '0.55rem', backgroundColor: '#f6f9fc', color: 'var(--stripe-muted)', border: '1px solid var(--stripe-border)', borderRadius: '4px', fontWeight: 600, fontSize: '11.5px', cursor: 'not-allowed' }}>Current Plan</button>
                 ) : (
-                  <button onClick={() => { setTargetUpgradeTier('team'); setIsUpgradeSuccess(false); setShowUpgradeModal(true); }} style={{ width: '100%', padding: '0.55rem', backgroundColor: 'var(--stripe-purple)', color: '#ffffff', border: 'none', borderRadius: '4px', fontWeight: 600, fontSize: '11.5px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(83, 58, 253, 0.3)' }}>Upgrade to Team</button>
+                  <button
+                    onClick={() => { setTargetUpgradeTier('team'); setIsUpgradeSuccess(false); setShowUpgradeModal(true); }}
+                    disabled={isCheckoutLoading}
+                    style={{ width: '100%', padding: '0.55rem', backgroundColor: 'var(--stripe-purple)', color: '#ffffff', border: 'none', borderRadius: '4px', fontWeight: 600, fontSize: '11.5px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(83, 58, 253, 0.3)' }}
+                  >Upgrade to Team — ₦135,000/mo</button>
                 )}
               </div>
 
@@ -902,7 +1104,11 @@ function AccountSettingsInner() {
                 {billingTier === 'enterprise' ? (
                   <button disabled style={{ width: '100%', padding: '0.55rem', backgroundColor: '#f6f9fc', color: 'var(--stripe-muted)', border: '1px solid var(--stripe-border)', borderRadius: '4px', fontWeight: 600, fontSize: '11.5px', cursor: 'not-allowed' }}>Current Plan</button>
                 ) : (
-                  <button onClick={() => { setTargetUpgradeTier('enterprise'); setIsUpgradeSuccess(false); setShowUpgradeModal(true); }} style={{ width: '100%', padding: '0.55rem', backgroundColor: '#1e293b', color: '#ffffff', border: 'none', borderRadius: '4px', fontWeight: 600, fontSize: '11.5px', cursor: 'pointer', boxShadow: '0 2px 8px rgba(30, 41, 59, 0.2)' }}>Upgrade to Enterprise</button>
+                  <button
+                    onClick={() => { setTargetUpgradeTier('enterprise'); setIsUpgradeSuccess(false); setShowUpgradeModal(true); }}
+                    disabled={isCheckoutLoading}
+                    style={{ width: '100%', padding: '0.55rem', backgroundColor: '#1e293b', color: '#ffffff', border: 'none', borderRadius: '4px', fontWeight: 600, fontSize: '11.5px', cursor: 'pointer', boxShadow: '0 2px 8px rgba(30, 41, 59, 0.2)' }}
+                  >Upgrade to Enterprise — ₦450,000/mo</button>
                 )}
               </div>
             </div>
