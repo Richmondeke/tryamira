@@ -177,7 +177,7 @@ export default function IntegrationsPage() {
             <div style={{ display: 'inline-block', width: '32px', height: '32px', border: '3px solid #4caf50', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '1rem' }} />
             <div style={{ color: '#4caf50', fontSize: '14px', fontWeight: 600 }}>Secure Authorization</div>
             <p style={{ color: 'var(--stripe-body)', fontSize: '13px', marginTop: '0.5rem', marginInline: 'auto', maxWidth: '320px', lineHeight: 1.5 }}>
-              Redirecting you to the Composio OAuth portal to authorize {connectingApp?.name} securely...
+              Redirecting you to the secure authorization portal to authorize {connectingApp?.name} securely...
             </p>
           </div>
         ) : (
@@ -190,7 +190,7 @@ export default function IntegrationsPage() {
               <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', fontSize: '12px', color: 'var(--stripe-body)', lineHeight: 1.5 }}>
                 <span style={{ fontSize: '16px' }}>🛡️</span>
                 <span>
-                  <strong>Composio Verified Connection:</strong> Authentication takes place directly through secure OAuth. Amira does not store your credentials.
+                  <strong>Secure Verified Connection:</strong> Authentication takes place directly through secure OAuth. Amira does not store your credentials.
                 </span>
               </div>
             </div>
@@ -343,10 +343,7 @@ export default function IntegrationsPage() {
                     </button>
                   )}
                 </div>
-                <h3 style={{ fontSize: '13px', color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', fontWeight: 500 }}>{app.name}</h3>
-                <p style={{ fontSize: '12px', color: 'var(--stripe-body)', margin: 0, lineHeight: 1.5 }}>
-                  {app.desc || `Integrate ${app.name} smoothly via secure Composio login.`}
-                </p>
+                <h3 style={{ fontSize: '13px', color: 'var(--stripe-navy)', margin: '0', fontWeight: 500 }}>{app.name}</h3>
               </div>
             );
           })}

@@ -48,7 +48,14 @@ export default function Page() {
           const connStatus = connectionStatusMap.get(app.id.toLowerCase());
           let finalStatus = 'Not Connected';
           if (connStatus === 'active') finalStatus = 'Connected';
-          if (connStatus === 'inactive') finalStatus = 'Disconnected';
+          if (connStatus === 'inactive') {
+            const saved = typeof window !== 'undefined' ? localStorage.getItem(`integration_config_${app.id}`) : null;
+            if (saved) {
+              finalStatus = 'Disconnected';
+            } else {
+              finalStatus = 'Not Connected';
+            }
+          }
 
           // Retrieve local config for auto-reply state if available (in a real app we'd fetch from DB)
           let autoReply = finalStatus === 'Connected';

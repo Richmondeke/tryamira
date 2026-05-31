@@ -48,7 +48,14 @@ export default function WhatsAppPage() {
           const connStatus = connectionStatusMap.get(app.id.toLowerCase());
           let finalStatus = 'Not Connected';
           if (connStatus === 'active') finalStatus = 'Connected';
-          if (connStatus === 'inactive') finalStatus = 'Disconnected';
+          if (connStatus === 'inactive') {
+            const saved = typeof window !== 'undefined' ? localStorage.getItem(`integration_config_${app.id}`) : null;
+            if (saved) {
+              finalStatus = 'Disconnected';
+            } else {
+              finalStatus = 'Not Connected';
+            }
+          }
 
           // Retrieve local config for auto-reply state if available
           let autoReply = finalStatus === 'Connected';
@@ -272,7 +279,7 @@ export default function WhatsAppPage() {
               <MessageCircle style={{ width: '24px', height: '24px', color: '#64748b' }} />
             </div>
             <h3 style={{ fontSize: '16px', color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', fontWeight: 500 }}>No messaging providers found</h3>
-            <p style={{ color: 'var(--stripe-body)', fontSize: '13px', margin: '0 0 1.5rem 0', maxWidth: '300px' }}>Could not load integrations from Composio. Please check your API key.</p>
+            <p style={{ color: 'var(--stripe-body)', fontSize: '13px', margin: '0 0 1.5rem 0', maxWidth: '300px' }}>Could not load messaging providers. Please check your API key.</p>
           </div>
         ) : (
           <>
