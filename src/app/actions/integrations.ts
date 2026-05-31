@@ -158,10 +158,12 @@ export async function getComposioStatus() {
   }
 }
 
-export async function initiateComposioConnection(appName: string) {
+export async function initiateComposioConnection(appName: string, returnPath?: string) {
   const apiKey = process.env.COMPOSIO_API_KEY;
   const origin = process.env.NEXT_PUBLIC_APP_URL || 'https://heyamira.com';
-  const callbackUrl = `${origin}/dashboard/integrations/apps?status=success&app=${appName}`;
+  const callbackUrl = returnPath 
+    ? `${origin}${returnPath}?status=success&app=${appName}`
+    : `${origin}/dashboard/integrations/apps?status=success&app=${appName}`;
   const BASE = 'https://backend.composio.dev/api/v3';
   const headers = { 'x-api-key': apiKey!, 'Content-Type': 'application/json' };
 
