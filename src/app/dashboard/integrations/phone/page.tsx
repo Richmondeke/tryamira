@@ -237,7 +237,7 @@ export default function PhoneNumbersPage() {
       <Modal isOpen={showBuyModal} onClose={() => setShowBuyModal(false)} title="Rent a New Phone Number">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <p style={{ color: 'var(--stripe-body)', fontSize: '13px', margin: '0 0 0.5rem 0', lineHeight: 1.5 }}>
-            Instantly provision a new clean phone number from Vapi's pool. Enter an area code to search for available numbers.
+            Instantly provision a new clean phone number from Amira's number pool. Enter an area code to search for available numbers.
           </p>
 
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>

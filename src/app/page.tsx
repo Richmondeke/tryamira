@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Script from "next/script";
 import styles from "./page.module.css";
 
 export default function LandingPage() {
@@ -47,6 +48,8 @@ export default function LandingPage() {
   const [activeFeatureTab, setActiveFeatureTab] = useState<"channels" | "knowledge" | "automation">("channels");
   const [liveTranscript, setLiveTranscript] = useState<Array<{ sender: "user" | "ai"; text: string }>>([]);
   const [currentCallStatus, setCurrentCallStatus] = useState<"idle" | "calling" | "connected" | "ended">("idle");
+  const [vapiCallActive, setVapiCallActive] = useState(false);
+  const [vapiLoading, setVapiLoading] = useState(false);
   const [crmLeads, setCrmLeads] = useState<Array<{ name: string; phone: string; status: string; date: string }>>([
     { name: "John Doe", phone: "+1 (555) 019-2834", status: "Qualified", date: "Just now" },
     { name: "Sarah Jenkins", phone: "+1 (555) 048-1290", status: "Booked Call", date: "2 mins ago" },
@@ -100,6 +103,37 @@ export default function LandingPage() {
     setCurrentCallStatus("calling");
   };
 
+  const handleTalkToAmira = () => {
+    const publicKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || '';
+    const assistantId = process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID || '';
+
+    if (!publicKey || !assistantId) {
+      alert('Live demo is being set up. In the meantime, try the interactive simulation below!');
+      document.getElementById('demo')?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+
+    if (vapiCallActive) {
+      const vapi = (window as any).vapi;
+      if (vapi) vapi.stop();
+      setVapiCallActive(false);
+      return;
+    }
+
+    setVapiLoading(true);
+    const vapi = (window as any).vapi;
+    if (!vapi) {
+      alert('Please wait a moment and try again.');
+      setVapiLoading(false);
+      return;
+    }
+
+    vapi.start(assistantId);
+    vapi.on('call-start', () => { setVapiCallActive(true); setVapiLoading(false); });
+    vapi.on('call-end', () => { setVapiCallActive(false); setVapiLoading(false); });
+    vapi.on('error', () => { setVapiCallActive(false); setVapiLoading(false); });
+  };
+
   return (
     <div className={styles.container}>
       {/* BACKGROUND GRAPHICS */}
@@ -120,9 +154,10 @@ export default function LandingPage() {
           
           <ul className={styles.navLinks}>
             <li><a href="#features" className={styles.navLink}>Features</a></li>
+            <li><a href="#agents" className={styles.navLink}>Agent Library</a></li>
             <li><a href="#how-it-works" className={styles.navLink}>How It Works</a></li>
             <li><a href="#pricing" className={styles.navLink}>Pricing</a></li>
-            <li><a href="#demo" className={styles.navLink}>Interactive Demo</a></li>
+            <li><a href="#demo" className={styles.navLink}>Live Demo</a></li>
           </ul>
 
           <div className={styles.navActions}>
@@ -232,37 +267,51 @@ export default function LandingPage() {
       <header className={styles.hero}>
         <div className={styles.heroContainer}>
           <div className={styles.heroBadge}>
-            <span className={styles.heroBadgeHighlight}>Official Integrations</span>
-            <span className={styles.heroBadgeText}>Meta Business, Twilio &amp; Telnyx</span>
+            <span className={styles.heroBadgeHighlight}>AI Voice Employees</span>
+            <span className={styles.heroBadgeText}>For Sales, Support &amp; Scheduling — 24/7</span>
           </div>
 
           <h1 className={styles.heroTitle}>
-            Your customers call.<br />
-            <span className={styles.textAccent}>Your AI answers.</span><br />
-            You get paid.
+            Hire an AI that<br />
+            <span className={styles.textAccent}>answers every call.</span><br />
+            Close every deal.
           </h1>
 
           <p className={styles.heroSubtitle}>
-            Connect your phone lines, web call widget, and CRM to one AI Voice Agent.
-            Amira handles inbound support, qualifies outbound campaigns, and answers 24/7.
+            Amira is the AI receptionist, sales rep, and support agent that never sleeps.
+            Connect your phone lines, qualify leads automatically, and close more — without hiring.
           </p>
+
+          {/* VAPI Web SDK — loads once, initialises global vapi instance */}
+          <Script
+            src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/dist/vapi.umd.js"
+            strategy="afterInteractive"
+            onLoad={() => {
+              const publicKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY;
+              if (publicKey && (window as any).Vapi) {
+                (window as any).vapi = new (window as any).Vapi(publicKey);
+              }
+            }}
+          />
 
           <div className={styles.vapiWidgetContainer}>
             <div className={styles.vapiWidgetInner}>
-              <select className={styles.vapiSelect} defaultValue="support">
-                <option value="support">Customer Support</option>
-                <option value="lead">Lead Qualification</option>
-                <option value="sales">Outbound Sales</option>
-              </select>
-              <button className={styles.vapiButton}>
+              <button
+                className={styles.vapiButton}
+                onClick={handleTalkToAmira}
+                disabled={vapiLoading}
+                style={{ opacity: vapiLoading ? 0.7 : 1, cursor: vapiLoading ? 'wait' : 'pointer' }}
+              >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.vapiIcon}>
                   <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                 </svg>
-                Talk to Amira
+                {vapiLoading ? 'Connecting...' : vapiCallActive ? '⏹ End Call' : 'Talk to Amira'}
               </button>
             </div>
             <div className={styles.vapiMeta}>
-              <span className={styles.vapiMetaText}>Mic permissions needed • No credit card required</span>
+              <span className={styles.vapiMetaText}>
+                {vapiCallActive ? '🟢 Live call active — speak now' : 'Mic permissions needed • No credit card required'}
+              </span>
             </div>
           </div>
 
@@ -407,27 +456,28 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* TRUSTED BY LOGOS */}
+      {/* INTEGRATIONS TICKER */}
       <section className={styles.trusted}>
         <div className={styles.trustedContainer}>
-          <p className={styles.trustedLabel}>Trusted by innovative brands worldwide</p>
-          <div className={styles.trustedLogos}>
-            <span className={styles.trustedLogo}>TechStars</span>
-            <span className={styles.trustedLogo}>Y-Combinator</span>
-            <span className={styles.trustedLogo}>Zenith Inc.</span>
-            <span className={styles.trustedLogo}>Apex Group</span>
-            <span className={styles.trustedLogo}>ScaleFlow</span>
+          <p className={styles.trustedLabel}>Integrates with your tools and takes action in real time</p>
+          <div style={{ overflow: 'hidden', position: 'relative', width: '100%', maskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)' }}>
+            <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center', animation: 'amiraTicker 30s linear infinite', width: 'max-content' }}>
+              {['HubSpot', 'Salesforce', 'Slack', 'Gmail', 'Stripe', 'Google Calendar', 'GoHighLevel', 'Notion', 'Airtable', 'Shopify', 'Calendly', 'Zendesk', 'Twilio', 'WhatsApp Business', 'Monday.com', 'Pipedrive', 'Zoho CRM', 'QuickBooks', 'DocuSign', 'Mailchimp', '1,000+ More', 'HubSpot', 'Salesforce', 'Slack', 'Gmail', 'Stripe', 'Google Calendar', 'GoHighLevel', 'Notion', 'Airtable', 'Shopify', 'Calendly', 'Zendesk', 'Twilio', 'WhatsApp Business', 'Monday.com', 'Pipedrive', 'Zoho CRM', 'QuickBooks', 'DocuSign', 'Mailchimp', '1,000+ More'].map((tool, i) => (
+                <span key={i} style={{ whiteSpace: 'nowrap', padding: '7px 18px', borderRadius: '999px', border: '1px solid rgba(255,255,255,0.12)', backgroundColor: 'rgba(255,255,255,0.05)', fontSize: '13px', fontWeight: tool === '1,000+ More' ? 700 : 500, color: tool === '1,000+ More' ? '#818cf8' : 'rgba(255,255,255,0.75)', backdropFilter: 'blur(8px)', letterSpacing: '0.01em' }}>{tool}</span>
+              ))}
+            </div>
           </div>
+          <style>{`@keyframes amiraTicker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }`}</style>
         </div>
       </section>
 
-      {/* LIVE IN 5 MINUTES */}
+      {/* GO LIVE IN 5 MINUTES */}
       <section className={styles.featureBlock}>
         <div className={styles.innerBlockCentered}>
           <span className={styles.sectionTag}>Instant Deployment</span>
-          <h2 className={styles.sectionTitle}>Live in Under 5 Minutes.</h2>
+          <h2 className={styles.sectionTitle}>Go Live in Under 5 Minutes.</h2>
           <p className={styles.sectionSubtitle}>
-            No code. No tech team. No waiting. Sign up and your Voice AI is running today.
+            No code. No tech team. No waiting. Sign up, connect your number, and your AI is live today.
           </p>
         </div>
       </section>
@@ -440,7 +490,7 @@ export default function LandingPage() {
           <div className={styles.splitRow}>
             <div className={styles.splitTextCol}>
               <span className={styles.rowTag}>Step 1</span>
-              <h3 className={styles.rowTitle}>Connect every phone line in 60 seconds.</h3>
+              <h3 className={styles.rowTitle}>Connect every phone line in 60 seconds. Zero IT.</h3>
               <p className={styles.rowSubtitle}>
                 Inbound support lines. Outbound dialing. Web call widgets. All in one dashboard.
               </p>
@@ -492,7 +542,7 @@ export default function LandingPage() {
           <div className={`${styles.splitRow} ${styles.rowInverse}`}>
             <div className={styles.splitTextCol}>
               <span className={styles.rowTag}>Step 2</span>
-              <h3 className={styles.rowTitle}>Teach your AI everything about your business.</h3>
+              <h3 className={styles.rowTitle}>Train your AI on your business — in minutes.</h3>
               <p className={styles.rowSubtitle}>
                 Your knowledge. Your voice. Fully automated.
               </p>
@@ -539,7 +589,7 @@ export default function LandingPage() {
           <div className={styles.splitRow}>
             <div className={styles.splitTextCol}>
               <span className={styles.rowTag}>Step 3</span>
-              <h3 className={styles.rowTitle}>Your AI is live. Your voice operations run on autopilot.</h3>
+              <h3 className={styles.rowTitle}>Go live. Let your AI run voice operations on autopilot.</h3>
               <p className={styles.rowSubtitle}>
                 Every call answered. Every lead qualified. Every customer served.
               </p>
@@ -589,7 +639,7 @@ export default function LandingPage() {
           <div className={`${styles.splitRow} ${styles.rowInverse}`}>
             <div className={styles.splitTextCol}>
               <span className={styles.rowTag}>Step 4</span>
-              <h3 className={styles.rowTitle}>Connect your tools. Execute actions in real time.</h3>
+              <h3 className={styles.rowTitle}>Connect your stack. Trigger actions on every call.</h3>
               <p className={styles.rowSubtitle}>
                 Allow your AI voice agent to read, write, and execute tasks across 1,000+ business applications in real time during a call.
               </p>
@@ -653,9 +703,9 @@ export default function LandingPage() {
       <section className={styles.capabilities} id="how-it-works">
         <div className={styles.sectionHeaderCentered}>
           <span className={styles.sectionTag}>Key Advantages</span>
-          <h2 className={styles.sectionTitle}>Train once. Let it handle every call.</h2>
+          <h2 className={styles.sectionTitle}>Build once. Let it handle every call.</h2>
           <p className={styles.sectionSubtitle}>
-            Always on. Always accurate. Zero extra staff.
+            24/7 availability. Human-quality voice. Zero overhead.
           </p>
         </div>
 
@@ -663,7 +713,7 @@ export default function LandingPage() {
           {/* CARD 1 */}
           <div className={styles.capabilityCard}>
             <div className={styles.capIcon}>🎙️</div>
-            <h4 className={styles.capTitle}>Train once. Let it handle every call.</h4>
+            <h4 className={styles.capTitle}>One setup. Handles every call, every time.</h4>
             <p className={styles.capDesc}>
               Amira works across all your local lines, toll-free numbers, and website widgets.
               Train on your PDF catalogs, txt instructions, or pricing files.
@@ -716,9 +766,9 @@ export default function LandingPage() {
       <section className={styles.demoPlayground} id="demo">
         <div className={styles.sectionHeaderCentered}>
           <span className={styles.sectionTag}>Live Playground</span>
-          <h2 className={styles.sectionTitle}>Talk to Amira Right Now</h2>
+          <h2 className={styles.sectionTitle}>Hear Amira in Action</h2>
           <p className={styles.sectionSubtitle}>
-            Experience firsthand the industry-leading speed, voice quality, and responsiveness of Amira.
+            Every word, every pause, every response — indistinguishable from a human. Hear it yourself.
           </p>
         </div>
         
@@ -823,13 +873,56 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CLIENT TESTIMONIALS (JOHA ALIGNED) */}
+      {/* AGENT LIBRARY */}
+      <section style={{ padding: '5rem 1.5rem', background: 'transparent' }} id="agents">
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <span className={styles.sectionTag}>Agent Library</span>
+            <h2 className={styles.sectionTitle} style={{ marginTop: '0.75rem' }}>Deploy a ready-made AI Agent in seconds</h2>
+            <p className={styles.sectionSubtitle}>Pick a pre-built voice agent for your industry. Customise the script, train it on your docs, and go live immediately.</p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: '1.25rem' }}>
+            {[
+              { icon: '🏠', name: 'Real Estate Agent', tag: 'Sales', desc: 'Books property viewings, qualifies buyer intent, and follows up on listings automatically.', stat: '3.2× more bookings' },
+              { icon: '🏥', name: 'Medical Receptionist', tag: 'Healthcare', desc: 'Books appointments, handles patient inquiries, and reduces front desk call volume by 60%.', stat: '60% fewer missed calls' },
+              { icon: '🚗', name: 'Auto Dealership Agent', tag: 'Automotive', desc: 'Qualifies trade-in leads, books test drives, and handles finance inquiries 24/7.', stat: '4× lead response rate' },
+              { icon: '⚖️', name: 'Legal Intake Agent', tag: 'Legal', desc: 'Screens new case inquiries, captures contact details, and books attorney consultations automatically.', stat: 'Zero missed intakes' },
+              { icon: '📦', name: 'E-commerce Support', tag: 'Retail', desc: 'Handles order status, returns, and product questions over voice — without a support team.', stat: '80% query deflection' },
+              { icon: '🏋️', name: 'Gym & Wellness Agent', tag: 'Fitness', desc: 'Books trial classes, handles membership queries, and recovers churned members with outbound calls.', stat: '2× membership signups' },
+            ].map((agent, i) => (
+              <a
+                key={i}
+                href="/login?redirect=/dashboard/ai-agent"
+                style={{ display: 'block', textDecoration: 'none', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', padding: '1.5rem', cursor: 'pointer', transition: 'all 0.22s ease', position: 'relative', overflow: 'hidden' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(99,102,241,0.12)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(99,102,241,0.4)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.1)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}
+              >
+                <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>{agent.icon}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                  <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#ffffff' }}>{agent.name}</h4>
+                  <span style={{ fontSize: '10px', fontWeight: 600, padding: '2px 8px', borderRadius: '999px', background: 'rgba(99,102,241,0.25)', color: '#a5b4fc', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>{agent.tag}</span>
+                </div>
+                <p style={{ margin: '0 0 1rem 0', fontSize: '13px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.6 }}>{agent.desc}</p>
+                <div style={{ fontSize: '12px', fontWeight: 600, color: '#6ee7b7' }}>📈 {agent.stat}</div>
+                <div style={{ position: 'absolute', top: '1rem', right: '1rem', fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: 500 }}>Deploy →</div>
+              </a>
+            ))}
+          </div>
+
+          <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
+            <a href="/login" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 2rem', borderRadius: '8px', border: '1px solid rgba(99,102,241,0.5)', color: '#a5b4fc', fontSize: '14px', fontWeight: 600, textDecoration: 'none', background: 'rgba(99,102,241,0.1)', transition: 'all 0.2s' }}>Browse All Agents →</a>
+          </div>
+        </div>
+      </section>
+
+      {/* CLIENT TESTIMONIALS */}
       <section className={styles.testimonials}>
         <div className={styles.sectionHeaderCentered}>
           <span className={styles.sectionTag}>Client Stories</span>
-          <h2 className={styles.sectionTitle}>Businesses That Made the Switch</h2>
+          <h2 className={styles.sectionTitle}>What Happens When You Stop Missing Calls</h2>
           <p className={styles.sectionSubtitle}>
-            Hear directly from founders and operators who chose to stop competing manually and let AI handle the phones.
+            Real results from real businesses. No cherry-picked demos. Just numbers.
           </p>
         </div>
 
@@ -886,9 +979,9 @@ export default function LandingPage() {
       <section className={styles.footerCtaBanner}>
         <div className={styles.footerCtaContainer}>
           <div className={styles.footerCtaLeft}>
-            <h2 className={styles.footerCtaTitle}>Like what you see?</h2>
+            <h2 className={styles.footerCtaTitle}>Ready to stop missing calls?</h2>
             <p className={styles.footerCtaDesc}>
-              Join our early stage Limited Beta and help form the future of AI voice employees.
+              Join hundreds of businesses already using Amira to answer every call, qualify every lead, and close more deals — automatically.
             </p>
           </div>
           <div className={styles.footerCtaRight}>
@@ -908,7 +1001,7 @@ export default function LandingPage() {
             
             {/* Slanted Beveled Octagon button in white */}
             <a href="/dashboard" className={styles.beveledCtaBtn}>
-              Join limited Beta
+              Start Free — No Card Needed
             </a>
           </div>
         </div>

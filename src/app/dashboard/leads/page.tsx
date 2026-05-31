@@ -772,7 +772,7 @@ export default function LeadsPage() {
                 style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px', fontSize: '12px', color: 'var(--stripe-navy)' }} 
               />
               <span style={{ fontSize: '10px', color: 'var(--stripe-muted)', marginTop: '4px', display: 'block' }}>
-                Uses Vapi's <code>schedulePlan.earliestAt</code> parameter to defer call dialer triggers. Leave blank for immediate calls.
+                Uses Amira's <code>schedulePlan.earliestAt</code> parameter to defer call dialer triggers. Leave blank for immediate calls.
               </span>
             </div>
 
@@ -983,7 +983,7 @@ export default function LeadsPage() {
                     </div>
                   ) : (
                     <div>
-                      <label style={{ display: 'block', fontSize: '11px', color: 'var(--stripe-label)', marginBottom: '0.4rem', fontWeight: 600 }}>Active connected Composio accounts</label>
+                      <label style={{ display: 'block', fontSize: '11px', color: 'var(--stripe-label)', marginBottom: '0.4rem', fontWeight: 600 }}>Active connected integrations</label>
                       <select 
                         value={selectedCrmApp}
                         onChange={e => handleImportMockCRM(e.target.value)}
@@ -1122,7 +1122,7 @@ export default function LeadsPage() {
                         <strong style={{ display: 'block', color: 'var(--stripe-navy)', fontSize: '12px' }}>{campaign.completed} calls</strong>
                       </div>
                       <div>
-                        <span>Vapi Costs:</span>
+                        <span>Voice Call Costs:</span>
                         <strong style={{ display: 'block', color: '#10b981', fontSize: '12px', fontFamily: 'monospace' }}>${campaign.cost.toFixed(2)}</strong>
                       </div>
                     </div>
@@ -1236,7 +1236,7 @@ export default function LeadsPage() {
                   </strong>
                 </div>
                 <div style={{ padding: '1rem', border: '1px solid var(--stripe-border)', borderRadius: '6px', backgroundColor: '#ffffff' }}>
-                  <span style={{ fontSize: '10.5px', color: 'var(--stripe-muted)' }}>Vapi Dialer Cost</span>
+                  <span style={{ fontSize: '10.5px', color: 'var(--stripe-muted)' }}>Voice Dialer Cost</span>
                   <strong style={{ display: 'block', fontSize: '15px', color: '#10b981', fontFamily: 'monospace', marginTop: '4px' }}>
                     ${selectedCampaignRun.cost.toFixed(2)}
                   </strong>
