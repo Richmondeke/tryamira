@@ -3,243 +3,295 @@
 import { useState, useEffect } from 'react';
 import Modal from '../../../../components/ui/Modal';
 import Toast from '../../../../components/ui/Toast';
-import { createClient } from '../../../../utils/supabase/client';
+import { MessageCircle, Settings } from 'lucide-react';
+import { 
+  getComposioApps, 
+  getComposioStatus, 
+  initiateComposioConnection, 
+  removeComposioIntegration,
+  saveIntegrationConfig
+} from '@/app/actions/integrations';
 
 export default function WhatsAppPage() {
-  const [activeTab, setActiveTab] = useState<'broadcast' | 'drip'>('broadcast');
-  const [showModal, setShowModal] = useState(false);
-  const [showDripModal, setShowDripModal] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [connectingApp, setConnectingApp] = useState<any | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [waApps, setWaApps] = useState<any[]>([]);
 
-  const [broadcasts, setBroadcasts] = useState([
-    { id: 1, name: 'Q3 Promotion', audience: 'All Leads', sent: 'Aug 12, 2024', openRate: '42%' }
-  ]);
+  // List of slugs or keywords for messaging/WhatsApp apps in Composio
+  const WA_APP_KEYS = ['whatsapp', 'twilio', 'messagebird', 'vonage', 'intercom'];
 
-  const [drips, setDrips] = useState([
-    { id: 1, name: 'Lead Qualification', trigger: 'New Form Submission', steps: 4, conversion: '32%' },
-    { id: 2, name: 'Abandoned Cart', trigger: 'Cart Inactive 24h', steps: 2, conversion: '18%' },
-    { id: 3, name: 'Meeting Reminder', trigger: '24h Before Meeting', steps: 1, conversion: '95%' }
-  ]);
+  const loadIntegrations = async () => {
+    try {
+      const appsRes = await getComposioApps();
+      const statusRes = await getComposioStatus();
 
-  const [leadStats, setLeadStats] = useState({ total: 1248, hot: 240, warm: 400, cold: 608 }); // Defaults if no DB
-  const supabase = createClient();
+      if (appsRes.success && appsRes.data) {
+        const activeIds = statusRes.success && statusRes.data
+          ? statusRes.data.map((d: any) => d.provider.toLowerCase())
+          : [];
 
-  useEffect(() => {
-    async function loadLeadStats() {
-      if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return;
-      const { data } = await supabase.from('leads').select('status');
-      if (data && data.length > 0) {
-        setLeadStats({
-          total: data.length,
-          hot: data.filter(d => d.status === 'hot').length,
-          warm: data.filter(d => d.status === 'warm').length,
-          cold: data.filter(d => d.status === 'cold').length,
-        });
+        const filtered = appsRes.data.filter((app: any) => 
+          WA_APP_KEYS.includes(app.id.toLowerCase()) || 
+          app.name.toLowerCase().includes('whatsapp') ||
+          app.name.toLowerCase().includes('sms')
+        );
+
+        const mapped = filtered.map((app: any) => ({
+          ...app,
+          status: activeIds.includes(app.id.toLowerCase()) ? 'Connected' : 'Disconnected',
+          autoReply: activeIds.includes(app.id.toLowerCase())
+        }));
+
+        setWaApps(mapped);
       }
+    } catch (err) {
+      console.error('Failed to load messaging integrations:', err);
+      setToast('Failed to sync integration status.');
+    } finally {
+      setLoading(false);
     }
-    loadLeadStats();
-  }, [supabase]);
-
-  const handleSendBroadcast = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const audience = formData.get('audience') as string;
-    
-    setBroadcasts([
-      {
-        id: Date.now(),
-        name: 'New Broadcast',
-        audience: audience,
-        sent: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-        openRate: '0%'
-      },
-      ...broadcasts
-    ]);
-    
-    setShowModal(false);
-    setToast('Broadcast successfully scheduled for dispatch!');
   };
 
-  const handleCreateDrip = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const name = formData.get('name') as string;
-    const trigger = formData.get('trigger') as string;
-    const steps = parseInt(formData.get('steps') as string) || 1;
-    
-    setDrips([
-      ...drips,
-      {
-        id: Date.now(),
-        name,
-        trigger,
-        steps,
-        conversion: '0%'
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const status = params.get('status');
+      const app = params.get('app');
+
+      if (status === 'success' && app) {
+        saveIntegrationConfig(app, { connected: true }).then(() => {
+          const cleanName = app.charAt(0).toUpperCase() + app.slice(1);
+          setToast(`🎉 Successfully connected to ${cleanName}!`);
+          
+          const url = new URL(window.location.href);
+          url.searchParams.delete('status');
+          url.searchParams.delete('app');
+          window.history.replaceState({}, '', url.pathname + url.search);
+          
+          loadIntegrations();
+        });
+        return;
       }
-    ]);
-    
-    setShowDripModal(false);
-    setToast('Automated drip sequence created successfully!');
+    }
+    loadIntegrations();
+  }, []);
+
+  const handleCardClick = (app: any) => {
+    if (app.status !== 'Connected') {
+      setConnectingApp(app);
+      setShowModal(true);
+    }
+  };
+
+  const handleUninstall = async (e: React.MouseEvent, appId: string, appName: string) => {
+    e.stopPropagation();
+    const res = await removeComposioIntegration(appId);
+    if (res.success) {
+      setWaApps(prev => prev.map(a => a.id === appId ? { ...a, status: 'Disconnected', autoReply: false } : a));
+      setToast(`${appName} disconnected successfully.`);
+    } else {
+      setToast(`Failed to disconnect ${appName}.`);
+    }
+  };
+
+  const toggleAutoReply = (appId: string, currentAutoReply: boolean) => {
+    setWaApps(prev => prev.map(app => {
+      if (app.id === appId) {
+        const newValue = !currentAutoReply;
+        setToast(`Auto-reply ${newValue ? 'enabled' : 'disabled'} for ${app.name}`);
+        return { ...app, autoReply: newValue };
+      }
+      return app;
+    }));
+  };
+
+  const performInstall = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!connectingApp) return;
+
+    setIsConnecting(true);
+
+    try {
+      const res = await initiateComposioConnection(connectingApp.id, '/dashboard/chat/whatsapp');
+      
+      if (res.success && res.redirectUrl) {
+        await saveIntegrationConfig(connectingApp.id, { connected: true });
+        setToast(`Redirecting to ${connectingApp.name} secure login...`);
+        setTimeout(() => {
+          window.location.href = res.redirectUrl as string;
+        }, 1200);
+      } else {
+        setToast(`Failed to establish OAuth link with ${connectingApp.name}.`);
+        setIsConnecting(false);
+        setShowModal(false);
+      }
+    } catch (err) {
+      setToast(`Error connecting to ${connectingApp.name}.`);
+      setIsConnecting(false);
+      setShowModal(false);
+    }
   };
 
   return (
     <div style={{ maxWidth: '1080px', margin: '0 auto', width: '100%' }}>
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}
       
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.5rem' }}>
-        <div>
-          <h1 style={{ fontSize: '24px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0' }}>WhatsApp Outbound</h1>
-          <p style={{ color: 'var(--stripe-body)', fontSize: '13px', margin: 0 }}>Manage one-off broadcasts and automated drip sequences.</p>
-        </div>
-        <div style={{ display: 'flex', backgroundColor: '#f6f9fc', borderRadius: '6px', padding: '0.25rem', border: '1px solid var(--stripe-border)' }}>
-          <button 
-            onClick={() => setActiveTab('broadcast')}
-            style={{ 
-              padding: '0.5rem 1rem', 
-              fontSize: '13px', 
-              fontWeight: 500, 
-              border: 'none', 
-              borderRadius: '4px', 
-              cursor: 'pointer',
-              backgroundColor: activeTab === 'broadcast' ? '#fff' : 'transparent',
-              color: activeTab === 'broadcast' ? 'var(--stripe-navy)' : 'var(--stripe-label)',
-              boxShadow: activeTab === 'broadcast' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none'
-            }}
-          >
-            Broadcasts
-          </button>
-          <button 
-            onClick={() => setActiveTab('drip')}
-            style={{ 
-              padding: '0.5rem 1rem', 
-              fontSize: '13px', 
-              fontWeight: 500, 
-              border: 'none', 
-              borderRadius: '4px', 
-              cursor: 'pointer',
-              backgroundColor: activeTab === 'drip' ? '#fff' : 'transparent',
-              color: activeTab === 'drip' ? 'var(--stripe-navy)' : 'var(--stripe-label)',
-              boxShadow: activeTab === 'drip' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none'
-            }}
-          >
-            Automated Drip
-          </button>
-        </div>
-      </div>
-
-      {activeTab === 'broadcast' && (
-        <>
-          <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Create Broadcast">
-            <form onSubmit={handleSendBroadcast} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--stripe-label)', marginBottom: '4px' }}>Audience Segment</label>
-                <select name="audience" style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px' }}>
-                  <option value="All Leads">All Leads ({leadStats.total})</option>
-                  <option value="Hot Leads">Hot Leads ({leadStats.hot})</option>
-                  <option value="Warm Leads">Warm Leads ({leadStats.warm})</option>
-                  <option value="Cold Leads">Cold Leads ({leadStats.cold})</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--stripe-label)', marginBottom: '4px' }}>Message Body</label>
-                <textarea required rows={4} style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px', resize: 'vertical' }} placeholder="Hi {{first_name}}, check out our new listings!"></textarea>
-              </div>
-              <button type="submit" style={{ marginTop: '0.5rem', padding: '0.75rem', backgroundColor: '#4caf50', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 500, transition: 'background 0.2s' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4f46e5'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4caf50'}>Schedule Send</button>
-            </form>
-          </Modal>
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
-            <button onClick={() => setShowModal(true)} style={{ backgroundColor: '#4caf50', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '13px', fontWeight: 500, cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', transition: 'background 0.2s' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4f46e5'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4caf50'}>New Broadcast</button>
+      <Modal isOpen={showModal} onClose={() => !isConnecting && setShowModal(false)} title={`Connect ${connectingApp?.name}`}>
+        {isConnecting ? (
+          <div style={{ textAlign: 'center', padding: '2.5rem 0' }}>
+            <div style={{ display: 'inline-block', width: '32px', height: '32px', border: '3px solid #4caf50', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '1rem' }} />
+            <div style={{ color: '#4caf50', fontSize: '14px', fontWeight: 600 }}>Secure Authorization</div>
+            <p style={{ color: 'var(--stripe-body)', fontSize: '13px', marginTop: '0.5rem', marginInline: 'auto', maxWidth: '320px', lineHeight: 1.5 }}>
+              Redirecting you to the Composio OAuth portal to authorize {connectingApp?.name} securely...
+            </p>
           </div>
+        ) : (
+          <form onSubmit={performInstall}>
+            <p style={{ color: 'var(--stripe-body)', fontSize: '13px', marginBottom: '1.5rem', lineHeight: 1.5 }}>
+              Connect your <strong>{connectingApp?.name}</strong> account to allow Amira AI agents to read and respond to WhatsApp messages and SMS automatically.
+            </p>
 
-          <div style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', boxShadow: 'var(--stripe-shadow-ambient)', overflow: 'hidden' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontFeatureSettings: '"tnum", "ss01"' }}>
+            <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid var(--stripe-border)' }}>
+              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', fontSize: '12px', color: 'var(--stripe-body)', lineHeight: 1.5 }}>
+                <span style={{ fontSize: '16px' }}>🛡️</span>
+                <span>
+                  <strong>Composio Verified Connection:</strong> Authentication takes place directly through secure OAuth. Amira does not store your credentials.
+                </span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+              <button 
+                type="button" 
+                onClick={() => setShowModal(false)} 
+                style={{ padding: '0.5rem 1.25rem', borderRadius: '6px', border: '1px solid var(--stripe-border)', backgroundColor: '#fff', color: 'var(--stripe-navy)', cursor: 'pointer', fontWeight: 500, transition: 'all 0.2s' }}
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                style={{ padding: '0.5rem 1.25rem', borderRadius: '6px', border: 'none', backgroundColor: '#4caf50', color: '#fff', cursor: 'pointer', fontWeight: 600, boxShadow: '0 4px 12px rgba(76, 175, 80, 0.2)', transition: 'all 0.2s' }}
+              >
+                Connect {connectingApp?.name}
+              </button>
+            </div>
+          </form>
+        )}
+      </Modal>
+
+      <style jsx global>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+
+      <div style={{ marginBottom: '1rem' }}>
+        <h1 style={{ fontSize: '20px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', letterSpacing: '-0.64px', fontFeatureSettings: '"ss01"' }}>WhatsApp & SMS Agent</h1>
+        <p style={{ color: 'var(--stripe-body)', fontSize: '12px', margin: 0, fontWeight: 300, fontFeatureSettings: '"ss01"' }}>Connect your messaging integrations and allow Amira to handle inbound chats and automated drips.</p>
+      </div>
+      
+      <div style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '1.25rem', boxShadow: 'var(--stripe-shadow-ambient)' }}>
+        {loading ? (
+          <div style={{ padding: '4rem 2rem', textAlign: 'center' }}>
+            <div style={{ display: 'inline-block', width: '24px', height: '24px', border: '2px solid var(--stripe-purple)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+            <p style={{ color: 'var(--stripe-body)', fontSize: '13px', marginTop: '1rem' }}>Loading available messaging providers...</p>
+          </div>
+        ) : waApps.length === 0 ? (
+          <div style={{ padding: '4rem 2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
+              <MessageCircle style={{ width: '24px', height: '24px', color: '#64748b' }} />
+            </div>
+            <h3 style={{ fontSize: '16px', color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', fontWeight: 500 }}>No messaging providers found</h3>
+            <p style={{ color: 'var(--stripe-body)', fontSize: '13px', margin: '0 0 1.5rem 0', maxWidth: '300px' }}>Could not load integrations from Composio. Please check your API key.</p>
+          </div>
+        ) : (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ fontSize: '12px', color: 'var(--stripe-navy)', margin: 0, fontWeight: 500 }}>Available Integrations</h3>
+            </div>
+
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr style={{ backgroundColor: '#f6f9fc', borderBottom: '1px solid var(--stripe-border)' }}>
-                  <th style={{ padding: '1rem 1.5rem', fontSize: '11px', color: 'var(--stripe-label)', fontWeight: 600, letterSpacing: '0.5px' }}>CAMPAIGN NAME</th>
-                  <th style={{ padding: '1rem 1.5rem', fontSize: '11px', color: 'var(--stripe-label)', fontWeight: 600, letterSpacing: '0.5px' }}>AUDIENCE</th>
-                  <th style={{ padding: '1rem 1.5rem', fontSize: '11px', color: 'var(--stripe-label)', fontWeight: 600, letterSpacing: '0.5px' }}>SENT</th>
-                  <th style={{ padding: '1rem 1.5rem', fontSize: '11px', color: 'var(--stripe-label)', fontWeight: 600, letterSpacing: '0.5px' }}>OPEN RATE</th>
+                <tr style={{ borderBottom: '1px solid var(--stripe-border)', textAlign: 'left' }}>
+                  <th style={{ padding: '0.75rem 0', fontSize: '12px', color: 'var(--stripe-label)', fontWeight: 500 }}>PROVIDER</th>
+                  <th style={{ padding: '0.75rem 0', fontSize: '12px', color: 'var(--stripe-label)', fontWeight: 500 }}>STATUS</th>
+                  <th style={{ padding: '0.75rem 0', fontSize: '12px', color: 'var(--stripe-label)', fontWeight: 500 }}>AUTO-REPLY</th>
+                  <th style={{ padding: '0.75rem 0', fontSize: '12px', color: 'var(--stripe-label)', fontWeight: 500 }}>ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
-                {broadcasts.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} style={{ padding: '2rem', textAlign: 'center', color: 'var(--stripe-label)', fontSize: '13px' }}>
-                      No broadcasts found. Create one to get started.
+                {waApps.map((app) => (
+                  <tr key={app.id} style={{ borderBottom: '1px solid var(--stripe-border)' }}>
+                    <td style={{ padding: '1rem 0', fontSize: '13px', color: 'var(--stripe-navy)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <div style={{ width: '28px', height: '28px', borderRadius: '6px', backgroundColor: '#f6f9fc', border: '1px solid var(--stripe-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>
+                        {app.icon && app.icon.startsWith('http') ? (
+                          <img src={app.icon} alt={app.name} style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
+                        ) : (
+                          app.icon || '💬'
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontWeight: 500 }}>{app.name}</span>
+                        <span style={{ fontSize: '11px', color: 'var(--stripe-body)' }}>{app.id}</span>
+                      </div>
+                    </td>
+                    <td style={{ padding: '1rem 0' }}>
+                      {app.status === 'Connected' ? (
+                        <span style={{ backgroundColor: 'rgba(21,190,83,0.1)', color: 'var(--stripe-success-text)', padding: '2px 6px', borderRadius: '4px', fontSize: '12px', fontWeight: 500 }}>Connected</span>
+                      ) : (
+                        <span style={{ backgroundColor: 'rgba(217,45,32,0.1)', color: '#d92d20', padding: '2px 6px', borderRadius: '4px', fontSize: '12px', fontWeight: 500 }}>Disconnected</span>
+                      )}
+                    </td>
+                    <td style={{ padding: '1rem 0' }}>
+                      <div 
+                        onClick={() => app.status === 'Connected' && toggleAutoReply(app.id, app.autoReply)}
+                        style={{ 
+                          width: '36px', 
+                          height: '20px', 
+                          backgroundColor: app.autoReply && app.status === 'Connected' ? 'var(--stripe-purple)' : '#e3e8ee', 
+                          borderRadius: '10px', 
+                          position: 'relative',
+                          cursor: app.status === 'Connected' ? 'pointer' : 'not-allowed',
+                          opacity: app.status === 'Connected' ? 1 : 0.5,
+                          transition: 'background-color 0.2s'
+                        }}
+                      >
+                        <div style={{ 
+                          width: '16px', 
+                          height: '16px', 
+                          backgroundColor: '#fff', 
+                          borderRadius: '50%', 
+                          position: 'absolute', 
+                          top: '2px', 
+                          left: app.autoReply && app.status === 'Connected' ? '18px' : '2px',
+                          transition: 'left 0.2s',
+                          boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                        }}></div>
+                      </div>
+                    </td>
+                    <td style={{ padding: '1rem 0', fontSize: '12px' }}>
+                      {app.status === 'Connected' ? (
+                        <div style={{ display: 'flex', gap: '1rem' }}>
+                          <span onClick={() => setToast(`Configuring settings for ${app.name}`)} style={{ color: 'var(--stripe-purple)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Settings size={14} /> Configure
+                          </span>
+                          <span onClick={(e) => handleUninstall(e, app.id, app.name)} style={{ color: '#d92d20', cursor: 'pointer' }}>Disconnect</span>
+                        </div>
+                      ) : (
+                        <span onClick={() => handleCardClick(app)} style={{ color: 'var(--stripe-purple)', cursor: 'pointer', fontWeight: 500 }}>Connect</span>
+                      )}
                     </td>
                   </tr>
-                ) : (
-                  broadcasts.map(broadcast => (
-                    <tr key={broadcast.id} style={{ borderBottom: '1px solid var(--stripe-border)' }}>
-                      <td style={{ padding: '1rem 1.5rem', fontSize: '13px', color: 'var(--stripe-navy)', fontWeight: 500 }}>{broadcast.name}</td>
-                      <td style={{ padding: '1rem 1.5rem', fontSize: '13px', color: 'var(--stripe-body)' }}>{broadcast.audience}</td>
-                      <td style={{ padding: '1rem 1.5rem', fontSize: '13px', color: 'var(--stripe-body)' }}>{broadcast.sent}</td>
-                      <td style={{ padding: '1rem 1.5rem', fontSize: '13px', color: 'var(--stripe-success-text)' }}>{broadcast.openRate}</td>
-                    </tr>
-                  ))
-                )}
+                ))}
               </tbody>
             </table>
-          </div>
-        </>
-      )}
+          </>
+        )}
+      </div>
 
-      {activeTab === 'drip' && (
-        <>
-          <Modal isOpen={showDripModal} onClose={() => setShowDripModal(false)} title="Create Drip Sequence">
-            <form onSubmit={handleCreateDrip} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--stripe-label)', marginBottom: '4px' }}>Sequence Name</label>
-                <input required type="text" name="name" style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px' }} placeholder="e.g., Welcome Series" />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--stripe-label)', marginBottom: '4px' }}>Trigger Event</label>
-                <select name="trigger" style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px' }}>
-                  <option value="New Lead Captured">New Lead Captured</option>
-                  <option value="Form Submission">Form Submission</option>
-                  <option value="Meeting Scheduled">Meeting Scheduled</option>
-                  <option value="Custom Tag Added">Custom Tag Added</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--stripe-label)', marginBottom: '4px' }}>Number of Steps</label>
-                <input required type="number" min="1" max="10" name="steps" defaultValue="3" style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px' }} />
-              </div>
-              <button type="submit" style={{ marginTop: '0.5rem', padding: '0.75rem', backgroundColor: 'var(--stripe-purple)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>Create Sequence</button>
-            </form>
-          </Modal>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
-            {drips.map((drip) => (
-              <div key={drip.id} style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '1.25rem', boxShadow: 'var(--stripe-shadow-ambient)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                  <div style={{ fontSize: '13px', color: 'var(--stripe-navy)', fontWeight: 500 }}>{drip.name}</div>
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--stripe-success-text)' }}></div>
-                </div>
-                <div style={{ fontSize: '12px', color: 'var(--stripe-label)', marginBottom: '0.25rem', textTransform: 'uppercase' }}>Trigger</div>
-                <div style={{ fontSize: '13px', color: 'var(--stripe-body)', marginBottom: '1rem' }}>{drip.trigger}</div>
-                
-                <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--stripe-border)', paddingTop: '1rem', fontFeatureSettings: '"tnum"' }}>
-                  <div>
-                    <div style={{ fontSize: '12px', color: 'var(--stripe-label)' }}>Steps</div>
-                    <div style={{ fontSize: '13px', color: 'var(--stripe-navy)', fontWeight: 500 }}>{drip.steps}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '12px', color: 'var(--stripe-label)' }}>Conversion</div>
-                    <div style={{ fontSize: '13px', color: 'var(--stripe-navy)', fontWeight: 500 }}>{drip.conversion}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-            
-            <div onClick={() => setShowDripModal(true)} style={{ backgroundColor: '#f6f9fc', border: '1px dashed var(--stripe-purple)', borderRadius: '6px', padding: '1.25rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', minHeight: '180px', transition: 'background-color 0.2s' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(76,175,80,0.1)', color: 'var(--stripe-purple)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginBottom: '1rem' }}>+</div>
-              <div style={{ fontSize: '13px', color: 'var(--stripe-purple)', fontWeight: 500 }}>Create Sequence</div>
-            </div>
-          </div>
-        </>
-      )}
     </div>
   );
 }
