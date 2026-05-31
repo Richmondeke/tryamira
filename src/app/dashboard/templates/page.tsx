@@ -213,7 +213,7 @@ export default function Page() {
                 onClick={() => router.push(`/dashboard/ai-agent?template=${tpl.id}`)}
                 style={{
                   width: '100%',
-                  backgroundColor: '#533afd',
+                  backgroundColor: '#4caf50',
                   color: '#ffffff',
                   border: 'none',
                   borderRadius: '6px',

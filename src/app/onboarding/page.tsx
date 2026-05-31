@@ -50,7 +50,7 @@ export default function OnboardingPage() {
       <div style={{ maxWidth: '480px', width: '100%', backgroundColor: '#ffffff', borderRadius: '12px', padding: '3rem', boxShadow: '0 10px 25px rgba(0,0,0,0.05)' }}>
         
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-          <div style={{ width: '48px', height: '48px', backgroundColor: 'rgba(83,58,253,0.1)', color: 'var(--stripe-purple)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', margin: '0 auto 1.5rem auto' }}>
+          <div style={{ width: '48px', height: '48px', backgroundColor: 'rgba(76,175,80,0.1)', color: 'var(--stripe-purple)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', margin: '0 auto 1.5rem auto' }}>
             🚀
           </div>
           <h1 style={{ fontSize: '24px', fontWeight: 600, color: '#0f172a', margin: '0 0 0.5rem 0' }}>Welcome to Amira</h1>

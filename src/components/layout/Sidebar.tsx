@@ -91,7 +91,7 @@ export function Sidebar({ closeMobileMenu }: { closeMobileMenu?: () => void }) {
     <aside style={{ 
       width: '260px', 
       height: '100vh', 
-      backgroundColor: '#0a1128', // Dark blackish blue
+      backgroundColor: '#174275', // Amira brand navy
       borderRight: '1px solid rgba(255, 255, 255, 0.1)',
       display: 'flex', 
       flexDirection: 'column',
@@ -183,8 +183,8 @@ export function Sidebar({ closeMobileMenu }: { closeMobileMenu?: () => void }) {
           padding: '1.25rem',
           margin: '0 1rem 1.5rem 1rem',
           borderRadius: '12px',
-          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(79, 70, 229, 0.15) 100%)',
-          border: '1px solid rgba(99, 102, 241, 0.25)',
+          background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.12) 0%, rgba(56, 142, 60, 0.12) 100%)',
+          border: '1px solid rgba(76, 175, 80, 0.25)',
           boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.2)',
           backdropFilter: 'blur(4px)',
           display: 'flex',
@@ -203,14 +203,14 @@ export function Sidebar({ closeMobileMenu }: { closeMobileMenu?: () => void }) {
             style={{
               display: 'block',
               textAlign: 'center',
-              backgroundColor: '#6366f1',
+              backgroundColor: '#4caf50',
               color: '#ffffff',
               textDecoration: 'none',
               fontSize: '12px',
               fontWeight: 600,
               padding: '0.5rem 1rem',
               borderRadius: '6px',
-              boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
+              boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)',
               transition: 'all 0.2s ease-in-out'
             }}
           >
@@ -290,7 +290,7 @@ export function Sidebar({ closeMobileMenu }: { closeMobileMenu?: () => void }) {
       >
         <div style={{
           width: '36px', height: '36px', borderRadius: '8px',
-          background: 'linear-gradient(135deg, #6366f1 0%, #533afd 100%)',
+          background: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
           color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontWeight: 700, fontSize: '13px', flexShrink: 0,
         }}>
@@ -306,9 +306,9 @@ export function Sidebar({ closeMobileMenu }: { closeMobileMenu?: () => void }) {
         </div>
         {sidebarUser?.role === 'admin' && (
           <span style={{
-            fontSize: '9px', fontWeight: 700, color: '#6366f1',
-            backgroundColor: 'rgba(99,102,241,0.15)',
-            border: '1px solid rgba(99,102,241,0.3)',
+            fontSize: '9px', fontWeight: 700, color: '#4caf50',
+            backgroundColor: 'rgba(76,175,80,0.15)',
+            border: '1px solid rgba(76,175,80,0.3)',
             padding: '2px 5px', borderRadius: '4px', flexShrink: 0,
           }}>
             ADMIN

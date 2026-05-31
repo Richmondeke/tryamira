@@ -574,7 +574,7 @@ function AccountSettingsInner() {
                       <button 
                         type="submit" 
                         disabled={isRegisteringSip} 
-                        style={{ backgroundColor: '#533afd', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.6rem 1.25rem', fontSize: '12px', fontWeight: 600, cursor: isRegisteringSip ? 'wait' : 'pointer', opacity: isRegisteringSip ? 0.7 : 1, boxShadow: 'var(--stripe-shadow-action)' }}
+                        style={{ backgroundColor: '#4caf50', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.6rem 1.25rem', fontSize: '12px', fontWeight: 600, cursor: isRegisteringSip ? 'wait' : 'pointer', opacity: isRegisteringSip ? 0.7 : 1, boxShadow: 'var(--stripe-shadow-action)' }}
                       >
                         {isRegisteringSip ? 'Connecting SIP Handshake...' : '🔒 Register Local SIP Trunk'}
                       </button>
@@ -662,8 +662,8 @@ function AccountSettingsInner() {
                     </div>
                   </div>
                   <span style={{ 
-                    backgroundColor: billingTier !== 'starter' ? 'rgba(21,190,83,0.1)' : 'rgba(99,102,241,0.1)', 
-                    color: billingTier !== 'starter' ? 'var(--stripe-success-text)' : '#6366f1', 
+                    backgroundColor: billingTier !== 'starter' ? 'rgba(21,190,83,0.1)' : 'rgba(76,175,80,0.1)', 
+                    color: billingTier !== 'starter' ? 'var(--stripe-success-text)' : '#4caf50', 
                     padding: '4px 8px', 
                     borderRadius: '4px', 
                     fontSize: '11px', 
@@ -715,7 +715,7 @@ function AccountSettingsInner() {
                     </div>
                     <div style={{ fontSize: '12px', color: 'var(--stripe-body)' }}>Pay-as-you-go call credit wallet</div>
                   </div>
-                  <span style={{ backgroundColor: callCredits > 0 ? 'rgba(16,185,129,0.1)' : 'rgba(99,102,241,0.1)', color: callCredits > 0 ? '#10b981' : '#6366f1', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600 }}>
+                  <span style={{ backgroundColor: callCredits > 0 ? 'rgba(16,185,129,0.1)' : 'rgba(76,175,80,0.1)', color: callCredits > 0 ? '#10b981' : '#4caf50', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600 }}>
                     {callCredits > 0 ? 'Active Wallet' : 'Top Up Required'}
                   </span>
                 </div>
@@ -726,7 +726,7 @@ function AccountSettingsInner() {
                     <button
                       key={amt}
                       onClick={() => setTopupAmount(amt)}
-                      style={{ padding: '4px 10px', fontSize: '11px', borderRadius: '4px', border: `1px solid ${topupAmount === amt ? 'var(--stripe-purple)' : 'var(--stripe-border)'}`, backgroundColor: topupAmount === amt ? 'rgba(99,102,241,0.08)' : '#fff', color: topupAmount === amt ? 'var(--stripe-purple)' : 'var(--stripe-navy)', fontWeight: topupAmount === amt ? 600 : 400, cursor: 'pointer' }}
+                      style={{ padding: '4px 10px', fontSize: '11px', borderRadius: '4px', border: `1px solid ${topupAmount === amt ? 'var(--stripe-purple)' : 'var(--stripe-border)'}`, backgroundColor: topupAmount === amt ? 'rgba(76,175,80,0.08)' : '#fff', color: topupAmount === amt ? 'var(--stripe-purple)' : 'var(--stripe-navy)', fontWeight: topupAmount === amt ? 600 : 400, cursor: 'pointer' }}
                     >
                       ₦{amt.toLocaleString()}
                     </button>
@@ -736,7 +736,7 @@ function AccountSettingsInner() {
                 <button
                   onClick={handleTopup}
                   disabled={isTopupLoading}
-                  style={{ width: '100%', backgroundColor: '#6366f1', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.6rem', fontSize: '12px', fontWeight: 600, cursor: isTopupLoading ? 'wait' : 'pointer', boxShadow: '0 4px 12px rgba(99,102,241,0.15)', opacity: isTopupLoading ? 0.7 : 1 }}
+                  style={{ width: '100%', backgroundColor: '#4caf50', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.6rem', fontSize: '12px', fontWeight: 600, cursor: isTopupLoading ? 'wait' : 'pointer', boxShadow: '0 4px 12px rgba(76,175,80,0.15)', opacity: isTopupLoading ? 0.7 : 1 }}
                 >
                   {isTopupLoading ? 'Redirecting to payment...' : `+ Add ₦${topupAmount.toLocaleString()} Call Credits`}
                 </button>
@@ -1047,13 +1047,13 @@ function AccountSettingsInner() {
                   <button
                     onClick={() => { setTargetUpgradeTier('pro'); setIsUpgradeSuccess(false); setShowUpgradeModal(true); }}
                     disabled={isCheckoutLoading}
-                    style={{ width: '100%', padding: '0.55rem', backgroundColor: '#6366f1', backgroundImage: 'linear-gradient(135deg, #6366f1, #4f46e5)', color: '#ffffff', border: 'none', borderRadius: '4px', fontWeight: 600, fontSize: '11.5px', cursor: 'pointer', boxShadow: '0 2px 8px rgba(99, 102, 241, 0.2)' }}
+                    style={{ width: '100%', padding: '0.55rem', backgroundColor: '#4caf50', backgroundImage: 'linear-gradient(135deg, #4caf50, #4f46e5)', color: '#ffffff', border: 'none', borderRadius: '4px', fontWeight: 600, fontSize: '11.5px', cursor: 'pointer', boxShadow: '0 2px 8px rgba(76, 175, 80, 0.2)' }}
                   >Upgrade to Pro — ₦45,000/mo</button>
                 )}
               </div>
 
               {/* Team Plan */}
-              <div style={{ backgroundColor: '#ffffff', border: billingTier === 'team' ? '2px solid var(--stripe-success-text)' : '2px solid var(--stripe-purple)', borderRadius: '8px', padding: '1.5rem', width: '250px', boxShadow: '0 12px 24px rgba(83,58,253,0.12)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' }}>
+              <div style={{ backgroundColor: '#ffffff', border: billingTier === 'team' ? '2px solid var(--stripe-success-text)' : '2px solid var(--stripe-purple)', borderRadius: '8px', padding: '1.5rem', width: '250px', boxShadow: '0 12px 24px rgba(76,175,80,0.12)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' }}>
                 <div style={{ position: 'absolute', top: '-11px', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'var(--stripe-purple)', color: '#ffffff', fontSize: '9px', fontWeight: 600, padding: '2px 8px', borderRadius: '10px', letterSpacing: '0.5px' }}>{billingTier === 'team' ? 'CURRENT PLAN' : 'RECOMMENDED'}</div>
                 <div>
                   <h3 style={{ fontSize: '13px', color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', fontWeight: 600 }}>Team Plan</h3>
@@ -1077,7 +1077,7 @@ function AccountSettingsInner() {
                   <button
                     onClick={() => { setTargetUpgradeTier('team'); setIsUpgradeSuccess(false); setShowUpgradeModal(true); }}
                     disabled={isCheckoutLoading}
-                    style={{ width: '100%', padding: '0.55rem', backgroundColor: 'var(--stripe-purple)', color: '#ffffff', border: 'none', borderRadius: '4px', fontWeight: 600, fontSize: '11.5px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(83, 58, 253, 0.3)' }}
+                    style={{ width: '100%', padding: '0.55rem', backgroundColor: 'var(--stripe-purple)', color: '#ffffff', border: 'none', borderRadius: '4px', fontWeight: 600, fontSize: '11.5px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)' }}
                   >Upgrade to Team — ₦135,000/mo</button>
                 )}
               </div>

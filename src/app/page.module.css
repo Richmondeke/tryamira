@@ -1770,14 +1770,14 @@
   gap: 0.875rem;
   padding: 0.875rem;
   border-radius: 10px;
-  background: rgba(83, 58, 253, 0.04);
-  border: 1px solid rgba(83, 58, 253, 0.12);
+  background: rgba(76, 175, 80, 0.04);
+  border: 1px solid rgba(76, 175, 80, 0.12);
   transition: all 0.2s ease;
 }
 
 .integrationItem:hover {
-  background: rgba(83, 58, 253, 0.08);
-  border-color: rgba(83, 58, 253, 0.25);
+  background: rgba(76, 175, 80, 0.08);
+  border-color: rgba(76, 175, 80, 0.25);
   transform: translateY(-1px);
 }
 
@@ -1785,7 +1785,7 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: rgba(83, 58, 253, 0.12);
+  background: rgba(76, 175, 80, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -228,7 +228,7 @@ export function Topbar({ toggleMobileMenu }: { toggleMobileMenu?: () => void }) 
                 backgroundColor: '#fff', color: 'var(--stripe-navy)', cursor: 'pointer',
                 boxShadow: '0 1px 2px rgba(0,0,0,0.05)', transition: 'border-color 0.15s ease'
               }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = '#533afd'}
+              onMouseEnter={e => e.currentTarget.style.borderColor = '#4caf50'}
               onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--stripe-border)'}
             >
               <span style={{ fontSize: '15px' }}>{languagesList.find(l => l.code === currentLang)?.flag || '🇺🇸'}</span>

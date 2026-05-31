@@ -127,14 +127,14 @@ export default function SuccessConfirmation({
             width: '100%',
             padding: '0.65rem 1rem',
             backgroundColor: 'var(--stripe-purple)',
-            backgroundImage: 'linear-gradient(135deg, #6366f1, #4f46e5)',
+            backgroundImage: 'linear-gradient(135deg, #4caf50, #4f46e5)',
             color: '#fff',
             border: 'none',
             borderRadius: '6px',
             fontSize: '12.5px',
             fontWeight: 600,
             cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(99, 102, 241, 0.25)',
+            boxShadow: '0 4px 12px rgba(76, 175, 80, 0.25)',
             transition: 'transform 0.1s ease, filter 0.1s ease'
           }}
           onMouseOver={(e) => { e.currentTarget.style.filter = 'brightness(1.05)'; }}

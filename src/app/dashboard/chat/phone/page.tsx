@@ -192,7 +192,7 @@ export default function PhoneAgentPage() {
             </div>
 
             <div>
-              <button type="submit" disabled={isLoading} style={{ padding: '0.75rem 1.5rem', backgroundColor: '#6366f1', color: '#fff', border: 'none', borderRadius: '4px', cursor: isLoading ? 'not-allowed' : 'pointer', fontWeight: 500, opacity: isLoading ? 0.7 : 1, transition: 'background 0.2s' }} onMouseOver={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#4f46e5' }} onMouseOut={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#6366f1' }}>
+              <button type="submit" disabled={isLoading} style={{ padding: '0.75rem 1.5rem', backgroundColor: '#4caf50', color: '#fff', border: 'none', borderRadius: '4px', cursor: isLoading ? 'not-allowed' : 'pointer', fontWeight: 500, opacity: isLoading ? 0.7 : 1, transition: 'background 0.2s' }} onMouseOver={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#4f46e5' }} onMouseOut={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#4caf50' }}>
                 {isLoading ? 'Saving...' : 'Save & Activate Inbound'}
               </button>
             </div>
@@ -226,14 +226,14 @@ export default function PhoneAgentPage() {
                 <input name="scheduledTime" type="datetime-local" style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px' }} />
                 <p style={{ fontSize: '11px', color: 'var(--stripe-muted)', marginTop: '4px' }}>Leave blank to dial immediately.</p>
               </div>
-              <button type="submit" disabled={isLoading} style={{ marginTop: '0.5rem', padding: '0.75rem', backgroundColor: '#6366f1', color: '#fff', border: 'none', borderRadius: '4px', cursor: isLoading ? 'not-allowed' : 'pointer', fontWeight: 500, opacity: isLoading ? 0.7 : 1, transition: 'background 0.2s' }} onMouseOver={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#4f46e5' }} onMouseOut={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#6366f1' }}>
+              <button type="submit" disabled={isLoading} style={{ marginTop: '0.5rem', padding: '0.75rem', backgroundColor: '#4caf50', color: '#fff', border: 'none', borderRadius: '4px', cursor: isLoading ? 'not-allowed' : 'pointer', fontWeight: 500, opacity: isLoading ? 0.7 : 1, transition: 'background 0.2s' }} onMouseOver={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#4f46e5' }} onMouseOut={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#4caf50' }}>
                 {isLoading ? 'Launching...' : 'Launch Campaign'}
               </button>
             </form>
           </Modal>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
-            <button onClick={() => setShowCampaignModal(true)} style={{ backgroundColor: '#6366f1', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '13px', fontWeight: 500, cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', transition: 'background 0.2s' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4f46e5'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#6366f1'}>New Campaign</button>
+            <button onClick={() => setShowCampaignModal(true)} style={{ backgroundColor: '#4caf50', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '13px', fontWeight: 500, cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', transition: 'background 0.2s' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4f46e5'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4caf50'}>New Campaign</button>
           </div>
 
           <div style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', boxShadow: 'var(--stripe-shadow-ambient)', overflow: 'hidden' }}>

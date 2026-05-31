@@ -226,7 +226,7 @@ export default function PhoneNumbersPage() {
 
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
             <Button type="button" variant="outline" onClick={() => setShowImportModal(false)} disabled={isImporting}>Cancel</Button>
-            <Button type="submit" style={{ backgroundColor: '#533afd', color: '#fff' }} disabled={isImporting}>
+            <Button type="submit" style={{ backgroundColor: '#4caf50', color: '#fff' }} disabled={isImporting}>
               {isImporting ? 'Importing...' : 'Import Number'}
             </Button>
           </div>
@@ -252,7 +252,7 @@ export default function PhoneNumbersPage() {
             </div>
             <Button 
               type="button" 
-              style={{ backgroundColor: '#533afd', color: '#fff', height: '42px' }}
+              style={{ backgroundColor: '#4caf50', color: '#fff', height: '42px' }}
               onClick={handleSearchNumbers}
               disabled={isSearching}
             >
@@ -305,7 +305,7 @@ export default function PhoneNumbersPage() {
 
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
             <Button type="button" variant="outline" onClick={() => setShowLinkModal(false)}>Cancel</Button>
-            <Button type="submit" style={{ backgroundColor: '#533afd', color: '#fff' }}>
+            <Button type="submit" style={{ backgroundColor: '#4caf50', color: '#fff' }}>
               Save Route Configuration
             </Button>
           </div>
@@ -329,7 +329,7 @@ export default function PhoneNumbersPage() {
           <Button 
             type="button" 
             variant="primary" 
-            style={{ backgroundColor: '#533afd', color: '#fff' }}
+            style={{ backgroundColor: '#4caf50', color: '#fff' }}
             onClick={() => setShowBuyModal(true)}
           >
             📞 Buy New Number
@@ -354,7 +354,7 @@ export default function PhoneNumbersPage() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(83,58,253,0.06)', color: '#533afd', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(76,175,80,0.06)', color: '#4caf50', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
                 📞
               </div>
               <div>

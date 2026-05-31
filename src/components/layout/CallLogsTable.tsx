@@ -352,7 +352,7 @@ export default function CallLogsTable({ initialCalls }: { initialCalls: CallReco
                     <td style={{ padding: '0.875rem 1.25rem', fontSize: '13px', color: 'var(--stripe-body)', fontFamily: 'monospace' }}>
                       ${(call.cost || 0).toFixed(4)}
                     </td>
-                    <td style={{ padding: '0.875rem 1.25rem', fontSize: '12px', color: '#533afd', fontWeight: 600 }}>
+                    <td style={{ padding: '0.875rem 1.25rem', fontSize: '12px', color: '#4caf50', fontWeight: 600 }}>
                       Inspect →
                     </td>
                   </tr>
@@ -497,7 +497,7 @@ export default function CallLogsTable({ initialCalls }: { initialCalls: CallReco
                           type="checkbox" 
                           checked={autoScroll}
                           onChange={(e) => setAutoScroll(e.target.checked)}
-                          style={{ accentColor: '#533afd' }}
+                          style={{ accentColor: '#4caf50' }}
                         />
                         Auto-scroll
                       </label>
@@ -511,7 +511,7 @@ export default function CallLogsTable({ initialCalls }: { initialCalls: CallReco
                         style={{
                           background: 'none',
                           border: 'none',
-                          color: '#533afd',
+                          color: '#4caf50',
                           fontSize: '11px',
                           fontWeight: 600,
                           cursor: 'pointer',
@@ -660,14 +660,14 @@ export default function CallLogsTable({ initialCalls }: { initialCalls: CallReco
                               alignSelf: bubble.sender === 'user' ? 'flex-end' : 'flex-start',
                               backgroundColor: isBubblePlaying 
                                 ? (bubble.sender === 'user' ? '#4338ca' : '#f5f3ff')
-                                : bubble.sender === 'user' ? '#533afd' : '#ffffff',
+                                : bubble.sender === 'user' ? '#4caf50' : '#ffffff',
                               color: bubble.sender === 'user' ? '#ffffff' : 'var(--stripe-navy)',
                               padding: '0.75rem 1rem',
                               borderRadius: bubble.sender === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
                               fontSize: '12px',
                               maxWidth: '82%',
                               boxShadow: isBubblePlaying 
-                                ? '0 10px 15px -3px rgba(83, 58, 253, 0.15), 0 4px 6px -2px rgba(83, 58, 253, 0.05)'
+                                ? '0 10px 15px -3px rgba(76, 175, 80, 0.15), 0 4px 6px -2px rgba(76, 175, 80, 0.05)'
                                 : '0 1px 3px rgba(0,0,0,0.05)',
                               lineHeight: 1.45,
                               cursor: 'pointer',
@@ -715,7 +715,7 @@ export default function CallLogsTable({ initialCalls }: { initialCalls: CallReco
                             </div>
                             
                             {isBubblePlaying && (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '9px', fontWeight: 600, color: bubble.sender === 'user' ? '#a5b4fc' : '#6366f1', marginTop: '5px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '9px', fontWeight: 600, color: bubble.sender === 'user' ? '#a5b4fc' : '#4caf50', marginTop: '5px' }}>
                                 <span>🔊</span>
                                 <span style={{ textTransform: 'uppercase', letterSpacing: '0.2px' }}>Now Playing...</span>
                               </div>
@@ -758,7 +758,7 @@ export default function CallLogsTable({ initialCalls }: { initialCalls: CallReco
                                 style={{
                                   width: '2px',
                                   height: isPlaying ? '100%' : '20%',
-                                  backgroundColor: '#533afd',
+                                  backgroundColor: '#4caf50',
                                   borderRadius: '1px',
                                   animation: isPlaying ? `bounceWave ${duration}s ease-in-out ${delay}s infinite alternate` : 'none',
                                   transformOrigin: 'bottom',
@@ -793,7 +793,7 @@ export default function CallLogsTable({ initialCalls }: { initialCalls: CallReco
                             width: '100%', 
                             height: '5px', 
                             cursor: 'pointer', 
-                            accentColor: '#533afd',
+                            accentColor: '#4caf50',
                             backgroundColor: '#e2e8f0',
                             borderRadius: '4px',
                             outline: 'none'
@@ -837,7 +837,7 @@ export default function CallLogsTable({ initialCalls }: { initialCalls: CallReco
                             width: '38px',
                             height: '38px',
                             borderRadius: '50%',
-                            backgroundColor: isPlaying ? '#ef4444' : '#533afd',
+                            backgroundColor: isPlaying ? '#ef4444' : '#4caf50',
                             color: '#fff',
                             border: 'none',
                             cursor: 'pointer',
@@ -845,7 +845,7 @@ export default function CallLogsTable({ initialCalls }: { initialCalls: CallReco
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontSize: '14px',
-                            boxShadow: '0 4px 10px rgba(83, 58, 253, 0.25)',
+                            boxShadow: '0 4px 10px rgba(76, 175, 80, 0.25)',
                             transition: 'transform 0.15s ease'
                           }}
                           onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
@@ -892,7 +892,7 @@ export default function CallLogsTable({ initialCalls }: { initialCalls: CallReco
                                 borderRadius: '4px',
                                 fontSize: '9px',
                                 fontWeight: 700,
-                                backgroundColor: playbackRate === rate ? '#533afd' : '#fff',
+                                backgroundColor: playbackRate === rate ? '#4caf50' : '#fff',
                                 color: playbackRate === rate ? '#fff' : 'var(--stripe-navy)',
                                 cursor: 'pointer',
                                 transition: 'all 0.1s'
@@ -928,7 +928,7 @@ export default function CallLogsTable({ initialCalls }: { initialCalls: CallReco
                               audioObj.volume = val;
                             }
                           }}
-                          style={{ width: '60px', height: '4px', cursor: 'pointer', accentColor: '#533afd' }}
+                          style={{ width: '60px', height: '4px', cursor: 'pointer', accentColor: '#4caf50' }}
                         />
 
                         {/* Raw audio link */}
@@ -990,11 +990,11 @@ export default function CallLogsTable({ initialCalls }: { initialCalls: CallReco
                         style={{
                           background: 'none',
                           border: 'none',
-                          borderBottom: activeTelemetryTab === tab ? '2px solid #533afd' : '2px solid transparent',
+                          borderBottom: activeTelemetryTab === tab ? '2px solid #4caf50' : '2px solid transparent',
                           padding: '6px 0',
                           fontSize: '11px',
                           fontWeight: 700,
-                          color: activeTelemetryTab === tab ? '#533afd' : 'var(--stripe-muted)',
+                          color: activeTelemetryTab === tab ? '#4caf50' : 'var(--stripe-muted)',
                           textTransform: 'uppercase',
                           letterSpacing: '0.4px',
                           cursor: 'pointer',

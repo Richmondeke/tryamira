@@ -1360,7 +1360,7 @@ function AgentContent() {
             <Button 
               type="button"
               variant="primary"
-              style={{ backgroundColor: '#533afd', color: '#fff' }}
+              style={{ backgroundColor: '#4caf50', color: '#fff' }}
               onClick={() => router.push(`/dashboard/ai-agent?template=${selectedTemplate.id}`)}
             >
               Hire Agent Now →
@@ -1386,9 +1386,9 @@ function AgentContent() {
 
             {isCloning ? (
               <div style={{ textAlign: 'center', padding: '2rem 0' }}>
-                <div style={{ fontSize: '16px', fontWeight: 600, color: '#533afd', marginBottom: '1rem' }}>Cloning Voiceprint: {cloneProgress}%</div>
+                <div style={{ fontSize: '16px', fontWeight: 600, color: '#4caf50', marginBottom: '1rem' }}>Cloning Voiceprint: {cloneProgress}%</div>
                 <div style={{ height: '8px', backgroundColor: '#e2e8f0', borderRadius: '4px', maxWidth: '300px', margin: '0 auto', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${cloneProgress}%`, backgroundColor: '#533afd', transition: 'width 0.4s ease-in-out' }}></div>
+                  <div style={{ height: '100%', width: `${cloneProgress}%`, backgroundColor: '#4caf50', transition: 'width 0.4s ease-in-out' }}></div>
                 </div>
                 <p style={{ color: 'var(--stripe-muted)', fontSize: '12px', marginTop: '1rem' }}>Matching neural voice frequencies...</p>
               </div>
@@ -1429,7 +1429,7 @@ function AgentContent() {
 
                 <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
                   <Button type="button" variant="outline" onClick={() => setShowCloneModal(false)}>Cancel</Button>
-                  <Button type="submit" style={{ backgroundColor: '#533afd', color: '#fff' }}>
+                  <Button type="submit" style={{ backgroundColor: '#4caf50', color: '#fff' }}>
                     Start Cloning Neural Voiceprint
                   </Button>
                 </div>
@@ -1445,19 +1445,19 @@ function AgentContent() {
               <h2 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--stripe-navy)', margin: '0 0 0.25rem 0' }}>Hiring {selectedTemplate.name}</h2>
               <p style={{ color: 'var(--stripe-muted)', fontSize: '12px', margin: 0 }}>Configure and deploy your new AI employee live.</p>
             </div>
-            <div style={{ fontSize: '13px', fontWeight: 600, color: '#533afd' }}>
+            <div style={{ fontSize: '13px', fontWeight: 600, color: '#4caf50' }}>
               Step {onboardingStep} of 3
             </div>
           </div>
           
           <div style={{ height: '6px', backgroundColor: '#e2e8f0', borderRadius: '3px', position: 'relative' }}>
-            <div style={{ height: '100%', width: `${(onboardingStep / 3) * 100}%`, backgroundColor: '#533afd', borderRadius: '3px', transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }} />
+            <div style={{ height: '100%', width: `${(onboardingStep / 3) * 100}%`, backgroundColor: '#4caf50', borderRadius: '3px', transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }} />
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 500, color: 'var(--stripe-muted)', marginTop: '0.75rem' }}>
-            <span style={{ color: onboardingStep >= 1 ? '#533afd' : 'inherit', fontWeight: onboardingStep >= 1 ? 600 : 500 }}>1. Brain & Identity</span>
-            <span style={{ color: onboardingStep >= 2 ? '#533afd' : 'inherit', fontWeight: onboardingStep >= 2 ? 600 : 500 }}>2. Connect Workflows</span>
-            <span style={{ color: onboardingStep >= 3 ? '#533afd' : 'inherit', fontWeight: onboardingStep >= 3 ? 600 : 500 }}>3. Go Live 🚀</span>
+            <span style={{ color: onboardingStep >= 1 ? '#4caf50' : 'inherit', fontWeight: onboardingStep >= 1 ? 600 : 500 }}>1. Brain & Identity</span>
+            <span style={{ color: onboardingStep >= 2 ? '#4caf50' : 'inherit', fontWeight: onboardingStep >= 2 ? 600 : 500 }}>2. Connect Workflows</span>
+            <span style={{ color: onboardingStep >= 3 ? '#4caf50' : 'inherit', fontWeight: onboardingStep >= 3 ? 600 : 500 }}>3. Go Live 🚀</span>
           </div>
         </div>
 
@@ -1501,7 +1501,7 @@ function AgentContent() {
                     type="button" 
                     variant="outline" 
                     size="sm" 
-                    style={{ borderColor: '#533afd', color: '#533afd', padding: '0.35rem 0.75rem' }}
+                    style={{ borderColor: '#4caf50', color: '#4caf50', padding: '0.35rem 0.75rem' }}
                     onClick={() => setShowCloneModal(true)}
                   >
                     🎙️ Clone My Voice
@@ -1592,13 +1592,13 @@ function AgentContent() {
                       onClick={() => setCustomVoice(voice.id)}
                       style={{
                         backgroundColor: '#ffffff',
-                        border: isSelected ? '2px solid #533afd' : '1px solid var(--stripe-border)',
+                        border: isSelected ? '2px solid #4caf50' : '1px solid var(--stripe-border)',
                         borderRadius: '8px',
                         padding: '1rem',
                         cursor: 'pointer',
                         position: 'relative',
                         transition: 'all 0.15s ease-in-out',
-                        boxShadow: isSelected ? '0 4px 12px rgba(83,58,253,0.1)' : 'none',
+                        boxShadow: isSelected ? '0 4px 12px rgba(76,175,80,0.1)' : 'none',
                         minHeight: '145px',
                         display: 'flex',
                         flexDirection: 'column',
@@ -1607,7 +1607,7 @@ function AgentContent() {
                     >
                       {/* Selected indicator checkmark */}
                       {isSelected && (
-                        <div style={{ position: 'absolute', top: '8px', right: '8px', width: '16px', height: '16px', borderRadius: '50%', backgroundColor: '#533afd', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold' }}>
+                        <div style={{ position: 'absolute', top: '8px', right: '8px', width: '16px', height: '16px', borderRadius: '50%', backgroundColor: '#4caf50', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold' }}>
                           ✓
                         </div>
                       )}
@@ -1615,7 +1615,7 @@ function AgentContent() {
                       <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem' }}>
                           <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--stripe-navy)' }}>{voice.name}</span>
-                          <span style={{ fontSize: '9px', color: '#533afd', backgroundColor: 'rgba(83,58,253,0.08)', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                          <span style={{ fontSize: '9px', color: '#4caf50', backgroundColor: 'rgba(76,175,80,0.08)', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>
                             {voice.provider}
                           </span>
                         </div>
@@ -1633,10 +1633,10 @@ function AgentContent() {
                         {/* Sound Wave Animation Visualizer */}
                         {isCurrentlyPlaying && (
                           <div style={{ display: 'flex', gap: '3px', alignItems: 'center', justifyContent: 'center', height: '16px', marginBottom: '0.5rem' }}>
-                            <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#533afd', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate' }}></span>
-                            <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#533afd', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate 0.2s' }}></span>
-                            <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#533afd', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate 0.4s' }}></span>
-                            <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#533afd', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate 0.1s' }}></span>
+                            <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#4caf50', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate' }}></span>
+                            <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#4caf50', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate 0.2s' }}></span>
+                            <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#4caf50', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate 0.4s' }}></span>
+                            <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#4caf50', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate 0.1s' }}></span>
                           </div>
                         )}
 
@@ -1743,7 +1743,7 @@ function AgentContent() {
                     variant="outline" 
                     size="sm" 
                     onClick={() => setShowKbInput(true)}
-                    style={{ borderColor: '#533afd', color: '#533afd', fontSize: '11px', padding: '0.35rem 0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                    style={{ borderColor: '#4caf50', color: '#4caf50', fontSize: '11px', padding: '0.35rem 0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
                   >
                     ➕ Train New Document
                   </Button>
@@ -1790,7 +1790,7 @@ function AgentContent() {
                     }}
                   >
                     <span style={{ fontSize: '20px' }}>📁</span>
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#533afd' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#4caf50' }}>
                       Upload PDF, TXT, CSV, or MD Guidelines
                     </span>
                     <span style={{ fontSize: '10px', color: '#64748b' }}>
@@ -1848,7 +1848,7 @@ function AgentContent() {
                       variant="primary" 
                       size="sm" 
                       onClick={handleAddKbSubmit}
-                      style={{ backgroundColor: '#533afd', color: '#fff', fontSize: '11px' }}
+                      style={{ backgroundColor: '#4caf50', color: '#fff', fontSize: '11px' }}
                     >
                       Vectorize & Index
                     </Button>
@@ -1870,12 +1870,12 @@ function AgentContent() {
                       <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>🔄</span> 
                       {kbProgress < 30 ? 'Extracting text chunks...' : kbProgress < 60 ? 'Generating semantic embeddings...' : kbProgress < 90 ? 'Upserting vectors into database...' : 'Finalizing RAG vector index...'}
                     </span>
-                    <span style={{ fontSize: '11px', fontWeight: 600, color: '#533afd' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 600, color: '#4caf50' }}>
                       {kbProgress}%
                     </span>
                   </div>
                   <div style={{ height: '6px', backgroundColor: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${kbProgress}%`, backgroundColor: '#533afd', borderRadius: '3px', transition: 'width 0.25s linear' }} />
+                    <div style={{ height: '100%', width: `${kbProgress}%`, backgroundColor: '#4caf50', borderRadius: '3px', transition: 'width 0.25s linear' }} />
                   </div>
                 </div>
               )}
@@ -1975,7 +1975,7 @@ function AgentContent() {
               <Button 
                 type="button"
                 variant="primary"
-                style={{ backgroundColor: '#533afd', color: '#fff' }}
+                style={{ backgroundColor: '#4caf50', color: '#fff' }}
                 onClick={() => setOnboardingStep(2)}
               >
                 Next: Connect Workflows →
@@ -2006,7 +2006,7 @@ function AgentContent() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                           <span style={{ fontSize: '14px', color: 'var(--stripe-navy)', fontWeight: 600 }}>{int.name}</span>
                           {isRequired && (
-                            <span style={{ fontSize: '10px', fontWeight: 600, color: '#533afd', backgroundColor: 'rgba(83,58,253,0.1)', padding: '2px 8px', borderRadius: '20px', textTransform: 'uppercase' }}>
+                            <span style={{ fontSize: '10px', fontWeight: 600, color: '#4caf50', backgroundColor: 'rgba(76,175,80,0.1)', padding: '2px 8px', borderRadius: '20px', textTransform: 'uppercase' }}>
                               Recommended
                             </span>
                           )}
@@ -2021,8 +2021,8 @@ function AgentContent() {
                       style={{
                         padding: '0.5rem 1.25rem',
                         borderRadius: '6px',
-                        border: connected ? '1px solid #10b981' : '1px solid #533afd',
-                        backgroundColor: connected ? 'transparent' : '#533afd',
+                        border: connected ? '1px solid #10b981' : '1px solid #4caf50',
+                        backgroundColor: connected ? 'transparent' : '#4caf50',
                         color: connected ? '#10b981' : '#ffffff',
                         fontSize: '12px',
                         fontWeight: 600,
@@ -2050,7 +2050,7 @@ function AgentContent() {
               <Button 
                 type="button"
                 variant="primary"
-                style={{ backgroundColor: '#533afd', color: '#fff' }}
+                style={{ backgroundColor: '#4caf50', color: '#fff' }}
                 onClick={() => setOnboardingStep(3)}
               >
                 Next: Review & Go Live →
@@ -2103,8 +2103,8 @@ function AgentContent() {
                     onClick={handleToggleCall}
                     style={{
                       border: 'none',
-                      backgroundColor: isCallActive ? '#ef4444' : 'rgba(83,58,253,0.1)',
-                      color: isCallActive ? '#ffffff' : '#533afd',
+                      backgroundColor: isCallActive ? '#ef4444' : 'rgba(76,175,80,0.1)',
+                      color: isCallActive ? '#ffffff' : '#4caf50',
                       padding: '4px 10px',
                       borderRadius: '20px',
                       fontSize: '11px',
@@ -2137,19 +2137,19 @@ function AgentContent() {
                           width: '54px', 
                           height: '54px', 
                           borderRadius: '50%', 
-                          backgroundColor: 'rgba(83,58,253,0.08)', 
+                          backgroundColor: 'rgba(76,175,80,0.08)', 
                           display: 'flex', 
                           alignItems: 'center', 
                           justifyContent: 'center', 
                           fontSize: '24px',
                           position: 'relative',
                           marginBottom: '0.75rem',
-                          boxShadow: '0 0 16px rgba(83,58,253,0.15)'
+                          boxShadow: '0 0 16px rgba(76,175,80,0.15)'
                         }}>
                           <div style={{
                             position: 'absolute',
                             top: 0, left: 0, right: 0, bottom: 0,
-                            border: '2px solid #533afd',
+                            border: '2px solid #4caf50',
                             borderRadius: '50%',
                             animation: 'spin 2s linear infinite',
                             opacity: 0.5
@@ -2173,7 +2173,7 @@ function AgentContent() {
                                   display: 'inline-block', 
                                   width: '3px', 
                                   height: `${height}px`, 
-                                  backgroundColor: '#533afd', 
+                                  backgroundColor: '#4caf50', 
                                   borderRadius: '2px', 
                                   transition: 'height 0.05s ease-out' 
                                 }} 
@@ -2189,7 +2189,7 @@ function AgentContent() {
                             key={i} 
                             style={{
                               alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-                              backgroundColor: msg.sender === 'user' ? '#533afd' : '#ffffff',
+                              backgroundColor: msg.sender === 'user' ? '#4caf50' : '#ffffff',
                               color: msg.sender === 'user' ? '#ffffff' : 'var(--stripe-navy)',
                               padding: '0.5rem 0.85rem',
                               borderRadius: '8px',
@@ -2220,7 +2220,7 @@ function AgentContent() {
                       onChange={(e) => setChatInput(e.target.value)}
                       style={{ flex: 1, padding: '0.6rem', fontSize: '12px', border: 'none', outline: 'none' }}
                     />
-                    <button type="submit" style={{ padding: '0 1rem', backgroundColor: 'transparent', border: 'none', color: '#533afd', fontWeight: 600, fontSize: '12px', cursor: 'pointer' }}>
+                    <button type="submit" style={{ padding: '0 1rem', backgroundColor: 'transparent', border: 'none', color: '#4caf50', fontWeight: 600, fontSize: '12px', cursor: 'pointer' }}>
                       Send
                     </button>
                   </form>
@@ -2283,7 +2283,7 @@ function AgentContent() {
               onClick={handleCreateAgent} 
               disabled={isCreating}
               style={{ 
-                backgroundColor: '#533afd', 
+                backgroundColor: '#4caf50', 
                 color: '#ffffff', 
                 border: 'none', 
                 borderRadius: '4px', 
@@ -2309,7 +2309,7 @@ function AgentContent() {
             borderRadius: '12px', 
             textAlign: 'center', 
             boxShadow: 'var(--stripe-shadow-ambient)',
-            background: 'linear-gradient(135deg, rgba(83, 58, 253, 0.02) 0%, rgba(83, 58, 253, 0.05) 100%)',
+            background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.02) 0%, rgba(76, 175, 80, 0.05) 100%)',
             borderWidth: '1.5px'
           }}>
             <span style={{ fontSize: '32px', display: 'block', marginBottom: '0.75rem' }}>🤖</span>
@@ -2323,7 +2323,7 @@ function AgentContent() {
               onClick={handleCreateAgent}
               disabled={isCreating}
               style={{ 
-                backgroundColor: '#533afd', 
+                backgroundColor: '#4caf50', 
                 border: 'none', 
                 borderRadius: '4px', 
                 padding: '0.6rem 1.25rem', 
@@ -2331,7 +2331,7 @@ function AgentContent() {
                 cursor: 'pointer', 
                 color: '#ffffff', 
                 fontWeight: 600,
-                boxShadow: '0 4px 12px rgba(83,58,253,0.15)'
+                boxShadow: '0 4px 12px rgba(76,175,80,0.15)'
               }}
             >
               + Build Custom Agent
@@ -2364,7 +2364,7 @@ function AgentContent() {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(83,58,253,0.1)', color: '#533afd', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(76,175,80,0.1)', color: '#4caf50', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
                     🤖
                   </div>
                   <div>
@@ -2379,7 +2379,7 @@ function AgentContent() {
                 </p>
                 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem', borderTop: '1px solid #f1f5f9', paddingTop: '0.75rem' }}>
-                  <span style={{ fontSize: '11px', color: '#533afd', fontWeight: 700 }}>Configure Employee →</span>
+                  <span style={{ fontSize: '11px', color: '#4caf50', fontWeight: 700 }}>Configure Employee →</span>
                 </div>
               </div>
             ))}
@@ -2418,8 +2418,8 @@ function AgentContent() {
               transition: 'all 0.15s ease-in-out'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = '#533afd';
-              e.currentTarget.style.backgroundColor = 'rgba(83, 58, 253, 0.01)';
+              e.currentTarget.style.borderColor = '#4caf50';
+              e.currentTarget.style.backgroundColor = 'rgba(76, 175, 80, 0.01)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.borderColor = 'var(--stripe-border)';
@@ -2431,7 +2431,7 @@ function AgentContent() {
             <p style={{ fontSize: '12px', color: 'var(--stripe-muted)', textAlign: 'center', lineHeight: 1.5, maxWidth: '240px' }}>
               Configure a virtual assistant from scratch with custom voices, prompts, and bespoke webhook actions.
             </p>
-            <Button size="sm" style={{ marginTop: '1.25rem', backgroundColor: '#533afd', color: '#fff' }}>
+            <Button size="sm" style={{ marginTop: '1.25rem', backgroundColor: '#4caf50', color: '#fff' }}>
               Hire Custom Assistant
             </Button>
           </div>
@@ -2537,7 +2537,7 @@ function AgentContent() {
                   onClick={() => router.push(`/dashboard/ai-agent?template=${tpl.id}`)}
                   style={{
                     width: '100%',
-                    backgroundColor: '#533afd',
+                    backgroundColor: '#4caf50',
                     color: '#ffffff',
                     border: 'none',
                     borderRadius: '6px',
@@ -2547,7 +2547,7 @@ function AgentContent() {
                     cursor: 'pointer',
                     letterSpacing: '0.1px',
                     display: 'block',
-                    boxShadow: '0 2px 4px rgba(83, 58, 253, 0.1)'
+                    boxShadow: '0 2px 4px rgba(76, 175, 80, 0.1)'
                   }}
                 >
                   Hire specialized worker →
@@ -2567,7 +2567,7 @@ function AgentContent() {
                     fontWeight: 600,
                     cursor: 'pointer',
                   }}
-                  onMouseEnter={e => e.currentTarget.style.color = '#533afd'}
+                  onMouseEnter={e => e.currentTarget.style.color = '#4caf50'}
                   onMouseLeave={e => e.currentTarget.style.color = 'var(--stripe-muted)'}
                 >
                   Preview profile details

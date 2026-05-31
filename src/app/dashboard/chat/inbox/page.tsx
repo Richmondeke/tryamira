@@ -184,7 +184,7 @@ export default function ChatPage() {
         </p>
         <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
           <button onClick={() => setShowModal(false)} style={{ padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid var(--stripe-border)', backgroundColor: '#fff', color: 'var(--stripe-navy)', cursor: 'pointer', fontSize: '13px' }}>Cancel</button>
-          <button onClick={handleTakeover} style={{ padding: '0.5rem 1rem', borderRadius: '4px', border: 'none', backgroundColor: '#533afd', color: '#fff', cursor: 'pointer', fontSize: '13px', fontWeight: 500 }}>Take Over</button>
+          <button onClick={handleTakeover} style={{ padding: '0.5rem 1rem', borderRadius: '4px', border: 'none', backgroundColor: '#4caf50', color: '#fff', cursor: 'pointer', fontSize: '13px', fontWeight: 500 }}>Take Over</button>
         </div>
       </Modal>
 
@@ -202,9 +202,9 @@ export default function ChatPage() {
               {['All', 'AI Active', 'Manual', 'Resolved'].map(f => (
                 <button key={f} onClick={() => setFilter(f)}
                   style={{ padding: '2px 8px', borderRadius: '20px', border: '1px solid', fontSize: '11px', cursor: 'pointer', fontWeight: filter === f ? 600 : 400,
-                    backgroundColor: filter === f ? '#533afd' : 'transparent',
+                    backgroundColor: filter === f ? '#4caf50' : 'transparent',
                     color: filter === f ? '#fff' : 'var(--stripe-muted)',
-                    borderColor: filter === f ? '#533afd' : 'var(--stripe-border)',
+                    borderColor: filter === f ? '#4caf50' : 'var(--stripe-border)',
                   }}>
                   {f}
                 </button>
@@ -231,7 +231,7 @@ export default function ChatPage() {
                     <span style={{ fontSize: '11px' }}>{channelIcons[chat.channel] || '💬'}</span>
                     <span style={{ fontSize: '11px', color: 'var(--stripe-muted)' }}>{chat.channel}</span>
                     {chat.unread > 0 && (
-                      <span style={{ marginLeft: 'auto', backgroundColor: '#533afd', color: '#fff', borderRadius: '20px', fontSize: '10px', fontWeight: 700, padding: '1px 6px' }}>{chat.unread}</span>
+                      <span style={{ marginLeft: 'auto', backgroundColor: '#4caf50', color: '#fff', borderRadius: '20px', fontSize: '10px', fontWeight: 700, padding: '1px 6px' }}>{chat.unread}</span>
                     )}
                   </div>
                 </div>
@@ -277,7 +277,7 @@ export default function ChatPage() {
                   const isAI = msg.sender_type === 'ai';
                   return (
                     <div key={i} style={{ alignSelf: isOutbound ? 'flex-end' : 'flex-start', maxWidth: '68%' }}>
-                      <div style={{ backgroundColor: isAI ? '#533afd' : isOutbound ? '#1e293b' : '#ffffff', color: isOutbound ? '#ffffff' : 'var(--stripe-navy)', padding: '0.75rem 1rem', borderRadius: '12px', borderBottomRightRadius: isOutbound ? '2px' : '12px', borderBottomLeftRadius: isOutbound ? '12px' : '2px', fontSize: '13px', lineHeight: 1.5, boxShadow: '0 1px 2px rgba(0,0,0,0.06)', border: isOutbound ? 'none' : '1px solid var(--stripe-border)' }}>
+                      <div style={{ backgroundColor: isAI ? '#4caf50' : isOutbound ? '#1e293b' : '#ffffff', color: isOutbound ? '#ffffff' : 'var(--stripe-navy)', padding: '0.75rem 1rem', borderRadius: '12px', borderBottomRightRadius: isOutbound ? '2px' : '12px', borderBottomLeftRadius: isOutbound ? '12px' : '2px', fontSize: '13px', lineHeight: 1.5, boxShadow: '0 1px 2px rgba(0,0,0,0.06)', border: isOutbound ? 'none' : '1px solid var(--stripe-border)' }}>
                         {msg.content}
                       </div>
                       <div style={{ fontSize: '11px', color: 'var(--stripe-muted)', marginTop: '0.25rem', textAlign: isOutbound ? 'right' : 'left', paddingLeft: isOutbound ? 0 : '0.25rem' }}>
@@ -302,7 +302,7 @@ export default function ChatPage() {
                     style={{ flex: 1, padding: '0.65rem 1rem', borderRadius: '8px', border: '1px solid var(--stripe-border)', fontSize: '13px', outline: 'none', backgroundColor: activeChatData.status === 'AI Active' ? '#f9fafb' : '#fff', color: 'var(--stripe-navy)' }}
                   />
                   <button type="submit" disabled={activeChatData.status === 'AI Active'}
-                    style={{ backgroundColor: activeChatData.status === 'AI Active' ? '#e2e8f0' : '#533afd', color: activeChatData.status === 'AI Active' ? 'var(--stripe-muted)' : '#fff', border: 'none', borderRadius: '8px', padding: '0.65rem 1.25rem', fontSize: '13px', fontWeight: 500, cursor: activeChatData.status === 'AI Active' ? 'not-allowed' : 'pointer' }}>
+                    style={{ backgroundColor: activeChatData.status === 'AI Active' ? '#e2e8f0' : '#4caf50', color: activeChatData.status === 'AI Active' ? 'var(--stripe-muted)' : '#fff', border: 'none', borderRadius: '8px', padding: '0.65rem 1.25rem', fontSize: '13px', fontWeight: 500, cursor: activeChatData.status === 'AI Active' ? 'not-allowed' : 'pointer' }}>
                     Send
                   </button>
                 </form>

@@ -16,7 +16,7 @@ interface Notification {
 const TYPE_META: Record<string, { icon: string; color: string }> = {
   call_completed: { icon: '📞', color: '#10b981' },
   call_failed:    { icon: '❌', color: '#ef4444' },
-  lead_captured:  { icon: '🎯', color: '#6366f1' },
+  lead_captured:  { icon: '🎯', color: '#4caf50' },
   form_submission:{ icon: '📋', color: '#f59e0b' },
   agent_updated:  { icon: '🤖', color: '#3b82f6' },
   integration_connected: { icon: '🔗', color: '#8b5cf6' },
@@ -145,7 +145,7 @@ export default function NotificationDrawer({ open, onClose, workspaceId }: Notif
               {unreadCount > 0 && (
                 <span style={{
                   marginLeft: '8px',
-                  backgroundColor: '#6366f1',
+                  backgroundColor: '#4caf50',
                   color: '#fff',
                   fontSize: '11px',
                   fontWeight: 700,
@@ -162,7 +162,7 @@ export default function NotificationDrawer({ open, onClose, workspaceId }: Notif
               <button
                 onClick={markAllRead}
                 style={{
-                  fontSize: '12px', color: '#6366f1', fontWeight: 500,
+                  fontSize: '12px', color: '#4caf50', fontWeight: 500,
                   background: 'none', border: 'none', cursor: 'pointer', padding: 0,
                 }}
               >
@@ -250,7 +250,7 @@ export default function NotificationDrawer({ open, onClose, workspaceId }: Notif
                     {!n.read && (
                       <div style={{
                         width: '8px', height: '8px', borderRadius: '50%',
-                        backgroundColor: '#6366f1', flexShrink: 0, marginTop: '4px',
+                        backgroundColor: '#4caf50', flexShrink: 0, marginTop: '4px',
                       }} />
                     )}
                   </div>

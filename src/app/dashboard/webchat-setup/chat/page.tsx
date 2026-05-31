@@ -37,7 +37,7 @@ export default function WebchatPage() {
           <h1 style={{ fontSize: '20px', fontWeight: 300, color: 'var(--stripe-navy)', margin: '0 0 0.25rem 0' }}>Webchat Customization</h1>
           <p style={{ color: 'var(--stripe-body)', fontSize: '13px', margin: 0 }}>Design how the chat widget appears on your website.</p>
         </div>
-        <button onClick={handleSave} style={{ backgroundColor: '#533afd', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.5rem 1.25rem', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
+        <button onClick={handleSave} style={{ backgroundColor: '#4caf50', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.5rem 1.25rem', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
           Save Settings
         </button>
       </div>
@@ -82,7 +82,7 @@ export default function WebchatPage() {
 
             <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
               <input type="checkbox" checked={showAvatar} onChange={e => setShowAvatar(e.target.checked)}
-                style={{ width: '16px', height: '16px', accentColor: '#533afd' }} />
+                style={{ width: '16px', height: '16px', accentColor: '#4caf50' }} />
               <span style={{ fontSize: '13px', color: 'var(--stripe-navy)' }}>Show agent avatar in widget</span>
             </label>
           </div>

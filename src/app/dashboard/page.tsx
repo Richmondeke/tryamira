@@ -145,7 +145,7 @@ export default function OverviewPage() {
       sub: `${leadGrowth >= 0 ? '+' : ''}${leadGrowth}% vs last month`,
       positive: leadGrowth >= 0,
       chart: leadTrend,
-      color: '#533afd',
+      color: '#4caf50',
       link: '/dashboard/leads',
     },
     {
@@ -390,7 +390,7 @@ export default function OverviewPage() {
               )
             },
           ].map((item, i) => {
-            const activeColor = item.isAction ? '#533afd' : '#0f172a';
+            const activeColor = item.isAction ? '#4caf50' : '#0f172a';
             const displayColor = item.done ? '#94a3b8' : activeColor;
             return (
               <Link key={i} href={item.href} style={{ textDecoration: 'none' }}>
@@ -454,7 +454,7 @@ export default function OverviewPage() {
                   {/* Task Label */}
                   <span style={{ 
                     fontSize: '13.5px', 
-                    color: item.isAction && !item.done ? '#533afd' : item.done ? '#94a3b8' : '#0f172a', 
+                    color: item.isAction && !item.done ? '#4caf50' : item.done ? '#94a3b8' : '#0f172a', 
                     textDecoration: item.done ? 'line-through' : 'none', 
                     fontWeight: item.done ? 450 : 600,
                     fontFamily: 'Inter, system-ui, sans-serif'
@@ -525,10 +525,10 @@ export default function OverviewPage() {
               sub: 'Deploy a new AI employee',
               link: '/dashboard/ai-agent',
               highlight: true,
-              color: '#ede9fe',
-              accentColor: '#533afd',
+              color: '#e8f5e9',
+              accentColor: '#4caf50',
               icon: (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#533afd" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4caf50" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
                   <circle cx="9" cy="7" r="4" />
                   <line x1="19" y1="8" x2="19" y2="14" />
@@ -638,27 +638,27 @@ export default function OverviewPage() {
             <Link href={action.link} key={i} style={{ textDecoration: 'none' }}>
               <div
                 style={{
-                  backgroundColor: action.highlight ? '#533afd' : '#fff',
+                  backgroundColor: action.highlight ? '#4caf50' : '#fff',
                   border: action.highlight ? 'none' : '1px solid var(--stripe-border)',
                   borderRadius: '8px',
                   padding: '1rem',
                   display: 'flex',
                   alignItems: 'flex-start',
                   gap: '0.75rem',
-                  boxShadow: action.highlight ? '0 4px 14px rgba(83,58,253,0.25)' : 'var(--stripe-shadow-ambient)',
+                  boxShadow: action.highlight ? '0 4px 14px rgba(76,175,80,0.25)' : 'var(--stripe-shadow-ambient)',
                   cursor: 'pointer',
                   transition: 'all 0.18s ease',
                 }}
                 onMouseEnter={e => {
                   e.currentTarget.style.transform = 'translateY(-2px)';
                   e.currentTarget.style.boxShadow = action.highlight
-                    ? '0 8px 20px rgba(83,58,253,0.35)'
+                    ? '0 8px 20px rgba(76,175,80,0.35)'
                     : '0 6px 16px rgba(0,0,0,0.08)';
                 }}
                 onMouseLeave={e => {
                   e.currentTarget.style.transform = 'translateY(0)';
                   e.currentTarget.style.boxShadow = action.highlight
-                    ? '0 4px 14px rgba(83,58,253,0.25)'
+                    ? '0 4px 14px rgba(76,175,80,0.25)'
                     : 'var(--stripe-shadow-ambient)';
                 }}
               >
@@ -691,7 +691,7 @@ export default function OverviewPage() {
       <div style={{ backgroundColor: '#fff', border: '1px solid var(--stripe-border)', borderRadius: '8px', padding: '1.25rem', boxShadow: 'var(--stripe-shadow-ambient)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
           <h3 style={{ fontSize: '13px', color: 'var(--stripe-navy)', margin: 0, fontWeight: 600 }}>Recent Activity</h3>
-          <Link href="/dashboard/leads" style={{ fontSize: '12px', color: '#533afd', textDecoration: 'none' }}>View all →</Link>
+          <Link href="/dashboard/leads" style={{ fontSize: '12px', color: '#4caf50', textDecoration: 'none' }}>View all →</Link>
         </div>
         {activities.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--stripe-muted)', fontSize: '13px' }}>
@@ -700,7 +700,7 @@ export default function OverviewPage() {
         ) : (
           activities.map((item, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', marginBottom: '1rem', paddingBottom: '1rem', borderBottom: i === activities.length - 1 ? 'none' : '1px solid var(--stripe-border)' }}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#f6f9fc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#533afd', flexShrink: 0, fontSize: '14px' }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#f6f9fc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4caf50', flexShrink: 0, fontSize: '14px' }}>
                 {item.avatar_url ? <img src={item.avatar_url} style={{ width: '32px', height: '32px', borderRadius: '50%' }} alt="" /> : '•'}
               </div>
               <div style={{ flex: 1 }}>

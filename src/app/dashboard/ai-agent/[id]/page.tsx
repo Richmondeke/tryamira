@@ -932,14 +932,14 @@ export default function AgentBuilderPage() {
         <form onSubmit={handleCloneSubmit} style={{ padding: '0.5rem' }}>
           {isCloning ? (
             <div style={{ textAlign: 'center', padding: '2rem' }}>
-              <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '3px solid #e2e8f0', borderTopColor: '#533afd', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginBottom: '1.5rem' }} />
+              <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '3px solid #e2e8f0', borderTopColor: '#4caf50', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginBottom: '1.5rem' }} />
               <h4 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0' }}>Analyzing Audio Frequency...</h4>
               <p style={{ fontSize: '12px', color: 'var(--stripe-muted)', margin: '0 0 1rem 0' }}>Neural cloning uploads take up to 30 seconds. Do not close this window.</p>
               
               <div style={{ height: '6px', backgroundColor: '#e2e8f0', borderRadius: '3px', width: '80%', margin: '0 auto', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${cloneProgress}%`, backgroundColor: '#533afd', borderRadius: '3px', transition: 'width 0.2s ease' }} />
+                <div style={{ height: '100%', width: `${cloneProgress}%`, backgroundColor: '#4caf50', borderRadius: '3px', transition: 'width 0.2s ease' }} />
               </div>
-              <span style={{ fontSize: '11px', color: '#533afd', fontWeight: 600, marginTop: '8px', display: 'block' }}>{cloneProgress}% matching</span>
+              <span style={{ fontSize: '11px', color: '#4caf50', fontWeight: 600, marginTop: '8px', display: 'block' }}>{cloneProgress}% matching</span>
             </div>
           ) : (
             <>
@@ -994,7 +994,7 @@ export default function AgentBuilderPage() {
 
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
                 <Button type="button" variant="outline" onClick={() => setShowCloneModal(false)}>Cancel</Button>
-                <Button type="submit" style={{ backgroundColor: '#533afd', color: '#fff' }}>
+                <Button type="submit" style={{ backgroundColor: '#4caf50', color: '#fff' }}>
                   Start Cloning Neural Voiceprint
                 </Button>
               </div>
@@ -1019,7 +1019,7 @@ export default function AgentBuilderPage() {
           onClick={handleSave} 
           disabled={isSaving}
           style={{ 
-            backgroundColor: '#533afd', 
+            backgroundColor: '#4caf50', 
             color: '#ffffff', 
             border: 'none', 
             borderRadius: '6px', 
@@ -1079,7 +1079,7 @@ export default function AgentBuilderPage() {
                     type="button" 
                     variant="outline" 
                     size="sm" 
-                    style={{ borderColor: '#533afd', color: '#533afd', padding: '0.35rem 0.75rem' }}
+                    style={{ borderColor: '#4caf50', color: '#4caf50', padding: '0.35rem 0.75rem' }}
                     onClick={() => setShowCloneModal(true)}
                   >
                     🎙️ Clone My Voice
@@ -1166,13 +1166,13 @@ export default function AgentBuilderPage() {
                       onClick={() => setCustomVoice(voice.id)}
                       style={{
                         backgroundColor: '#ffffff',
-                        border: isSelected ? '2px solid #533afd' : '1px solid var(--stripe-border)',
+                        border: isSelected ? '2px solid #4caf50' : '1px solid var(--stripe-border)',
                         borderRadius: '8px',
                         padding: '1rem',
                         cursor: 'pointer',
                         position: 'relative',
                         transition: 'all 0.15s ease-in-out',
-                        boxShadow: isSelected ? '0 4px 12px rgba(83,58,253,0.06)' : 'none',
+                        boxShadow: isSelected ? '0 4px 12px rgba(76,175,80,0.06)' : 'none',
                         minHeight: '145px',
                         display: 'flex',
                         flexDirection: 'column',
@@ -1180,7 +1180,7 @@ export default function AgentBuilderPage() {
                       }}
                     >
                       {isSelected && (
-                        <div style={{ position: 'absolute', top: '8px', right: '8px', width: '16px', height: '16px', borderRadius: '50%', backgroundColor: '#533afd', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold' }}>
+                        <div style={{ position: 'absolute', top: '8px', right: '8px', width: '16px', height: '16px', borderRadius: '50%', backgroundColor: '#4caf50', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold' }}>
                           ✓
                         </div>
                       )}
@@ -1188,7 +1188,7 @@ export default function AgentBuilderPage() {
                       <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem' }}>
                           <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--stripe-navy)' }}>{voice.name}</span>
-                          <span style={{ fontSize: '9px', color: '#533afd', backgroundColor: 'rgba(83,58,253,0.08)', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                          <span style={{ fontSize: '9px', color: '#4caf50', backgroundColor: 'rgba(76,175,80,0.08)', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>
                             {voice.provider}
                           </span>
                         </div>
@@ -1205,10 +1205,10 @@ export default function AgentBuilderPage() {
                       <div>
                         {isCurrentlyPlaying && (
                           <div style={{ display: 'flex', gap: '3px', alignItems: 'center', justifyContent: 'center', height: '16px', marginBottom: '0.5rem' }}>
-                            <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#533afd', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate' }}></span>
-                            <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#533afd', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate 0.2s' }}></span>
-                            <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#533afd', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate 0.4s' }}></span>
-                            <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#533afd', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate 0.1s' }}></span>
+                            <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#4caf50', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate' }}></span>
+                            <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#4caf50', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate 0.2s' }}></span>
+                            <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#4caf50', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate 0.4s' }}></span>
+                            <span style={{ display: 'inline-block', width: '3px', height: '100%', backgroundColor: '#4caf50', borderRadius: '3px', animation: 'bounce 0.8s ease-in-out infinite alternate 0.1s' }}></span>
                           </div>
                         )}
 
@@ -1314,7 +1314,7 @@ export default function AgentBuilderPage() {
                   variant="outline" 
                   size="sm" 
                   onClick={() => setShowKbInput(true)}
-                  style={{ borderColor: '#533afd', color: '#533afd', fontSize: '11px', padding: '0.4rem 0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                  style={{ borderColor: '#4caf50', color: '#4caf50', fontSize: '11px', padding: '0.4rem 0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }}
                 >
                   ➕ Train New Document
                 </Button>
@@ -1361,7 +1361,7 @@ export default function AgentBuilderPage() {
                   }}
                 >
                   <span style={{ fontSize: '20px' }}>📁</span>
-                  <span style={{ fontSize: '12px', fontWeight: 600, color: '#533afd' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: '#4caf50' }}>
                     Upload PDF, TXT, CSV, or MD Guidelines
                   </span>
                   <span style={{ fontSize: '10px', color: '#64748b' }}>
@@ -1419,7 +1419,7 @@ export default function AgentBuilderPage() {
                     variant="primary" 
                     size="sm" 
                     onClick={handleAddKbSubmit}
-                    style={{ backgroundColor: '#533afd', color: '#fff', fontSize: '11px' }}
+                    style={{ backgroundColor: '#4caf50', color: '#fff', fontSize: '11px' }}
                   >
                     Vectorize & Index
                   </Button>
@@ -1441,12 +1441,12 @@ export default function AgentBuilderPage() {
                     <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>🔄</span> 
                     {kbProgress < 30 ? 'Extracting text chunks...' : kbProgress < 60 ? 'Generating semantic embeddings...' : kbProgress < 90 ? 'Upserting vectors into database...' : 'Finalizing RAG vector index...'}
                   </span>
-                  <span style={{ fontSize: '11px', fontWeight: 600, color: '#533afd' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: '#4caf50' }}>
                     {kbProgress}%
                   </span>
                 </div>
                 <div style={{ height: '6px', backgroundColor: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${kbProgress}%`, backgroundColor: '#533afd', borderRadius: '3px', transition: 'width 0.25s linear' }} />
+                  <div style={{ height: '100%', width: `${kbProgress}%`, backgroundColor: '#4caf50', borderRadius: '3px', transition: 'width 0.25s linear' }} />
                 </div>
               </div>
             )}
@@ -1541,7 +1541,7 @@ export default function AgentBuilderPage() {
                 {availableWorkflows.map((workflow, idx) => {
                   const isActive = attachedWorkflows.includes(workflow.provider);
                   return (
-                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', border: '1px solid var(--stripe-border)', borderRadius: '6px', backgroundColor: isActive ? 'rgba(83,58,253,0.02)' : '#fff' }}>
+                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', border: '1px solid var(--stripe-border)', borderRadius: '6px', backgroundColor: isActive ? 'rgba(76,175,80,0.02)' : '#fff' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: isActive ? '#10b981' : 'var(--stripe-muted)' }}></div>
                         <span style={{ fontSize: '12px', color: 'var(--stripe-navy)', fontWeight: 600, textTransform: 'capitalize' }}>{workflow.provider}</span>
@@ -1555,7 +1555,7 @@ export default function AgentBuilderPage() {
                         />
                         <span style={{
                           position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
-                          backgroundColor: isActive ? '#533afd' : '#e5e7eb',
+                          backgroundColor: isActive ? '#4caf50' : '#e5e7eb',
                           transition: '.2s', borderRadius: '20px'
                         }}>
                           <span style={{
@@ -1581,7 +1581,7 @@ export default function AgentBuilderPage() {
                 type="checkbox" 
                 checked={useEmojis} 
                 onChange={(e) => setUseEmojis(e.target.checked)}
-                style={{ width: '16px', height: '16px', accentColor: '#533afd' }} 
+                style={{ width: '16px', height: '16px', accentColor: '#4caf50' }} 
               />
               <span style={{ fontSize: '13px', color: 'var(--stripe-navy)', fontWeight: 500 }}>Use emojis naturally 😊</span>
             </label>
@@ -1591,7 +1591,7 @@ export default function AgentBuilderPage() {
                 type="checkbox" 
                 checked={keepResponsesShort}
                 onChange={(e) => setKeepResponsesShort(e.target.checked)}
-                style={{ width: '16px', height: '16px', accentColor: '#533afd' }} 
+                style={{ width: '16px', height: '16px', accentColor: '#4caf50' }} 
               />
               <span style={{ fontSize: '13px', color: 'var(--stripe-navy)', fontWeight: 500 }}>Keep responses under 2 sentences</span>
             </label>
@@ -1601,7 +1601,7 @@ export default function AgentBuilderPage() {
                 type="checkbox" 
                 checked={captureEmailFirst}
                 onChange={(e) => setCaptureEmailFirst(e.target.checked)}
-                style={{ width: '16px', height: '16px', accentColor: '#533afd' }} 
+                style={{ width: '16px', height: '16px', accentColor: '#4caf50' }} 
               />
               <span style={{ fontSize: '13px', color: 'var(--stripe-navy)', fontWeight: 500 }}>Always capture email first</span>
             </label>
@@ -1613,7 +1613,7 @@ export default function AgentBuilderPage() {
             border: '1px solid var(--stripe-border)', 
             borderRadius: '12px', 
             padding: '1.5rem', 
-            boxShadow: '0 4px 20px rgba(83,58,253,0.06)',
+            boxShadow: '0 4px 20px rgba(76,175,80,0.06)',
             position: 'relative',
             overflow: 'hidden'
           }}>
@@ -1624,7 +1624,7 @@ export default function AgentBuilderPage() {
               width: '100px',
               height: '100px',
               borderRadius: '50%',
-              backgroundColor: isCallActive ? 'rgba(239,68,68,0.1)' : 'rgba(83,58,253,0.08)',
+              backgroundColor: isCallActive ? 'rgba(239,68,68,0.1)' : 'rgba(76,175,80,0.08)',
               filter: 'blur(30px)',
               transition: 'background-color 0.3s'
             }} />
@@ -1649,7 +1649,7 @@ export default function AgentBuilderPage() {
                   width: '48px', 
                   height: '48px', 
                   borderRadius: '50%', 
-                  backgroundColor: 'rgba(83,58,253,0.08)', 
+                  backgroundColor: 'rgba(76,175,80,0.08)', 
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center', 
@@ -1660,7 +1660,7 @@ export default function AgentBuilderPage() {
                   <div style={{
                     position: 'absolute',
                     top: 0, left: 0, right: 0, bottom: 0,
-                    border: '2px solid #533afd',
+                    border: '2px solid #4caf50',
                     borderRadius: '50%',
                     animation: 'spin 2s linear infinite',
                     opacity: 0.5
@@ -1684,7 +1684,7 @@ export default function AgentBuilderPage() {
                           display: 'inline-block', 
                           width: '3px', 
                           height: `${height}px`, 
-                          backgroundColor: '#533afd', 
+                          backgroundColor: '#4caf50', 
                           borderRadius: '2px', 
                           transition: 'height 0.05s ease-out' 
                         }} 
@@ -1714,12 +1714,12 @@ export default function AgentBuilderPage() {
                 type="button" 
                 onClick={handleToggleCall}
                 style={{
-                  backgroundColor: '#533afd',
+                  backgroundColor: '#4caf50',
                   color: '#ffffff',
                   width: '100%',
                   fontSize: '12px',
                   fontWeight: 600,
-                  boxShadow: '0 4px 12px rgba(83,58,253,0.15)',
+                  boxShadow: '0 4px 12px rgba(76,175,80,0.15)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',

@@ -27,7 +27,7 @@ export default function FormBuilderPage({ params }: { params: { id: string } }) 
     title: 'Contact Us',
     description: 'Please fill out the form below and we will get back to you shortly.',
     buttonText: 'Submit Inquiry',
-    color: '#6366f1',
+    color: '#4caf50',
     fields: {
       firstName: true,
       lastName: true,
@@ -149,7 +149,7 @@ export default function FormBuilderPage({ params }: { params: { id: string } }) 
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 'calc(100vh - 64px)', width: '100%', backgroundColor: '#f8fafc', fontFamily: 'Inter, system-ui, sans-serif' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ display: 'inline-block', width: '32px', height: '32px', border: '3px solid #6366f1', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+          <div style={{ display: 'inline-block', width: '32px', height: '32px', border: '3px solid #4caf50', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
           <div style={{ color: '#475569', fontSize: '14px', fontWeight: 500, marginTop: '12px' }}>Loading form builder...</div>
         </div>
         <style jsx global>{`
@@ -304,7 +304,7 @@ export default function FormBuilderPage({ params }: { params: { id: string } }) 
                 </label>
 
                 <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                  <button onClick={addCustomField} style={{ flex: 1, backgroundColor: '#6366f1', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.5rem', fontSize: '12px', cursor: 'pointer' }}>Add</button>
+                  <button onClick={addCustomField} style={{ flex: 1, backgroundColor: '#4caf50', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.5rem', fontSize: '12px', cursor: 'pointer' }}>Add</button>
                   <button onClick={() => setShowNewField(false)} style={{ flex: 1, backgroundColor: 'transparent', color: '#475569', border: '1px solid #cbd5e1', borderRadius: '4px', padding: '0.5rem', fontSize: '12px', cursor: 'pointer' }}>Cancel</button>
                 </div>
               </div>
@@ -361,7 +361,7 @@ export default function FormBuilderPage({ params }: { params: { id: string } }) 
       <div style={{ flex: 1, backgroundColor: '#f8fafc', position: 'relative', display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: '1rem 2rem', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#ffffff' }}>
           <span style={{ fontSize: '13px', fontWeight: 500, color: '#64748b' }}>Live Preview</span>
-          <button onClick={handleSave} disabled={isSaving} style={{ backgroundColor: '#6366f1', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.6rem 1.25rem', fontSize: '13px', fontWeight: 500, cursor: isSaving ? 'wait' : 'pointer', opacity: isSaving ? 0.75 : 1 }}>
+          <button onClick={handleSave} disabled={isSaving} style={{ backgroundColor: '#4caf50', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.6rem 1.25rem', fontSize: '13px', fontWeight: 500, cursor: isSaving ? 'wait' : 'pointer', opacity: isSaving ? 0.75 : 1 }}>
             {isSaving ? 'Saving...' : 'Save & Publish'}
           </button>
         </div>
@@ -464,7 +464,7 @@ export default function FormBuilderPage({ params }: { params: { id: string } }) 
                   {field.type === 'file' && (
                     <div style={{ border: '2px dashed #cbd5e1', borderRadius: '6px', padding: '1.5rem', textAlign: 'center', backgroundColor: '#f8fafc' }}>
                       <label style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-                        <span style={{ fontSize: '13px', color: '#6366f1', fontWeight: 500 }}>Upload a file</span>
+                        <span style={{ fontSize: '13px', color: '#4caf50', fontWeight: 500 }}>Upload a file</span>
                         <span style={{ fontSize: '11px', color: '#64748b' }}>PNG, JPG, PDF up to 10MB</span>
                         <input type="file" required={field.required} style={{ display: 'none' }} />
                       </label>

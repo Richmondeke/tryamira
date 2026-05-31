@@ -554,7 +554,7 @@ export default function LeadsPage() {
             <label style={{ display: 'block', fontSize: '12px', color: 'var(--stripe-label)', marginBottom: '4px' }}>Phone Number</label>
             <input name="phone" type="text" placeholder="+234..." style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px' }} />
           </div>
-          <button type="submit" style={{ marginTop: '1rem', padding: '0.75rem', backgroundColor: '#6366f1', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>Save Lead</button>
+          <button type="submit" style={{ marginTop: '1rem', padding: '0.75rem', backgroundColor: '#4caf50', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>Save Lead</button>
         </form>
       </Modal>
 
@@ -569,7 +569,7 @@ export default function LeadsPage() {
             <button onClick={handleExport} disabled={isExporting} style={{ backgroundColor: '#ffffff', color: 'var(--stripe-navy)', border: '1px solid var(--stripe-border)', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '12px', fontWeight: 500, cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
               {isExporting ? 'Exporting...' : 'Export CSV'}
             </button>
-            <button onClick={() => setShowAddModal(true)} style={{ backgroundColor: '#6366f1', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '12px', fontWeight: 500, cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', transition: 'background 0.2s' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4f46e5'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#6366f1'}>
+            <button onClick={() => setShowAddModal(true)} style={{ backgroundColor: '#4caf50', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '12px', fontWeight: 500, cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', transition: 'background 0.2s' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4f46e5'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4caf50'}>
               + Add Lead
             </button>
           </div>
@@ -583,11 +583,11 @@ export default function LeadsPage() {
           style={{
             background: 'none',
             border: 'none',
-            borderBottom: activeSubTab === 'directory' ? '2.5px solid #533afd' : '2.5px solid transparent',
+            borderBottom: activeSubTab === 'directory' ? '2.5px solid #4caf50' : '2.5px solid transparent',
             padding: '8px 0',
             fontSize: '13px',
             fontWeight: 700,
-            color: activeSubTab === 'directory' ? '#533afd' : 'var(--stripe-muted)',
+            color: activeSubTab === 'directory' ? '#4caf50' : 'var(--stripe-muted)',
             cursor: 'pointer',
             paddingBottom: '6px'
           }}
@@ -599,11 +599,11 @@ export default function LeadsPage() {
           style={{
             background: 'none',
             border: 'none',
-            borderBottom: activeSubTab === 'campaigns' ? '2.5px solid #533afd' : '2.5px solid transparent',
+            borderBottom: activeSubTab === 'campaigns' ? '2.5px solid #4caf50' : '2.5px solid transparent',
             padding: '8px 0',
             fontSize: '13px',
             fontWeight: 700,
-            color: activeSubTab === 'campaigns' ? '#533afd' : 'var(--stripe-muted)',
+            color: activeSubTab === 'campaigns' ? '#4caf50' : 'var(--stripe-muted)',
             cursor: 'pointer',
             paddingBottom: '6px'
           }}
@@ -699,7 +699,7 @@ export default function LeadsPage() {
                   onClick={() => window.location.href = '/dashboard/account?tab=upgrade'}
                   style={{
                     backgroundColor: 'var(--stripe-purple)',
-                    backgroundImage: 'linear-gradient(135deg, #6366f1, #533afd)',
+                    backgroundImage: 'linear-gradient(135deg, #4caf50, #4caf50)',
                     color: '#fff',
                     border: 'none',
                     borderRadius: '6px',
@@ -707,7 +707,7 @@ export default function LeadsPage() {
                     fontSize: '12px',
                     fontWeight: 700,
                     cursor: 'pointer',
-                    boxShadow: '0 4px 12px rgba(83,58,253,0.25)',
+                    boxShadow: '0 4px 12px rgba(76,175,80,0.25)',
                     transition: 'all 0.15s ease'
                   }}
                 >
@@ -798,9 +798,9 @@ export default function LeadsPage() {
                     fontSize: '11px',
                     fontWeight: 700,
                     cursor: 'pointer',
-                    color: leadSource === 'manual' ? '#533afd' : 'var(--stripe-muted)',
+                    color: leadSource === 'manual' ? '#4caf50' : 'var(--stripe-muted)',
                     backgroundColor: leadSource === 'manual' ? '#ffffff' : 'transparent',
-                    borderBottom: leadSource === 'manual' ? '2px solid #533afd' : 'none'
+                    borderBottom: leadSource === 'manual' ? '2px solid #4caf50' : 'none'
                   }}
                 >
                   📋 CSV Paste
@@ -814,9 +814,9 @@ export default function LeadsPage() {
                     fontSize: '11px',
                     fontWeight: 700,
                     cursor: 'pointer',
-                    color: leadSource === 'database' ? '#533afd' : 'var(--stripe-muted)',
+                    color: leadSource === 'database' ? '#4caf50' : 'var(--stripe-muted)',
                     backgroundColor: leadSource === 'database' ? '#ffffff' : 'transparent',
-                    borderBottom: leadSource === 'database' ? '2px solid #533afd' : 'none'
+                    borderBottom: leadSource === 'database' ? '2px solid #4caf50' : 'none'
                   }}
                 >
                   🗂️ Leads DB Checklist
@@ -830,9 +830,9 @@ export default function LeadsPage() {
                     fontSize: '11px',
                     fontWeight: 700,
                     cursor: 'pointer',
-                    color: leadSource === 'crm' ? '#533afd' : 'var(--stripe-muted)',
+                    color: leadSource === 'crm' ? '#4caf50' : 'var(--stripe-muted)',
                     backgroundColor: leadSource === 'crm' ? '#ffffff' : 'transparent',
-                    borderBottom: leadSource === 'crm' ? '2px solid #533afd' : 'none'
+                    borderBottom: leadSource === 'crm' ? '2px solid #4caf50' : 'none'
                   }}
                 >
                   🔌 CRM Integrations
@@ -858,7 +858,7 @@ export default function LeadsPage() {
                     <button
                       type="button"
                       onClick={handleParseCSV}
-                      style={{ backgroundColor: '#ffffff', border: '1px solid #533afd', borderRadius: '4px', padding: '3px 8px', fontSize: '10.5px', color: '#533afd', fontWeight: 600, cursor: 'pointer' }}
+                      style={{ backgroundColor: '#ffffff', border: '1px solid #4caf50', borderRadius: '4px', padding: '3px 8px', fontSize: '10.5px', color: '#4caf50', fontWeight: 600, cursor: 'pointer' }}
                     >
                       Parse CSV
                     </button>
@@ -874,7 +874,7 @@ export default function LeadsPage() {
                     <div style={{ display: 'flex', gap: '4px' }}>
                       <button type="button" onClick={() => handleSelectDbFiltered('all')} style={{ padding: '2px 6px', fontSize: '9.5px', border: '1px solid var(--stripe-border)', background: '#fff', borderRadius: '4px', cursor: 'pointer' }}>All</button>
                       <button type="button" onClick={() => handleSelectDbFiltered('hot')} style={{ padding: '2px 6px', fontSize: '9.5px', border: '1px solid var(--stripe-border)', background: '#fff', color: '#ef4444', borderRadius: '4px', cursor: 'pointer' }}>Hot</button>
-                      <button type="button" onClick={() => handleSelectDbFiltered('new')} style={{ padding: '2px 6px', fontSize: '9.5px', border: '1px solid var(--stripe-border)', background: '#fff', color: '#6366f1', borderRadius: '4px', cursor: 'pointer' }}>New</button>
+                      <button type="button" onClick={() => handleSelectDbFiltered('new')} style={{ padding: '2px 6px', fontSize: '9.5px', border: '1px solid var(--stripe-border)', background: '#fff', color: '#4caf50', borderRadius: '4px', cursor: 'pointer' }}>New</button>
                       <button type="button" onClick={() => setSelectedDbLeads([])} style={{ padding: '2px 6px', fontSize: '9.5px', border: '1px solid #ef4444', background: '#fff', color: '#ef4444', borderRadius: '4px', cursor: 'pointer' }}>Clear</button>
                     </div>
                   </div>
@@ -894,7 +894,7 @@ export default function LeadsPage() {
                           cursor: 'pointer',
                           fontSize: '11.5px',
                           borderBottom: '1px solid #f8fafc',
-                          backgroundColor: selectedDbLeads.includes(lead.id) ? 'rgba(99,102,241,0.05)' : 'transparent'
+                          backgroundColor: selectedDbLeads.includes(lead.id) ? 'rgba(76,175,80,0.05)' : 'transparent'
                         }}
                       >
                         <input 
@@ -1129,7 +1129,7 @@ export default function LeadsPage() {
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '9.5px', color: 'var(--stripe-muted)', borderTop: '1px dashed #e2e8f0', paddingTop: '0.4rem', marginTop: '0.4rem' }}>
                       <span>Created: {new Date(campaign.createdAt).toLocaleDateString()}</span>
-                      <span style={{ color: '#533afd', fontWeight: 600 }}>Click to view details &rarr;</span>
+                      <span style={{ color: '#4caf50', fontWeight: 600 }}>Click to view details &rarr;</span>
                     </div>
                   </div>
                 ))}
@@ -1208,7 +1208,7 @@ export default function LeadsPage() {
                     style={{ 
                       width: `${(selectedCampaignRun.completed / selectedCampaignRun.queued) * 100}%`, 
                       height: '100%', 
-                      backgroundImage: 'linear-gradient(90deg, #6366f1, #10b981)',
+                      backgroundImage: 'linear-gradient(90deg, #4caf50, #10b981)',
                       borderRadius: '4px',
                       transition: 'width 0.5s ease-out'
                     }} 
@@ -1216,8 +1216,8 @@ export default function LeadsPage() {
                 </div>
 
                 {selectedCampaignRun.status === 'Running' && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10.5px', color: '#6366f1', marginTop: '8px', fontWeight: 600 }}>
-                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#6366f1', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10.5px', color: '#4caf50', marginTop: '8px', fontWeight: 600 }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#4caf50', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
                     Outbound dialer is actively queuing SIP handshakes...
                   </div>
                 )}
@@ -1243,7 +1243,7 @@ export default function LeadsPage() {
                 </div>
                 <div style={{ padding: '1rem', border: '1px solid var(--stripe-border)', borderRadius: '6px', backgroundColor: '#ffffff' }}>
                   <span style={{ fontSize: '10.5px', color: 'var(--stripe-muted)' }}>Calling AI Assistant</span>
-                  <strong style={{ display: 'block', fontSize: '12px', color: '#6366f1', marginTop: '4px', textTransform: 'capitalize' }}>
+                  <strong style={{ display: 'block', fontSize: '12px', color: '#4caf50', marginTop: '4px', textTransform: 'capitalize' }}>
                     {selectedCampaignRun.agent?.replace('-', ' ')}
                   </strong>
                 </div>
@@ -1291,10 +1291,10 @@ export default function LeadsPage() {
                               })}
                               style={{ 
                                 padding: '2px 8px', 
-                                border: '1px solid #533afd', 
+                                border: '1px solid #4caf50', 
                                 borderRadius: '4px', 
                                 background: '#fff', 
-                                color: '#533afd', 
+                                color: '#4caf50', 
                                 fontSize: '10px', 
                                 fontWeight: 700,
                                 cursor: 'pointer' 
@@ -1360,7 +1360,7 @@ export default function LeadsPage() {
           <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
             <button 
               onClick={() => setSelectedCallTranscript(null)}
-              style={{ padding: '0.5rem 1rem', backgroundColor: '#6366f1', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
+              style={{ padding: '0.5rem 1rem', backgroundColor: '#4caf50', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
             >
               Close logs
             </button>
@@ -1418,7 +1418,7 @@ export default function LeadsPage() {
               </div>
 
               <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem', borderTop: '1px solid var(--stripe-border)', paddingTop: '1.5rem' }}>
-                <button type="submit" disabled={isUpdating} style={{ flex: 1, padding: '0.75rem', backgroundColor: '#6366f1', color: '#fff', border: 'none', borderRadius: '4px', cursor: isUpdating ? 'not-allowed' : 'pointer', fontWeight: 500 }}>
+                <button type="submit" disabled={isUpdating} style={{ flex: 1, padding: '0.75rem', backgroundColor: '#4caf50', color: '#fff', border: 'none', borderRadius: '4px', cursor: isUpdating ? 'not-allowed' : 'pointer', fontWeight: 500 }}>
                   {isUpdating ? 'Saving...' : 'Save Changes'}
                 </button>
                 <button type="button" onClick={() => handleDeleteLead(selectedLead.id)} style={{ padding: '0.75rem', backgroundColor: '#fff', color: '#d92d20', border: '1px solid #d92d20', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>

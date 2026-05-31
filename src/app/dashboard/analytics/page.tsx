@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import { getCurrentUserProfile, isAdmin } from '@/utils/auth';
 import CallLogsTable from '@/components/layout/CallLogsTable';
 
-function SVGBarChart({ data, labels, color = '#533afd' }: { data: number[]; labels: string[]; color?: string }) {
+function SVGBarChart({ data, labels, color = '#4caf50' }: { data: number[]; labels: string[]; color?: string }) {
   const max = Math.max(...data, 1);
   const width = 600;
   const height = 160;
@@ -30,7 +30,7 @@ function SVGBarChart({ data, labels, color = '#533afd' }: { data: number[]; labe
   );
 }
 
-function DonutChart({ value, color = '#533afd', label }: { value: number; color?: string; label: string }) {
+function DonutChart({ value, color = '#4caf50', label }: { value: number; color?: string; label: string }) {
   const r = 36;
   const circ = 2 * Math.PI * r;
   const dash = Math.min(value / 100, 1) * circ;
@@ -136,7 +136,7 @@ export default async function AnalyticsPage() {
   });
 
   const metricCards = [
-    { label: 'Total Calls', value: totalCalls.toString(), sub: 'All time via Vapi', color: '#533afd' },
+    { label: 'Total Calls', value: totalCalls.toString(), sub: 'All time via Vapi', color: '#4caf50' },
     { label: 'Call Success Rate', value: `${successRate}%`, sub: `${successCalls} of ${totalCalls} succeeded`, color: '#10b981' },
     { label: 'Avg Call Duration', value: totalCalls > 0 ? avgDurationFormatted : '—', sub: 'Per completed call', color: '#f59e0b' },
     { label: 'Total Spend', value: `$${totalSpend.toFixed(2)}`, sub: totalCalls > 0 ? `~$${costPerCall.toFixed(3)} per call` : 'No calls yet', color: '#ef4444' },
@@ -159,9 +159,9 @@ export default async function AnalyticsPage() {
         </div>
         {adminView && (
           <span style={{
-            backgroundColor: '#6366f118', color: '#6366f1', fontSize: '11px',
+            backgroundColor: '#4caf5018', color: '#4caf50', fontSize: '11px',
             fontWeight: 600, padding: '4px 10px', borderRadius: '999px',
-            border: '1px solid #6366f130'
+            border: '1px solid #4caf5030'
           }}>
             Admin View — All Agents
           </span>
@@ -182,7 +182,7 @@ export default async function AnalyticsPage() {
             Once your AI Agent starts receiving or making calls, all performance data, transcripts, and analytics will appear here automatically.
           </p>
           <a href="/dashboard/ai-agent" style={{
-            display: 'inline-block', backgroundColor: '#533afd', color: '#fff',
+            display: 'inline-block', backgroundColor: '#4caf50', color: '#fff',
             padding: '0.6rem 1.25rem', borderRadius: '6px', fontSize: '13px',
             fontWeight: 500, textDecoration: 'none',
           }}>
@@ -206,7 +206,7 @@ export default async function AnalyticsPage() {
           <div style={{ backgroundColor: '#fff', border: '1px solid var(--stripe-border)', borderRadius: '8px', padding: '1.5rem', boxShadow: 'var(--stripe-shadow-ambient)', marginBottom: '1.5rem' }}>
             <h3 style={{ fontSize: '14px', color: 'var(--stripe-navy)', margin: '0 0 1.25rem 0', fontWeight: 600 }}>Calls Per Day</h3>
             <p style={{ fontSize: '12px', color: 'var(--stripe-muted)', margin: '0 0 1rem 0' }}>Last 7 days — {callsByDay.reduce((a, b) => a + b, 0)} total calls</p>
-            <SVGBarChart data={callsByDay} labels={dayLabels} color="#533afd" />
+            <SVGBarChart data={callsByDay} labels={dayLabels} color="#4caf50" />
           </div>
 
           {/* Bottom Row */}
@@ -217,10 +217,10 @@ export default async function AnalyticsPage() {
             </div>
             <div style={{ backgroundColor: '#fff', border: '1px solid var(--stripe-border)', borderRadius: '8px', padding: '1.5rem', boxShadow: 'var(--stripe-shadow-ambient)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
               <h3 style={{ fontSize: '13px', color: 'var(--stripe-navy)', margin: 0, fontWeight: 600, alignSelf: 'flex-start' }}>Success Rate</h3>
-              <DonutChart value={successRate} color="#533afd" label="of calls achieved their goal" />
+              <DonutChart value={successRate} color="#4caf50" label="of calls achieved their goal" />
               <div style={{ display: 'flex', gap: '1rem', fontSize: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <div style={{ width: '10px', height: '10px', borderRadius: '2px', backgroundColor: '#533afd' }} />
+                  <div style={{ width: '10px', height: '10px', borderRadius: '2px', backgroundColor: '#4caf50' }} />
                   <span style={{ color: 'var(--stripe-muted)' }}>Succeeded ({successCalls})</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -244,7 +244,7 @@ export default async function AnalyticsPage() {
                           <span style={{ color: 'var(--stripe-muted)', fontWeight: 500 }}>{pct}%</span>
                         </div>
                         <div style={{ height: '6px', backgroundColor: '#f1f5f9', borderRadius: '3px' }}>
-                          <div style={{ height: '100%', width: `${pct}%`, backgroundColor: '#533afd', borderRadius: '3px', opacity: 0.7 }} />
+                          <div style={{ height: '100%', width: `${pct}%`, backgroundColor: '#4caf50', borderRadius: '3px', opacity: 0.7 }} />
                         </div>
                       </div>
                     );

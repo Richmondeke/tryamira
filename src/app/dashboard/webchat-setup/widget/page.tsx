@@ -118,7 +118,7 @@ export default function WidgetPage() {
                 padding: '0.75rem', borderRadius: '6px', border: '1px dashed var(--stripe-border)',
                 fontSize: '12px', color: 'var(--stripe-muted)', textAlign: 'center'
               }}>
-                No agents found. <a href="/dashboard/ai-agent" style={{ color: '#533afd' }}>Create an AI Agent first →</a>
+                No agents found. <a href="/dashboard/ai-agent" style={{ color: '#4caf50' }}>Create an AI Agent first →</a>
               </div>
             ) : (
               <select
@@ -150,9 +150,9 @@ export default function WidgetPage() {
                   onClick={() => setTheme(t)}
                   style={{
                     padding: '0.4rem 0.875rem', borderRadius: '4px', fontSize: '12px', cursor: 'pointer',
-                    border: `1px solid ${theme === t ? '#533afd' : 'var(--stripe-border)'}`,
-                    backgroundColor: theme === t ? '#533afd18' : '#fff',
-                    color: theme === t ? '#533afd' : 'var(--stripe-navy)',
+                    border: `1px solid ${theme === t ? '#4caf50' : 'var(--stripe-border)'}`,
+                    backgroundColor: theme === t ? '#4caf5018' : '#fff',
+                    color: theme === t ? '#4caf50' : 'var(--stripe-navy)',
                     fontWeight: theme === t ? 600 : 400,
                   }}
                 >
@@ -172,9 +172,9 @@ export default function WidgetPage() {
                   onClick={() => setPosition(p)}
                   style={{
                     padding: '0.4rem 0.875rem', borderRadius: '4px', fontSize: '12px', cursor: 'pointer',
-                    border: `1px solid ${position === p ? '#533afd' : 'var(--stripe-border)'}`,
-                    backgroundColor: position === p ? '#533afd18' : '#fff',
-                    color: position === p ? '#533afd' : 'var(--stripe-navy)',
+                    border: `1px solid ${position === p ? '#4caf50' : 'var(--stripe-border)'}`,
+                    backgroundColor: position === p ? '#4caf5018' : '#fff',
+                    color: position === p ? '#4caf50' : 'var(--stripe-navy)',
                     fontWeight: position === p ? 600 : 400,
                   }}
                 >
@@ -201,7 +201,7 @@ export default function WidgetPage() {
           <button
             onClick={saveConfig}
             style={{
-              backgroundColor: '#533afd', color: '#fff', border: 'none',
+              backgroundColor: '#4caf50', color: '#fff', border: 'none',
               borderRadius: '4px', padding: '0.5rem 1.25rem', fontSize: '12px',
               fontWeight: 500, cursor: 'pointer',
             }}
@@ -242,7 +242,7 @@ export default function WidgetPage() {
           }}>
             <div style={{ fontWeight: 600, color: 'var(--stripe-navy)', marginBottom: '6px' }}>Your Workspace ID</div>
             <code style={{
-              display: 'block', backgroundColor: '#e8f0fe', color: '#533afd',
+              display: 'block', backgroundColor: '#e8f0fe', color: '#4caf50',
               padding: '6px 10px', borderRadius: '4px', fontSize: '11px',
               wordBreak: 'break-all',
             }}>

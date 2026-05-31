@@ -7,7 +7,7 @@ const DEFAULT_CONFIG = {
   title: 'Lead Inquiry Form',
   description: 'Please fill out your contact details below and our team will get back to you shortly.',
   buttonText: 'Submit Inquiry',
-  color: '#6366f1',
+  color: '#4caf50',
   fields: {
     firstName: true,
     lastName: true,

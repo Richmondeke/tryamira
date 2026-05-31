@@ -174,8 +174,8 @@ export default function IntegrationsPage() {
       <Modal isOpen={showModal} onClose={() => !isConnecting && setShowModal(false)} title={`Install ${connectingApp?.name}`}>
         {isConnecting ? (
           <div style={{ textAlign: 'center', padding: '2.5rem 0' }}>
-            <div style={{ display: 'inline-block', width: '32px', height: '32px', border: '3px solid #6366f1', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '1rem' }} />
-            <div style={{ color: '#6366f1', fontSize: '14px', fontWeight: 600 }}>Secure Authorization</div>
+            <div style={{ display: 'inline-block', width: '32px', height: '32px', border: '3px solid #4caf50', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '1rem' }} />
+            <div style={{ color: '#4caf50', fontSize: '14px', fontWeight: 600 }}>Secure Authorization</div>
             <p style={{ color: 'var(--stripe-body)', fontSize: '13px', marginTop: '0.5rem', marginInline: 'auto', maxWidth: '320px', lineHeight: 1.5 }}>
               Redirecting you to the Composio OAuth portal to authorize {connectingApp?.name} securely...
             </p>
@@ -207,9 +207,9 @@ export default function IntegrationsPage() {
               </button>
               <button 
                 type="submit" 
-                style={{ padding: '0.5rem 1.25rem', borderRadius: '6px', border: 'none', backgroundColor: '#6366f1', color: '#fff', cursor: 'pointer', fontWeight: 600, boxShadow: '0 4px 12px rgba(99, 102, 241, 0.2)', transition: 'all 0.2s' }}
+                style={{ padding: '0.5rem 1.25rem', borderRadius: '6px', border: 'none', backgroundColor: '#4caf50', color: '#fff', cursor: 'pointer', fontWeight: 600, boxShadow: '0 4px 12px rgba(76, 175, 80, 0.2)', transition: 'all 0.2s' }}
                 onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#4f46e5'; }}
-                onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#6366f1'; }}
+                onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#4caf50'; }}
               >
                 Connect {connectingApp?.name}
               </button>
@@ -261,7 +261,7 @@ export default function IntegrationsPage() {
                 onClick={() => handleCardClick(app)}
                 style={{ 
                   backgroundColor: '#ffffff', 
-                  border: isInstalled ? '1px solid #6366f1' : '1px solid var(--stripe-border)', 
+                  border: isInstalled ? '1px solid #4caf50' : '1px solid var(--stripe-border)', 
                   borderRadius: '6px', 
                   padding: '1.5rem', 
                   boxShadow: 'var(--stripe-shadow-ambient)',
@@ -289,8 +289,8 @@ export default function IntegrationsPage() {
                     top: '1.5rem', 
                     right: '1.5rem', 
                     fontSize: '11px', 
-                    backgroundColor: 'rgba(99, 102, 241, 0.1)', 
-                    color: '#6366f1',
+                    backgroundColor: 'rgba(76, 175, 80, 0.1)', 
+                    color: '#4caf50',
                     padding: '0.25rem 0.6rem', 
                     borderRadius: '12px', 
                     fontWeight: 600

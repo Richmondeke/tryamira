@@ -63,14 +63,14 @@ export default function PublicFormClient({ formId, initialForm, initialError }: 
           <span style={{ fontSize: '40px' }}>⚠️</span>
           <h1 style={{ fontSize: '18px', fontWeight: 600, color: '#0f172a', margin: '12px 0 6px 0' }}>Form Unavailable</h1>
           <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 20px 0', lineHeight: 1.5 }}>{error || 'This form does not exist or has been deactivated.'}</p>
-          <a href="/" style={{ fontSize: '12px', color: '#6366f1', textDecoration: 'none', fontWeight: 500 }}>Powered by Amira Voice AI</a>
+          <a href="/" style={{ fontSize: '12px', color: '#4caf50', textDecoration: 'none', fontWeight: 500 }}>Powered by Amira Voice AI</a>
         </div>
       </div>
     );
   }
 
   const config = form.config || {};
-  const brandColor = config.color || '#6366f1';
+  const brandColor = config.color || '#4caf50';
 
   // ── Success State ────────────────────────────────────────────────────────
   if (submitted) {

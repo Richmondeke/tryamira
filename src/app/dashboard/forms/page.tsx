@@ -130,9 +130,9 @@ export default function Page() {
               <option value="booking">Meeting Booking</option>
             </select>
           </div>
-          <button type="submit" style={{ marginTop: '0.5rem', padding: '0.75rem', backgroundColor: '#6366f1', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500, fontSize: '13px', transition: 'background 0.2s' }}
+          <button type="submit" style={{ marginTop: '0.5rem', padding: '0.75rem', backgroundColor: '#4caf50', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500, fontSize: '13px', transition: 'background 0.2s' }}
                   onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4f46e5'}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#6366f1'}>
+                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4caf50'}>
             Create & Edit Fields
           </button>
         </form>
@@ -233,7 +233,7 @@ export default function Page() {
         <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
           {loadingSubmissions ? (
             <div style={{ textAlign: 'center', padding: '4rem 0' }}>
-              <div style={{ display: 'inline-block', width: '28px', height: '28px', border: '3px solid #6366f1', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '12px' }} />
+              <div style={{ display: 'inline-block', width: '28px', height: '28px', border: '3px solid #4caf50', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '12px' }} />
               <div style={{ color: '#64748b', fontSize: '13px' }}>Loading submissions database...</div>
             </div>
           ) : submissions.length === 0 ? (
@@ -245,7 +245,7 @@ export default function Page() {
               </p>
               <button 
                 onClick={() => { setShowResultsSidebar(false); openShareModal(selectedForm); }} 
-                style={{ backgroundColor: '#6366f1', color: '#fff', border: 'none', borderRadius: '6px', padding: '8px 16px', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}
+                style={{ backgroundColor: '#4caf50', color: '#fff', border: 'none', borderRadius: '6px', padding: '8px 16px', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}
               >
                 Get Share Link
               </button>
@@ -256,7 +256,7 @@ export default function Page() {
               {/* Back CTA */}
               <button 
                 onClick={() => setSelectedSubmission(null)}
-                style={{ alignSelf: 'flex-start', background: 'none', border: 'none', color: '#6366f1', fontSize: '13px', fontWeight: 500, cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '4px' }}
+                style={{ alignSelf: 'flex-start', background: 'none', border: 'none', color: '#4caf50', fontSize: '13px', fontWeight: 500, cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '4px' }}
               >
                 ← Back to submissions list
               </button>
@@ -294,8 +294,8 @@ export default function Page() {
                 <div style={{
                   padding: '1.25rem',
                   borderRadius: '8px',
-                  background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(79, 70, 229, 0.05) 100%)',
-                  border: '1px solid rgba(99, 102, 241, 0.15)',
+                  background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.05) 0%, rgba(79, 70, 229, 0.05) 100%)',
+                  border: '1px solid rgba(76, 175, 80, 0.15)',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '0.75rem'
@@ -314,7 +314,7 @@ export default function Page() {
                     }}
                     style={{
                       alignSelf: 'flex-start',
-                      backgroundColor: '#6366f1',
+                      backgroundColor: '#4caf50',
                       color: '#ffffff',
                       border: 'none',
                       fontSize: '12px',
@@ -322,11 +322,11 @@ export default function Page() {
                       padding: '8px 14px',
                       borderRadius: '6px',
                       cursor: 'pointer',
-                      boxShadow: '0 2px 8px rgba(99, 102, 241, 0.2)',
+                      boxShadow: '0 2px 8px rgba(76, 175, 80, 0.2)',
                       transition: 'background 0.2s'
                     }}
                     onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4f46e5'}
-                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#6366f1'}
+                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4caf50'}
                   >
                     View Call Transcript & Logs →
                   </button>
@@ -369,7 +369,7 @@ export default function Page() {
                       }}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>
-                        <span style={{ fontSize: '12px', fontWeight: 600, color: '#6366f1' }}>Response #{submissions.length - i}</span>
+                        <span style={{ fontSize: '12px', fontWeight: 600, color: '#4caf50' }}>Response #{submissions.length - i}</span>
                         <span style={{ fontSize: '11px', color: '#94a3b8' }}>{dateStr}</span>
                       </div>
                       
@@ -387,7 +387,7 @@ export default function Page() {
                       )}
                       
                       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.75rem' }}>
-                        <span style={{ fontSize: '11.5px', color: '#6366f1', fontWeight: 600 }}>View Details →</span>
+                        <span style={{ fontSize: '11.5px', color: '#4caf50', fontWeight: 600 }}>View Details →</span>
                       </div>
                     </div>
                   );
@@ -403,9 +403,9 @@ export default function Page() {
           <h1 style={{ fontSize: '24px', fontWeight: 400, color: '#1e293b', margin: '0 0 0.5rem 0', letterSpacing: '-0.5px', fontFeatureSettings: '"ss01"' }}>Lead Capture Forms</h1>
           <p style={{ color: '#64748b', fontSize: '14px', margin: 0, fontWeight: 400, fontFeatureSettings: '"ss01"' }}>Create high-converting forms for your AI to share.</p>
         </div>
-        <button onClick={() => setShowModal(true)} style={{ backgroundColor: '#6366f1', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.6rem 1.25rem', fontSize: '13px', fontWeight: 500, cursor: 'pointer', transition: 'background 0.2s' }}
+        <button onClick={() => setShowModal(true)} style={{ backgroundColor: '#4caf50', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.6rem 1.25rem', fontSize: '13px', fontWeight: 500, cursor: 'pointer', transition: 'background 0.2s' }}
                 onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4f46e5'}
-                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#6366f1'}>
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4caf50'}>
           + Create Form
         </button>
       </div>
@@ -415,7 +415,7 @@ export default function Page() {
 
         {loading ? (
           <div style={{ textAlign: 'center', padding: '4rem 0' }}>
-            <div style={{ display: 'inline-block', width: '28px', height: '28px', border: '3px solid #6366f1', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '12px' }} />
+            <div style={{ display: 'inline-block', width: '28px', height: '28px', border: '3px solid #4caf50', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '12px' }} />
             <div style={{ color: '#64748b', fontSize: '13px' }}>Loading forms database...</div>
           </div>
         ) : forms.length === 0 ? (
@@ -425,9 +425,9 @@ export default function Page() {
             <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 1.5rem 0', maxWidth: '360px', lineHeight: 1.5 }}>
               Create a custom form and share the link with your clients. Submitted responses will be automatically captured as leads in your CRM.
             </p>
-            <button onClick={() => setShowModal(true)} style={{ backgroundColor: '#6366f1', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.6rem 1.25rem', fontSize: '13px', fontWeight: 500, cursor: 'pointer', transition: 'background 0.2s' }}
+            <button onClick={() => setShowModal(true)} style={{ backgroundColor: '#4caf50', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.6rem 1.25rem', fontSize: '13px', fontWeight: 500, cursor: 'pointer', transition: 'background 0.2s' }}
                     onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4f46e5'}
-                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#6366f1'}>
+                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4caf50'}>
               + Create Your First Form
             </button>
           </div>
@@ -470,12 +470,12 @@ export default function Page() {
                       <td style={{ padding: '1.25rem 0', fontSize: '13px', color: '#15be53', fontWeight: 500 }}>{convRate}</td>
                       <td style={{ padding: '1.25rem 0', fontSize: '13px' }}>
                         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                          <span style={{ color: '#6366f1', cursor: 'pointer', fontWeight: 500 }} onClick={() => router.push(`/dashboard/forms/${form.id}`)}>Edit</span>
+                          <span style={{ color: '#4caf50', cursor: 'pointer', fontWeight: 500 }} onClick={() => router.push(`/dashboard/forms/${form.id}`)}>Edit</span>
                           {status === 'draft' && (
                             <span style={{ color: '#10b981', cursor: 'pointer', fontWeight: 500 }} onClick={() => handlePublish(form.id)}>Publish</span>
                           )}
-                          <span style={{ color: '#6366f1', cursor: 'pointer', fontWeight: 500 }} onClick={() => openShareModal(form)}>Share</span>
-                          <span style={{ color: '#6366f1', cursor: 'pointer', fontWeight: 500 }} onClick={() => openResultsModal(form)}>Results</span>
+                          <span style={{ color: '#4caf50', cursor: 'pointer', fontWeight: 500 }} onClick={() => openShareModal(form)}>Share</span>
+                          <span style={{ color: '#4caf50', cursor: 'pointer', fontWeight: 500 }} onClick={() => openResultsModal(form)}>Results</span>
                         </div>
                       </td>
                     </tr>

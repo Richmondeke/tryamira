@@ -895,13 +895,13 @@ export default function LandingPage() {
                 key={i}
                 href="/login?redirect=/dashboard/ai-agent"
                 style={{ display: 'block', textDecoration: 'none', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', padding: '1.5rem', cursor: 'pointer', transition: 'all 0.22s ease', position: 'relative', overflow: 'hidden' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(99,102,241,0.12)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(99,102,241,0.4)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)'; }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(76,175,80,0.12)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(76,175,80,0.4)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.1)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}
               >
                 <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>{agent.icon}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                   <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#ffffff' }}>{agent.name}</h4>
-                  <span style={{ fontSize: '10px', fontWeight: 600, padding: '2px 8px', borderRadius: '999px', background: 'rgba(99,102,241,0.25)', color: '#a5b4fc', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>{agent.tag}</span>
+                  <span style={{ fontSize: '10px', fontWeight: 600, padding: '2px 8px', borderRadius: '999px', background: 'rgba(76,175,80,0.25)', color: '#a5b4fc', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>{agent.tag}</span>
                 </div>
                 <p style={{ margin: '0 0 1rem 0', fontSize: '13px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.6 }}>{agent.desc}</p>
                 <div style={{ fontSize: '12px', fontWeight: 600, color: '#6ee7b7' }}>📈 {agent.stat}</div>
@@ -911,7 +911,7 @@ export default function LandingPage() {
           </div>
 
           <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
-            <a href="/login" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 2rem', borderRadius: '8px', border: '1px solid rgba(99,102,241,0.5)', color: '#a5b4fc', fontSize: '14px', fontWeight: 600, textDecoration: 'none', background: 'rgba(99,102,241,0.1)', transition: 'all 0.2s' }}>Browse All Agents →</a>
+            <a href="/login" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 2rem', borderRadius: '8px', border: '1px solid rgba(76,175,80,0.5)', color: '#a5b4fc', fontSize: '14px', fontWeight: 600, textDecoration: 'none', background: 'rgba(76,175,80,0.1)', transition: 'all 0.2s' }}>Browse All Agents →</a>
           </div>
         </div>
       </section>
@@ -987,15 +987,15 @@ export default function LandingPage() {
           <div className={styles.footerCtaRight}>
             {/* Abstract radiating burst of thick angled stripes in our electric blue/indigo theme */}
             <div className={styles.stripesBurst}>
-              <div className={styles.stripeBar} style={{ transform: 'rotate(12deg) translate(80px, -20px)', width: '130px', height: '24px', backgroundColor: 'rgba(83, 58, 253, 0.9)' }}></div>
+              <div className={styles.stripeBar} style={{ transform: 'rotate(12deg) translate(80px, -20px)', width: '130px', height: '24px', backgroundColor: 'rgba(76, 175, 80, 0.9)' }}></div>
               <div className={styles.stripeBar} style={{ transform: 'rotate(38deg) translate(90px, 10px)', width: '150px', height: '28px', backgroundColor: 'rgba(0, 101, 255, 0.9)' }}></div>
-              <div className={styles.stripeBar} style={{ transform: 'rotate(72deg) translate(100px, 30px)', width: '115px', height: '22px', backgroundColor: 'rgba(83, 58, 253, 0.9)' }}></div>
+              <div className={styles.stripeBar} style={{ transform: 'rotate(72deg) translate(100px, 30px)', width: '115px', height: '22px', backgroundColor: 'rgba(76, 175, 80, 0.9)' }}></div>
               <div className={styles.stripeBar} style={{ transform: 'rotate(108deg) translate(95px, 20px)', width: '140px', height: '26px', backgroundColor: 'rgba(0, 101, 255, 0.9)' }}></div>
-              <div className={styles.stripeBar} style={{ transform: 'rotate(148deg) translate(80px, 0px)', width: '120px', height: '24px', backgroundColor: 'rgba(83, 58, 253, 0.9)' }}></div>
+              <div className={styles.stripeBar} style={{ transform: 'rotate(148deg) translate(80px, 0px)', width: '120px', height: '24px', backgroundColor: 'rgba(76, 175, 80, 0.9)' }}></div>
               <div className={styles.stripeBar} style={{ transform: 'rotate(185deg) translate(95px, -15px)', width: '160px', height: '28px', backgroundColor: 'rgba(0, 101, 255, 0.9)' }}></div>
-              <div className={styles.stripeBar} style={{ transform: 'rotate(232deg) translate(90px, 10px)', width: '110px', height: '22px', backgroundColor: 'rgba(83, 58, 253, 0.9)' }}></div>
+              <div className={styles.stripeBar} style={{ transform: 'rotate(232deg) translate(90px, 10px)', width: '110px', height: '22px', backgroundColor: 'rgba(76, 175, 80, 0.9)' }}></div>
               <div className={styles.stripeBar} style={{ transform: 'rotate(268deg) translate(100px, -5px)', width: '130px', height: '26px', backgroundColor: 'rgba(0, 101, 255, 0.9)' }}></div>
-              <div className={styles.stripeBar} style={{ transform: 'rotate(308deg) translate(85px, -20px)', width: '140px', height: '24px', backgroundColor: 'rgba(83, 58, 253, 0.9)' }}></div>
+              <div className={styles.stripeBar} style={{ transform: 'rotate(308deg) translate(85px, -20px)', width: '140px', height: '24px', backgroundColor: 'rgba(76, 175, 80, 0.9)' }}></div>
               <div className={styles.stripeBar} style={{ transform: 'rotate(342deg) translate(90px, -10px)', width: '150px', height: '28px', backgroundColor: 'rgba(0, 101, 255, 0.9)' }}></div>
             </div>
             
