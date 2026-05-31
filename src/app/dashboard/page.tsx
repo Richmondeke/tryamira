@@ -42,7 +42,6 @@ export default function OverviewPage() {
   const { profile } = useUserProfile();
   const [activities, setActivities] = useState<any[]>([]);
   const [checklistStates, setChecklistStates] = useState({
-
     channelConnected: false,
     agentConfigured: false,
     trainingAdded: false,
@@ -50,6 +49,7 @@ export default function OverviewPage() {
     messageReceived: false,
     trialStarted: false
   });
+  const [checklistOpen, setChecklistOpen] = useState(true);
   const [metrics, setMetrics] = useState({
     totalLeads: 0,
     leadsThisMonth: 0,
@@ -282,206 +282,94 @@ export default function OverviewPage() {
         We're very excited to get started with you!
       </p>
 
-      {/* Onboarding Checklist in Measured sky-blue glass style */}
-      <div style={{ 
-        background: 'linear-gradient(135deg, rgba(235, 245, 255, 0.95) 0%, rgba(208, 230, 255, 0.95) 100%)', 
-        border: '1px solid rgba(255, 255, 255, 0.65)', 
-        borderRadius: '16px', 
-        padding: '2.25rem 1.75rem', 
-        boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.03)', 
-        marginBottom: '2.5rem', 
-        position: 'relative', 
-        overflow: 'hidden' 
-      }}>
-        {/* Sky-blue diagonal reflection highlight */}
-        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 60%)', pointerEvents: 'none' }} />
-        
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', position: 'relative', zIndex: 2 }}>
-          <div>
-            <h3 style={{ fontSize: '18px', color: '#0d233a', margin: '0 0 0.4rem 0', fontWeight: 700, fontFamily: 'Inter, system-ui, sans-serif' }}>Finish Onboarding</h3>
-            <p style={{ color: '#2a4365', fontSize: '13.5px', margin: 0, fontWeight: 500, opacity: 0.9, fontFamily: 'Inter, system-ui, sans-serif' }}>
-              Please ensure the following items are complete so that your Amira AI Employee can start qualifying leads:
-            </p>
+      {/* ── Compact Onboarding Checklist ──────────────────────────────────────
+          Hides when all 6 tasks are done. Collapses to a progress-bar header.
+      ────────────────────────────────────────────────────────────────────── */}
+      {(() => {
+        const tasks = [
+          { label: 'Connect your first channel',             done: checklistStates.channelConnected,  href: '/dashboard/integrations/channels', isAction: false,
+            icon: (c: string) => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg> },
+          { label: 'Configure your AI Agent',                done: checklistStates.agentConfigured,   href: '/dashboard/ai-agent',              isAction: false,
+            icon: (c: string) => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="6" height="6"/><rect x="2" y="2" width="20" height="20" rx="2.5"/><path d="M9 2v7M15 2v7M9 15v7M15 15v7M2 9h7M2 15h7M15 9h7M15 15h7"/></svg> },
+          { label: 'Train agent with FAQs & knowledge',      done: checklistStates.trainingAdded,     href: '/dashboard/ai-agent',              isAction: false,
+            icon: (c: string) => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg> },
+          { label: 'Capture your first qualified lead',      done: checklistStates.leadCaptured,      href: '/dashboard/leads',                 isAction: false,
+            icon: (c: string) => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg> },
+          { label: 'Receive your first AI conversation',     done: checklistStates.messageReceived,   href: '/dashboard/chat',                  isAction: false,
+            icon: (c: string) => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/></svg> },
+          { label: 'Go Live — activate your paid plan',      done: checklistStates.trialStarted,      href: '/dashboard/account?tab=upgrade',   isAction: true,
+            icon: (c: string) => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg> },
+        ];
+        const doneCount = tasks.filter(t => t.done).length;
+        const allDone = doneCount === tasks.length;
+        const pct = Math.round((doneCount / tasks.length) * 100);
+
+        if (allDone) return null; // ← vanishes once all tasks complete
+
+        return (
+          <div style={{ marginBottom: '1.5rem', border: '1px solid var(--stripe-border)', borderRadius: '10px', backgroundColor: '#fff', overflow: 'hidden', boxShadow: 'var(--stripe-shadow-ambient)' }}>
+            {/* Header row — always visible */}
+            <div
+              onClick={() => setChecklistOpen(o => !o)}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', cursor: 'pointer', userSelect: 'none' }}
+            >
+              {/* Progress ring / count pill */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}>
+                <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--stripe-navy)' }}>Finish Setup</span>
+                <span style={{ fontSize: '11px', fontWeight: 600, color: doneCount === tasks.length ? '#4caf50' : '#64748b', backgroundColor: doneCount === tasks.length ? '#e8f5e9' : '#f1f5f9', borderRadius: '99px', padding: '2px 8px' }}>
+                  {doneCount}/{tasks.length} done
+                </span>
+              </div>
+              {/* Thin progress bar */}
+              <div style={{ flex: 2, height: '5px', backgroundColor: '#f1f5f9', borderRadius: '99px', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${pct}%`, backgroundColor: '#4caf50', borderRadius: '99px', transition: 'width 0.4s ease' }} />
+              </div>
+              {/* Toggle chevron */}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, transform: checklistOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease' }}>
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </div>
+
+            {/* Expandable task list */}
+            {checklistOpen && (
+              <div style={{ borderTop: '1px solid var(--stripe-border)' }}>
+                {tasks.map((item, i) => {
+                  const ic = item.done ? '#94a3b8' : item.isAction ? '#4caf50' : '#475569';
+                  return (
+                    <Link key={i} href={item.href} style={{ textDecoration: 'none', display: 'block' }}>
+                      <div
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0.55rem 1rem', borderBottom: i < tasks.length - 1 ? '1px solid var(--stripe-border)' : 'none', transition: 'background 0.15s' }}
+                        onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#f8fafc')}
+                        onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
+                      >
+                        {/* Checkbox */}
+                        {item.done
+                          ? <div style={{ width: '16px', height: '16px', borderRadius: '50%', backgroundColor: '#4caf50', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                              <svg width="8" height="6" viewBox="0 0 10 8" fill="none"><path d="M1 4.5L3.5 7L9 1" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                            </div>
+                          : <div style={{ width: '16px', height: '16px', borderRadius: '50%', border: '1.5px solid #cbd5e1', flexShrink: 0 }} />
+                        }
+                        {/* Task icon */}
+                        <div style={{ flexShrink: 0 }}>{item.icon(ic)}</div>
+                        {/* Label */}
+                        <span style={{ fontSize: '12.5px', color: item.done ? '#94a3b8' : item.isAction ? '#4caf50' : 'var(--stripe-navy)', fontWeight: item.done ? 400 : 500, textDecoration: item.done ? 'line-through' : 'none', flex: 1 }}>
+                          {item.label}
+                        </span>
+                        {/* Chevron */}
+                        {!item.done && (
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="9 18 15 12 9 6" />
+                          </svg>
+                        )}
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
           </div>
-        </div>
-
-        {/* Checklist sub-cards */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', position: 'relative', zIndex: 2 }}>
-          {[
-            { 
-              label: 'Connect your first channel', 
-              done: checklistStates.channelConnected,
-              href: '/dashboard/integrations/channels',
-              icon: (color: string) => (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  {/* Phone handset — voice/channel */}
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
-                </svg>
-              )
-            },
-            { 
-              label: 'Configure your AI Agent', 
-              done: checklistStates.agentConfigured,
-              href: '/dashboard/ai-agent',
-              icon: (color: string) => (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  {/* CPU / AI chip */}
-                  <rect x="9" y="9" width="6" height="6" />
-                  <rect x="2" y="2" width="20" height="20" rx="2.5" />
-                  <path d="M9 2v7M15 2v7M9 15v7M15 15v7M2 9h7M2 15h7M15 9h7M15 15h7" />
-                </svg>
-              )
-            },
-            { 
-              label: 'Train your agent with FAQs & knowledge', 
-              done: checklistStates.trainingAdded,
-              href: '/dashboard/ai-agent',
-              icon: (color: string) => (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  {/* Database / knowledge base */}
-                  <ellipse cx="12" cy="5" rx="9" ry="3" />
-                  <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
-                  <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
-                </svg>
-              )
-            },
-            { 
-              label: 'Capture your first qualified lead', 
-              done: checklistStates.leadCaptured,
-              href: '/dashboard/leads',
-              icon: (color: string) => (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  {/* Crosshair / target */}
-                  <circle cx="12" cy="12" r="10" />
-                  <circle cx="12" cy="12" r="4" />
-                  <line x1="22" y1="12" x2="18" y2="12" />
-                  <line x1="6" y1="12" x2="2" y2="12" />
-                  <line x1="12" y1="6" x2="12" y2="2" />
-                  <line x1="12" y1="22" x2="12" y2="18" />
-                </svg>
-              )
-            },
-            { 
-              label: 'Receive your first AI conversation', 
-              done: checklistStates.messageReceived,
-              href: '/dashboard/chat',
-              icon: (color: string) => (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  {/* Two overlapping speech bubbles — conversation */}
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                  <line x1="8" y1="10" x2="16" y2="10" />
-                  <line x1="8" y1="14" x2="12" y2="14" />
-                </svg>
-              )
-            },
-            { 
-              label: 'Go Live — activate your paid plan', 
-              done: checklistStates.trialStarted,
-              href: '/dashboard/account?tab=upgrade',
-              isAction: true,
-              icon: (color: string) => (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  {/* Rocket */}
-                  <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
-                  <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
-                  <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
-                  <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
-                </svg>
-              )
-            },
-          ].map((item, i) => {
-            const activeColor = item.isAction ? '#4caf50' : '#0f172a';
-            const displayColor = item.done ? '#94a3b8' : activeColor;
-            return (
-              <Link key={i} href={item.href} style={{ textDecoration: 'none' }}>
-                <div 
-                  style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '0.85rem', 
-                    padding: '1rem 1.25rem', 
-                    borderRadius: '12px', 
-                    backgroundColor: '#ffffff',
-                    border: '1px solid rgba(255, 255, 255, 0.7)',
-                    boxShadow: '0 2px 6px rgba(0, 101, 255, 0.015)',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 101, 255, 0.05)';
-                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 1)';
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 2px 6px rgba(0, 101, 255, 0.015)';
-                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.7)';
-                  }}
-                >
-                  {/* Circle Checkbox */}
-                  {item.done ? (
-                    <div style={{ 
-                      width: '20px', 
-                      height: '20px', 
-                      borderRadius: '50%', 
-                      backgroundColor: '#64748b', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center', 
-                      flexShrink: 0 
-                    }}>
-                      <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                        <path d="M1 4.5L3.5 7L9 1" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </div>
-                  ) : (
-                    <div style={{ 
-                      width: '20px', 
-                      height: '20px', 
-                      borderRadius: '50%', 
-                      border: '1.8px solid #cbd5e1', 
-                      backgroundColor: '#ffffff',
-                      flexShrink: 0,
-                      transition: 'border-color 0.2s'
-                    }} />
-                  )}
-
-                  {/* Task Icon SVG */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    {item.icon(displayColor)}
-                  </div>
-
-                  {/* Task Label */}
-                  <span style={{ 
-                    fontSize: '13.5px', 
-                    color: item.isAction && !item.done ? '#4caf50' : item.done ? '#94a3b8' : '#0f172a', 
-                    textDecoration: item.done ? 'line-through' : 'none', 
-                    fontWeight: item.done ? 450 : 600,
-                    fontFamily: 'Inter, system-ui, sans-serif'
-                  }}>
-                    {item.label}
-                  </span>
-
-                  {/* Chevron Right */}
-                  <svg 
-                    width="14" 
-                    height="14" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke={displayColor} 
-                    strokeWidth="2.5" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    style={{ marginLeft: 'auto', opacity: item.done ? 0.4 : 0.8 }}
-                  >
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </div>
+        );
+      })()}
 
       {/* Metrics Section Header */}
       <div style={{ marginBottom: '1.5rem' }}>

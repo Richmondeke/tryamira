@@ -4,10 +4,21 @@ import { createClient } from '@/utils/supabase/server';
 import { unstable_cache } from 'next/cache';
 import { v4 as uuidv4 } from 'uuid';
 
-
 function isKeyEmpty(key: string | undefined): boolean {
   return !key || key === 'undefined' || key === 'null' || key.trim() === '';
 }
+
+// ── Resolve workspace_id for the authenticated user ────────────────────
+async function getWorkspaceId(supabase: any, userId: string): Promise<string> {
+  const { data } = await supabase
+    .from('workspace_members')
+    .select('workspace_id')
+    .eq('user_id', userId)
+    .limit(1)
+    .maybeSingle();
+  return data?.workspace_id || userId; // fallback: use userId itself as workspace key
+}
+
 
 export async function updateInboundAgent(
   assistantId: string,
@@ -401,6 +412,14 @@ export async function triggerCampaignDialer(params: {
   const supabase = await createClient();
   const apiKey = process.env.VAPI_PRIVATE_API_KEY;
 
+  // ── Resolve authenticated user → their workspace ───────────────────────
+  const { data: { user }, error: authErr } = await supabase.auth.getUser();
+  if (authErr || !user) {
+    console.error('triggerCampaignDialer: not authenticated');
+    return { success: false, error: 'Not authenticated' };
+  }
+  const workspaceId = await getWorkspaceId(supabase, user.id);
+
   // 1. Create campaign entry in public.campaigns
   let campaignId = uuidv4();
   if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
@@ -409,7 +428,7 @@ export async function triggerCampaignDialer(params: {
         .from('campaigns')
         .insert({
           id: campaignId,
-          workspace_id: '11111111-1111-1111-1111-111111111111', // Default workspace
+          workspace_id: workspaceId, // ← real user workspace
           name: params.campaignName,
           status: params.scheduledTime ? 'Scheduled' : 'Running',
           channel: 'Voice Call',
@@ -421,10 +440,10 @@ export async function triggerCampaignDialer(params: {
           created_at: new Date().toISOString()
         });
 
-      // Batch insert leads in database
+      // Batch insert leads — scoped to real workspace
       for (const lead of params.leads) {
         await supabase.from('leads').insert({
-          workspace_id: '11111111-1111-1111-1111-111111111111',
+          workspace_id: workspaceId, // ← real user workspace
           name: lead.name,
           phone: lead.phone,
           email: lead.email || '',
@@ -459,6 +478,8 @@ export async function triggerCampaignDialer(params: {
             name: lead.name
           },
           assistantId: params.agentId,
+          // Tag with workspace_id so webhook can route events to the right user
+          metadata: { workspace_id: workspaceId },
           assistant: {
             model: {
               messages: [

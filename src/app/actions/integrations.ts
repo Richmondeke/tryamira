@@ -3,8 +3,17 @@
 import { createClient } from '@/utils/supabase/server';
 import { unstable_cache } from 'next/cache';
 
-// We use a fixed workspace ID for demo purposes
-const DEMO_WORKSPACE_ID = 'workspace_1';
+// ── Helper: get user's real workspace_id from DB ──────────────────────────
+async function getUserWorkspaceId(supabase: any, userId: string): Promise<string> {
+  const { data } = await supabase
+    .from('workspace_members')
+    .select('workspace_id')
+    .eq('user_id', userId)
+    .limit(1)
+    .maybeSingle();
+  return data?.workspace_id || userId; // fallback to userId as workspace
+}
+
 
 const MOCK_INTEGRATIONS = [
   { id: 'hubspot', name: 'HubSpot', desc: 'Sync CRM leads, contact pipelines, and customer lists.', icon: '🟠', type: 'oauth' },
@@ -103,30 +112,34 @@ export const getComposioApps = unstable_cache(
 );
 
 export async function getComposioStatus() {
-
   const apiKey = process.env.COMPOSIO_API_KEY;
-  const isKeyEmpty = !apiKey || 
-                     apiKey === 'undefined' || 
-                     apiKey === 'null' || 
+  const isKeyEmpty = !apiKey ||
+                     apiKey === 'undefined' ||
+                     apiKey === 'null' ||
                      apiKey.trim() === '';
+
+  // Get authenticated user — entity_id = user's Supabase UID
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const entityId = user?.id || 'anonymous';
+  const workspaceId = user ? await getUserWorkspaceId(supabase, user.id) : entityId;
 
   if (isKeyEmpty) {
     console.warn('COMPOSIO_API_KEY not set. Simulating Composio status fetch.');
-    const supabase = await createClient();
     if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
       const { data } = await supabase
         .from('workspace_integrations')
         .select('*')
-        .eq('workspace_id', 1);
+        .eq('workspace_id', workspaceId);
       return { success: true, data: data || [] };
     }
     return { success: true, data: [] };
   }
 
   try {
-    // Composio v3 REST API — fetch connected accounts
+    // Composio v3 REST API — fetch connected accounts scoped to this user's entity_id
     const res = await fetch(
-      `https://backend.composio.dev/api/v3/connected_accounts?user_uuid=${DEMO_WORKSPACE_ID}&limit=100`,
+      `https://backend.composio.dev/api/v3/connected_accounts?user_uuid=${entityId}&limit=100`,
       { headers: { 'x-api-key': apiKey } }
     );
 
@@ -152,6 +165,11 @@ export async function initiateComposioConnection(appName: string) {
   const BASE = 'https://backend.composio.dev/api/v3';
   const headers = { 'x-api-key': apiKey!, 'Content-Type': 'application/json' };
 
+  // Get the real user ID — this becomes the Composio entity_id for isolation
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const entityId = user?.id || 'anonymous';
+
   const isKeyEmpty = !apiKey || apiKey === 'undefined' || apiKey === 'null' || apiKey.trim() === '';
   if (isKeyEmpty) {
     console.warn('COMPOSIO_API_KEY not set. Simulating OAuth redirect.');
@@ -165,7 +183,7 @@ export async function initiateComposioConnection(appName: string) {
       headers,
       body: JSON.stringify({
         toolkit: { slug: appName },
-        name: `${appName}_composio_managed_${DEMO_WORKSPACE_ID}`,
+        name: `${appName}_composio_managed_${entityId}`, // unique per user
         auth_scheme: 'OAUTH2',
         use_composio_managed_oauth: true
       })
@@ -180,13 +198,13 @@ export async function initiateComposioConnection(appName: string) {
     const authConfigId = configJson?.auth_config?.id;
     if (!authConfigId) throw new Error('No auth_config id returned from Composio');
 
-    // ── Step 2: Generate an OAuth link token via /connected_accounts/link ──
+    // ── Step 2: Generate an OAuth link token — scoped to this user's entity_id ──
     const linkRes = await fetch(`${BASE}/connected_accounts/link`, {
       method: 'POST',
       headers,
       body: JSON.stringify({
         auth_config_id: authConfigId,
-        user_id: DEMO_WORKSPACE_ID,
+        user_id: entityId, // ← real user ID, not a shared demo ID
         redirect_url: callbackUrl
       })
     });
@@ -197,11 +215,10 @@ export async function initiateComposioConnection(appName: string) {
     }
 
     const linkJson = await linkRes.json();
-    // Returns: { link_token, redirect_url: 'https://connect.composio.dev/link/lk_...', expires_at, connected_account_id }
     const redirectUrl = linkJson?.redirect_url;
     if (!redirectUrl) throw new Error('No redirect_url returned from Composio link');
 
-    console.log(`✅ Composio OAuth link for ${appName}:`, redirectUrl);
+    console.log(`✅ Composio OAuth link for ${appName} (entity: ${entityId}):`, redirectUrl);
     return { success: true, redirectUrl };
   } catch (err: any) {
     console.error('Error initiating Composio v3 OAuth:', err?.message || err);
@@ -211,17 +228,21 @@ export async function initiateComposioConnection(appName: string) {
 
 export async function removeComposioIntegration(appName: string) {
   const apiKey = process.env.COMPOSIO_API_KEY;
-  const isKeyEmpty = !apiKey || 
-                     apiKey === 'undefined' || 
-                     apiKey === 'null' || 
+  const isKeyEmpty = !apiKey ||
+                     apiKey === 'undefined' ||
+                     apiKey === 'null' ||
                      apiKey.trim() === '';
+
+  // Always resolve real workspace for DB scoping
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const entityId = user?.id || 'anonymous';
+  const workspaceId = user ? await getUserWorkspaceId(supabase, user.id) : entityId;
 
   if (isKeyEmpty) {
     console.warn('COMPOSIO_API_KEY not set. Simulating disconnect.');
-    // Also remove from supabase mock
     if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
-       const supabase = await createClient();
-       await supabase.from('workspace_integrations').delete().match({ workspace_id: 1, provider: appName });
+      await supabase.from('workspace_integrations').delete().match({ workspace_id: workspaceId, provider: appName });
     }
     return { success: true };
   }
@@ -230,9 +251,9 @@ export async function removeComposioIntegration(appName: string) {
     const BASE = 'https://backend.composio.dev/api/v3';
     const hdrs = { 'x-api-key': apiKey! };
 
-    // Find the connected account for this toolkit and user via v3 REST
+    // Find the connected account for THIS user's entity_id only
     const listRes = await fetch(
-      `${BASE}/connected_accounts?user_uuid=${DEMO_WORKSPACE_ID}&toolkit_slug=${appName}&limit=10`,
+      `${BASE}/connected_accounts?user_uuid=${entityId}&toolkit_slug=${appName}&limit=10`,
       { headers: hdrs }
     );
 
@@ -250,10 +271,9 @@ export async function removeComposioIntegration(appName: string) {
       }
     }
 
-    // Also remove from local DB
+    // Remove from local DB scoped to this user's workspace
     if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      const supabase = await createClient();
-      await supabase.from('workspace_integrations').delete().match({ workspace_id: 1, provider: appName });
+      await supabase.from('workspace_integrations').delete().match({ workspace_id: workspaceId, provider: appName });
     }
 
     return { success: true };
@@ -263,29 +283,31 @@ export async function removeComposioIntegration(appName: string) {
   }
 }
 
-// Keep the old save method for backward compatibility if needed, or to save mock state
 export async function saveIntegrationConfig(provider: string, config: any) {
   const supabase = await createClient();
-  
+
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
     return { success: true };
   }
 
   try {
+    const { data: { user } } = await supabase.auth.getUser();
+    const workspaceId = user ? await getUserWorkspaceId(supabase, user.id) : 'anonymous';
+
     const { error } = await supabase
       .from('workspace_integrations')
-      .upsert({ 
-        workspace_id: 1, 
-        provider, 
+      .upsert({
+        workspace_id: workspaceId,
+        provider,
         config,
         status: 'active',
         updated_at: new Date().toISOString()
       }, { onConflict: 'workspace_id, provider' });
 
     if (error) {
-      return { success: true }; 
+      return { success: true };
     }
-    
+
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };
