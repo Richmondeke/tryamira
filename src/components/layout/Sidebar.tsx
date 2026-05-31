@@ -364,10 +364,8 @@ export function Sidebar({ closeMobileMenu }: { closeMobileMenu?: () => void }) {
           padding: '0.85rem 1.25rem',
           borderTop: '1px solid rgba(255,255,255,0.06)',
           background: 'none',
-          border: 'none',
-          borderTop: '1px solid rgba(255,255,255,0.06)',
           cursor: 'pointer',
-          textAlign: 'left',
+          textAlign: 'left' as const,
           transition: 'background 0.15s ease',
           color: '#94a3b8',
         }}
