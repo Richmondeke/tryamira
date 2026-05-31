@@ -89,6 +89,10 @@ async function getOrCreateWorkspace(supabase: any, userId: string): Promise<stri
 
 /**
  * Fetch all active forms in the user's workspace
+ * Uses the forms_with_counts VIEW which pre-joins submission counts,
+ * eliminating the N+1 pattern of counting submissions per form.
+ * Before: 1 query for forms + N queries for submission counts
+ * After:  1 query against the forms_with_counts view
  */
 export async function getForms() {
   try {
@@ -100,19 +104,33 @@ export async function getForms() {
     }
 
     const workspaceId = await getOrCreateWorkspace(supabase, user.id);
+
+    // Query the view — submission_count is already joined server-side
     const { data, error } = await supabase
-      .from('lead_capture_forms')
+      .from('forms_with_counts')
       .select('*')
       .eq('workspace_id', workspaceId)
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      // Graceful fallback to original table if view doesn't exist yet
+      console.warn('forms_with_counts view not found, falling back:', error.message);
+      const { data: fallback, error: fallbackError } = await supabase
+        .from('lead_capture_forms')
+        .select('*')
+        .eq('workspace_id', workspaceId)
+        .order('created_at', { ascending: false });
+      if (fallbackError) throw fallbackError;
+      return { success: true, data: fallback || [] };
+    }
+
     return { success: true, data: data || [] };
   } catch (err: any) {
     console.warn('getForms database query failed:', err.message);
     return { success: false, data: [], error: err.message };
   }
 }
+
 
 
 /**
