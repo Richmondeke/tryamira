@@ -11,9 +11,14 @@ ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS full_name TEXT;
 
 -- 2. Make ekerichmond@gmail.com an admin
+--    profiles has no email column — email lives in auth.users.
+--    We look up the UUID from auth.users, then update profiles by id.
 UPDATE public.profiles 
 SET role = 'admin' 
-WHERE email = 'ekerichmond@gmail.com';
+WHERE id = (
+  SELECT id FROM auth.users WHERE email = 'ekerichmond@gmail.com' LIMIT 1
+);
+
 
 -- 3. Notifications table for real-time event tracking
 CREATE TABLE IF NOT EXISTS public.notifications (

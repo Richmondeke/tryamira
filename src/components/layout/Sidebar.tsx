@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
+import { useUserProfile } from '@/contexts/UserProfileContext';
+
 
 
 interface NavItem {
@@ -41,43 +42,26 @@ interface SidebarUser {
 export function Sidebar({ closeMobileMenu }: { closeMobileMenu?: () => void }) {
   const pathname = usePathname();
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
-  const [billingTier, setBillingTier] = useState<'starter' | 'pro' | 'team' | 'enterprise'>('starter');
   const [isDemoMode, setIsDemoMode] = useState(false);
-  const [sidebarUser, setSidebarUser] = useState<SidebarUser | null>(null);
+
+  // ── Use shared profile context instead of fetching independently ─────────
+  // Profile was already fetched once at dashboard/layout.tsx level.
+  // Zero additional Supabase calls here.
+  const { profile } = useUserProfile();
+
+  const billingTier = (profile?.plan?.toLowerCase() || 'starter') as 'starter' | 'pro' | 'team' | 'enterprise';
+  const sidebarUser = profile ? {
+    fullName: profile.full_name || profile.email.split('@')[0],
+    initials: profile.initials,
+    email: profile.email,
+    plan: profile.plan,
+    role: profile.role,
+  } : null;
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const cached = localStorage.getItem('amira_billing_tier') as 'starter' | 'pro' | 'team' | 'enterprise';
-      if (cached) setBillingTier(cached);
       setIsDemoMode(localStorage.getItem('amira_demo_mode') === 'true');
     }
-
-    const supabase = createClient();
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) return;
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('full_name, plan, role')
-        .eq('id', user.id)
-        .single();
-
-      const fullName = profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
-      const initials = fullName.split(' ').slice(0, 2).map((w: string) => w[0]?.toUpperCase() || '').join('');
-      setSidebarUser({
-        fullName,
-        initials,
-        email: user.email || '',
-        plan: profile?.plan || 'Starter',
-        role: profile?.role || 'user',
-      });
-      if (profile?.plan) {
-        const tier = profile.plan.toLowerCase() as 'starter' | 'pro' | 'team' | 'enterprise';
-        if (['starter','pro','team','enterprise'].includes(tier)) {
-          setBillingTier(tier);
-          localStorage.setItem('amira_billing_tier', tier);
-        }
-      }
-    });
   }, []);
 
   const toggleDemoMode = () => {

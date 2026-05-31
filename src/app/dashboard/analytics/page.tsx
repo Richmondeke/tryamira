@@ -63,8 +63,10 @@ async function getVapiCallsForUser(adminView: boolean, assistantIds: string[]) {
 
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      cache: 'no-store',
+      // Cache for 5 minutes — real-time updates arrive via webhook, analytics don't need second-accuracy
+      next: { revalidate: 300 },
     });
+
     if (!res.ok) throw new Error(`VAPI ${res.status}`);
     const data = await res.json();
     return Array.isArray(data) ? data : data.results || [];

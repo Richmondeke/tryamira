@@ -1,7 +1,9 @@
 'use server';
 
 import { createClient } from '@/utils/supabase/server';
+import { unstable_cache } from 'next/cache';
 import { v4 as uuidv4 } from 'uuid';
+
 
 function isKeyEmpty(key: string | undefined): boolean {
   return !key || key === 'undefined' || key === 'null' || key.trim() === '';
@@ -540,7 +542,7 @@ export async function deleteAgentVector(vectorId: string) {
   }
 }
 
-export async function getElevenLabsVoices() {
+async function _fetchElevenLabsVoices() {
   const apiKey = process.env.ELEVEN_LABS_API_KEY;
   const headers: Record<string, string> = {
     'Accept': 'application/json'
@@ -574,8 +576,15 @@ export async function getElevenLabsVoices() {
     return { success: true, data: mapped };
   } catch (err: any) {
     console.error("getElevenLabsVoices error:", err);
-    return { success: false, error: err.message };
+    return { success: false, error: err.message, data: [] };
   }
 }
 
-
+// ElevenLabs voice list changes very rarely — cache for 6 hours
+// Before: 1 external API call every time user visits /dashboard/ai-agent
+// After:  1 call per 6 hours, served instantly from Next.js cache
+export const getElevenLabsVoices = unstable_cache(
+  _fetchElevenLabsVoices,
+  ['elevenlabs-voices'],
+  { revalidate: 21600 } // 6 hours
+);
