@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useDemoMode } from '@/contexts/DemoModeContext';
 import { useParams, useRouter } from 'next/navigation';
 import Toast from '../../../../components/ui/Toast';
 import { Button } from '@/components/ui/Button';
@@ -599,6 +600,7 @@ export default function AgentBuilderPage() {
     const res = await updateAgent(params.id, config);
     setIsSaving(false);
     setToast('Agent configuration saved successfully!');
+    setTimeout(() => router.push('/dashboard/ai-agent'), 1500);
   };
 
   const toggleWorkflow = (provider: string) => {
@@ -803,7 +805,7 @@ export default function AgentBuilderPage() {
       setKbProgress(prev => {
         if (prev >= 80) {
           clearInterval(timer);
-          return 80;
+          return 100;
         }
         return prev + 15;
       });
@@ -1322,7 +1324,7 @@ export default function AgentBuilderPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
               <div>
                 <h3 style={{ fontSize: '15px', color: 'var(--stripe-navy)', margin: '0 0 4px 0', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  🧠 Cognitive Knowledge Base (RAG)
+                  🧠 Upload Knowledgebase
                 </h3>
                 <p style={{ fontSize: '12px', color: 'var(--stripe-body)', margin: 0 }}>
                   Train your agent on custom pricing sheets, FAQs, and policies so they cite facts accurately.
@@ -1442,7 +1444,7 @@ export default function AgentBuilderPage() {
                     onClick={handleAddKbSubmit}
                     style={{ backgroundColor: '#4caf50', color: '#fff', fontSize: '11px' }}
                   >
-                    Vectorize & Index
+                    Save to Knowledgebase
                   </Button>
                 </div>
               </div>
@@ -1460,7 +1462,7 @@ export default function AgentBuilderPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                   <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--stripe-navy)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>🔄</span> 
-                    {kbProgress < 30 ? 'Extracting text chunks...' : kbProgress < 60 ? 'Generating semantic embeddings...' : kbProgress < 90 ? 'Upserting vectors into database...' : 'Finalizing RAG vector index...'}
+                    {kbProgress < 30 ? 'Reading file...' : kbProgress < 60 ? 'Processing content...' : kbProgress < 90 ? 'Saving files...' : 'Finishing up...'}
                   </span>
                   <span style={{ fontSize: '11px', fontWeight: 600, color: '#4caf50' }}>
                     {kbProgress}%

@@ -629,7 +629,8 @@ export default function LeadsPage() {
               style={{ width: '100%', maxWidth: '400px', padding: '0.5rem 1rem', borderRadius: '20px', border: '1px solid var(--stripe-border)', fontSize: '12px', outline: 'none' }} 
             />
           </div>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontFeatureSettings: '"tnum", "ss01"' }}>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontFeatureSettings: '"tnum", "ss01"' }}>
             <thead>
               <tr style={{ backgroundColor: '#ffffff', borderBottom: '1px solid var(--stripe-border)' }}>
                 <th style={{ padding: '1rem 1.5rem', fontSize: '11px', color: 'var(--stripe-label)', fontWeight: 600, letterSpacing: '0.5px' }}>NAME</th>
@@ -670,6 +671,7 @@ export default function LeadsPage() {
               )}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 
@@ -1029,7 +1031,7 @@ export default function LeadsPage() {
                   <span>Dialer Target Contacts ({parsedLeads.length})</span>
                   <button type="button" onClick={() => { setParsedLeads([]); setSelectedDbLeads([]); setSelectedCrmApp(''); }} style={{ border: 'none', background: 'none', color: '#ef4444', fontSize: '11px', cursor: 'pointer' }}>Clear Queue</button>
                 </div>
-                <div style={{ maxHeight: '110px', overflowY: 'auto', border: '1px solid var(--stripe-border)', borderRadius: '6px', backgroundColor: '#f9fafb' }}>
+                <div style={{ maxHeight: '110px', overflowY: 'auto', overflowX: 'auto', border: '1px solid var(--stripe-border)', borderRadius: '6px', backgroundColor: '#f9fafb' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '11px' }}>
                     <thead>
                       <tr style={{ backgroundColor: '#f1f5f9', borderBottom: '1px solid var(--stripe-border)' }}>
@@ -1259,7 +1261,7 @@ export default function LeadsPage() {
 
               {/* Table / Queue Logs inside campaign run */}
               <h3 style={{ fontSize: '12px', color: 'var(--stripe-navy)', fontWeight: 700, margin: '0 0 0.5px 0' }}>Call Queue Logs</h3>
-              <div style={{ border: '1px solid var(--stripe-border)', borderRadius: '6px', overflow: 'hidden' }}>
+              <div style={{ border: '1px solid var(--stripe-border)', borderRadius: '6px', overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', textAlign: 'left' }}>
                   <thead>
                     <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid var(--stripe-border)' }}>

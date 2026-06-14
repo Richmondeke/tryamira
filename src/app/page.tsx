@@ -3,11 +3,27 @@
 import React, { useState, useEffect } from "react";
 import Script from "next/script";
 import styles from "./page.module.css";
+import { useLocalPricing } from "@/hooks/useLocalPricing";
+
+function LocalPrice({ basePriceUsd }: { basePriceUsd: number }) {
+  const { price, isLoading } = useLocalPricing(basePriceUsd);
+  if (isLoading) return <>{`$${basePriceUsd}`}</>;
+  return <>{price}</>;
+}
 
 export default function LandingPage() {
   const [activePlan, setActivePlan] = useState<"monthly" | "annually">("monthly");
   const [currentLang, setCurrentLang] = useState('en');
   const [showLangMenu, setShowLangMenu] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Call simulation states
+  const [demoScenario, setDemoScenario] = useState<"isp" | "fintech">("isp");
+  const [isPlayingCall, setIsPlayingCall] = useState(false);
+  const [playbackTime, setPlaybackTime] = useState(0);
+  const [transcriptIndex, setTranscriptIndex] = useState(-1);
+  const [vapiCallActive, setVapiCallActive] = useState(false);
+  const [vapiLoading, setVapiLoading] = useState(false);
 
   const languagesList = [
     { code: 'en', label: 'English', flag: '🇺🇸' },
@@ -20,6 +36,33 @@ export default function LandingPage() {
     { code: 'zh-CN', label: '中文', flag: '🇨🇳' },
     { code: 'ja', label: '日本語', flag: '🇯🇵' },
   ];
+
+  const ispDialogue = [
+    { time: 2, sender: "user", text: "Hey, my internet has been offline for the last hour. I tried restarting the router but nothing happened." },
+    { time: 7, sender: "ai", text: "I'm sorry to hear that. Let me look up your account details using your registered phone number. One moment..." },
+    { time: 13, sender: "ai", text: "Okay, I see your account under John Doe. I'm querying your optical terminal status right now." },
+    { time: 19, sender: "system", text: "[System Check] Sending ping request to port ONT-559-X..." },
+    { time: 22, sender: "ai", text: "I see a signal loss at your line port. I've initiated a remote port reset on our end. Can you check if the broadband light on your router is blinking now?" },
+    { time: 29, sender: "user", text: "Oh wait... the light just turned solid green! The WiFi is back up. Wow, that was fast." },
+    { time: 34, sender: "ai", text: "Fantastic! I've updated your ticket status in Zendesk to resolved. Is there anything else I can assist you with?" },
+    { time: 39, sender: "user", text: "No, that's all. Thank you so much." },
+    { time: 42, sender: "ai", text: "You're very welcome! Have a great day." }
+  ];
+
+  const fintechDialogue = [
+    { time: 2, sender: "user", text: "Hi, I sent a transfer of 50,000 Naira to my mom's account two hours ago, but she hasn't received it yet. Can you check it?" },
+    { time: 8, sender: "ai", text: "I understand your concern. Let me check our transaction logs for you. Can you confirm the transaction reference code or your registered email address?" },
+    { time: 15, sender: "user", text: "Yes, the reference code is TXN-8902-LK." },
+    { time: 20, sender: "ai", text: "Thank you. Checking ledger logs... One moment." },
+    { time: 23, sender: "system", text: "[System Check] Querying billing API for reference TXN-8902-LK..." },
+    { time: 26, sender: "ai", text: "I see the transaction has been approved by our system, but it is currently held up at the destination bank's clearinghouse. I've just pinged their API to expedite the confirmation." },
+    { time: 34, sender: "ai", text: "You should receive a delivery confirmation notification on your mom's end within the next 3 to 5 minutes. I've also logged a tracking ticket." },
+    { time: 41, sender: "user", text: "Ah, ok, that makes sense. Thank you for checking that so quickly!" },
+    { time: 45, sender: "ai", text: "You're very welcome! Let me know if you need help with anything else." }
+  ];
+
+  const dialogue = demoScenario === "isp" ? ispDialogue : fintechDialogue;
+  const maxCallTime = dialogue[dialogue.length - 1].time + 3;
 
   useEffect(() => {
     const getCookie = (name: string) => {
@@ -45,62 +88,48 @@ export default function LandingPage() {
     }
     window.location.reload();
   };
-  const [activeFeatureTab, setActiveFeatureTab] = useState<"channels" | "knowledge" | "automation">("channels");
-  const [liveTranscript, setLiveTranscript] = useState<Array<{ sender: "user" | "ai"; text: string }>>([]);
-  const [currentCallStatus, setCurrentCallStatus] = useState<"idle" | "calling" | "connected" | "ended">("idle");
-  const [vapiCallActive, setVapiCallActive] = useState(false);
-  const [vapiLoading, setVapiLoading] = useState(false);
-  const [crmLeads, setCrmLeads] = useState<Array<{ name: string; phone: string; status: string; date: string }>>([
-    { name: "John Doe", phone: "+1 (555) 019-2834", status: "Qualified", date: "Just now" },
-    { name: "Sarah Jenkins", phone: "+1 (555) 048-1290", status: "Booked Call", date: "2 mins ago" },
-    { name: "Marcus Kincaid", phone: "+44 20 7946 0958", status: "Replied", date: "15 mins ago" },
-  ]);
 
-  // Handle mock live caller simulation
+  // Playback timer loop for custom audio simulation
   useEffect(() => {
-    if (currentCallStatus === "calling") {
-      const timer = setTimeout(() => {
-        setCurrentCallStatus("connected");
-        setLiveTranscript([{ sender: "ai", text: "Thank you for calling Amira support. How can I help you scale today?" }]);
-      }, 1500);
-      return () => clearTimeout(timer);
-    } else if (currentCallStatus === "connected") {
-      const dialogue = [
-        { delay: 3000, sender: "user", text: "Hi, I need to know if Amira integrates with Salesforce and Hubspot CRM." },
-        { delay: 6000, sender: "ai", text: "Yes! Amira has direct native integrations with Salesforce, HubSpot, and 1,000+ other apps via Zapier. It logs transcripts and details instantly." },
-        { delay: 9500, sender: "user", text: "That is perfect. Can I set up a free trial to test the voice response latency?" },
-        { delay: 12500, sender: "ai", text: "Absolutely. I've just sent a trial link to your mobile number. You can be live in under 5 minutes!" },
-        { delay: 15500, sender: "user", text: "Awesome, thank you!" },
-        { delay: 17500, sender: "ai", text: "You're welcome! Have a great day." }
-      ];
-
-      const timers = dialogue.map((line) => {
-        return setTimeout(() => {
-          setLiveTranscript((prev) => [...prev, { sender: line.sender as "user" | "ai", text: line.text }]);
-          if (line.text.includes("trial link")) {
-            // Auto add to CRM
-            setCrmLeads((prev) => [
-              { name: "New Visitor", phone: "+1 (555) 012-7890", status: "Qualified", date: "Just now" },
-              ...prev
-            ]);
+    let interval: NodeJS.Timeout;
+    if (isPlayingCall) {
+      interval = setInterval(() => {
+        setPlaybackTime((prev) => {
+          if (prev >= maxCallTime) {
+            setIsPlayingCall(false);
+            return 0;
           }
-        }, line.delay);
-      });
-
-      const endTimer = setTimeout(() => {
-        setCurrentCallStatus("ended");
-      }, 20000);
-
-      return () => {
-        timers.forEach((t) => clearTimeout(t));
-        clearTimeout(endTimer);
-      };
+          const nextTime = prev + 1;
+          // Find matching dialogue index
+          const nextIndex = dialogue.findIndex((d) => d.time > nextTime);
+          const currentIndex = nextIndex === -1 ? dialogue.length - 1 : nextIndex - 1;
+          setTranscriptIndex(currentIndex);
+          return nextTime;
+        });
+      }, 1000);
     }
-  }, [currentCallStatus]);
+    return () => clearInterval(interval);
+  }, [isPlayingCall, dialogue, maxCallTime]);
 
-  const startDemoCall = () => {
-    setLiveTranscript([]);
-    setCurrentCallStatus("calling");
+  const handleTogglePlay = () => {
+    if (isPlayingCall) {
+      setIsPlayingCall(false);
+    } else {
+      setIsPlayingCall(true);
+    }
+  };
+
+  const handleResetCall = () => {
+    setIsPlayingCall(false);
+    setPlaybackTime(0);
+    setTranscriptIndex(-1);
+  };
+
+  const handleSelectScenario = (scenario: "isp" | "fintech") => {
+    setIsPlayingCall(false);
+    setDemoScenario(scenario);
+    setPlaybackTime(0);
+    setTranscriptIndex(-1);
   };
 
   const handleTalkToAmira = () => {
@@ -108,8 +137,8 @@ export default function LandingPage() {
     const assistantId = process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID || '';
 
     if (!publicKey || !assistantId) {
-      alert('Live demo is being set up. In the meantime, try the interactive simulation below!');
-      document.getElementById('demo')?.scrollIntoView({ behavior: 'smooth' });
+      // Scroll to custom simulator if Vapi is not active
+      document.getElementById('interactive-demo')?.scrollIntoView({ behavior: 'smooth' });
       return;
     }
 
@@ -149,72 +178,34 @@ export default function LandingPage() {
               alt="Amira Logo" 
               className={styles.navLogoImg} 
             />
-            
           </a>
           
           <ul className={styles.navLinks}>
-            <li><a href="#features" className={styles.navLink}>Features</a></li>
-            <li><a href="#agents" className={styles.navLink}>Agent Library</a></li>
-            <li><a href="#how-it-works" className={styles.navLink}>How It Works</a></li>
+            <li><a href="#problem" className={styles.navLink}>Repetitive Calls</a></li>
+            <li><a href="#workflow" className={styles.navLink}>How Amira Works</a></li>
+            <li><a href="#integrations" className={styles.navLink}>Integrations</a></li>
+            <li><a href="#interactive-demo" className={styles.navLink}>Listen to Call</a></li>
             <li><a href="#pricing" className={styles.navLink}>Pricing</a></li>
-            <li><a href="#demo" className={styles.navLink}>Live Demo</a></li>
           </ul>
 
           <div className={styles.navActions}>
-            {/* Custom Language Switcher */}
+            {/* Language Switcher */}
             <div style={{ position: 'relative', display: 'inline-block' }}>
               <button 
                 onClick={() => setShowLangMenu(!showLangMenu)}
-                style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '0.4rem', 
-                  fontSize: '13px', 
-                  fontWeight: 500, 
-                  padding: '8px 14px', 
-                  borderRadius: '30px', 
-                  border: '1px solid rgba(255, 255, 255, 0.15)', 
-                  backgroundColor: 'rgba(255, 255, 255, 0.06)', 
-                  color: '#ffffff',
-                  cursor: 'pointer',
-                  backdropFilter: 'blur(8px)',
-                  transition: 'background-color 0.2s ease, border-color 0.2s ease'
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.12)';
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.06)';
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
-                }}
+                className={styles.langBtn}
               >
                 <span style={{ fontSize: '15px' }}>
                   {languagesList.find(l => l.code === currentLang)?.flag || '🇺🇸'}
                 </span>
-                <span style={{ color: 'rgba(255,255,255,0.9)' }}>
+                <span>
                   {languagesList.find(l => l.code === currentLang)?.label || 'English'}
                 </span>
                 <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.6)' }}>▼</span>
               </button>
               
               {showLangMenu && (
-                <div style={{ 
-                  position: 'absolute', 
-                  top: '100%', 
-                  right: 0, 
-                  marginTop: '8px', 
-                  backgroundColor: '#061b31', // Premium dark navy to match landing page
-                  border: '1px solid rgba(255, 255, 255, 0.15)', 
-                  borderRadius: '10px', 
-                  boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5)', 
-                  zIndex: 9999, 
-                  minWidth: '155px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  padding: '6px',
-                  backdropFilter: 'blur(12px)'
-                }}>
+                <div className={styles.langMenu}>
                   {languagesList.map(lang => (
                     <button
                       key={lang.code}
@@ -222,31 +213,7 @@ export default function LandingPage() {
                         changeLanguage(lang.code);
                         setShowLangMenu(false);
                       }}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.75rem',
-                        padding: '8px 12px',
-                        width: '100%',
-                        border: 'none',
-                        background: 'none',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        color: 'rgba(255, 255, 255, 0.85)',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        fontWeight: currentLang === lang.code ? 600 : 400,
-                        backgroundColor: currentLang === lang.code ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
-                        transition: 'all 0.15s ease'
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.12)';
-                        e.currentTarget.style.color = '#ffffff';
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.backgroundColor = currentLang === lang.code ? 'rgba(255, 255, 255, 0.08)' : 'transparent';
-                        e.currentTarget.style.color = 'rgba(255, 255, 255, 0.85)';
-                      }}
+                      className={`${styles.langMenuItem} ${currentLang === lang.code ? styles.langMenuItemActive : ""}`}
                     >
                       <span style={{ fontSize: '14px' }}>{lang.flag}</span>
                       <span>{lang.label}</span>
@@ -257,32 +224,51 @@ export default function LandingPage() {
             </div>
 
             <a href="/dashboard" className={styles.navSignIn}>Login</a>
-            <a href="#demo" className={styles.navSecondaryBtn}>Talk to Sales</a>
+            <a href="#interactive-demo" className={styles.navSecondaryBtn}>Talk to Sales</a>
             <a href="/dashboard" className={styles.navCta}>Start Free Trial</a>
           </div>
+
+          <button 
+            className={styles.mobileMenuToggle} 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle Menu"
+          >
+            ☰
+          </button>
         </div>
+
+        {/* MOBILE MENU DROPDOWN */}
+        {mobileMenuOpen && (
+          <div className={styles.mobileMenu}>
+            <a href="#problem" onClick={() => setMobileMenuOpen(false)}>Repetitive Calls</a>
+            <a href="#workflow" onClick={() => setMobileMenuOpen(false)}>How Amira Works</a>
+            <a href="#integrations" onClick={() => setMobileMenuOpen(false)}>Integrations</a>
+            <a href="#interactive-demo" onClick={() => setMobileMenuOpen(false)}>Listen to Call</a>
+            <a href="#pricing" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
+            <hr />
+            <a href="/dashboard">Login</a>
+            <a href="#interactive-demo" onClick={() => setMobileMenuOpen(false)}>Talk to Sales</a>
+            <a href="/dashboard" className={styles.mobileMenuCta}>Start Free Trial</a>
+          </div>
+        )}
       </nav>
 
       {/* HERO SECTION */}
       <header className={styles.hero}>
         <div className={styles.heroContainer}>
           <div className={styles.heroBadge}>
-            <span className={styles.heroBadgeHighlight}>AI Voice Employees</span>
-            <span className={styles.heroBadgeText}>For Sales, Support &amp; Scheduling — 24/7</span>
+            <span className={styles.heroBadgeHighlight}>Customer Support Operations</span>
+            <span className={styles.heroBadgeText}>Resolve Repetitive Calls 24/7</span>
           </div>
 
           <h1 className={styles.heroTitle}>
-            Hire an AI that<br />
-            <span className={styles.textAccent}>answers every call.</span><br />
-            Close every deal.
+            Stop Drowning Your Support Team in Repetitive Customer Calls
           </h1>
 
           <p className={styles.heroSubtitle}>
-            Amira is the AI receptionist, sales rep, and support agent that never sleeps.
-            Connect your phone lines, qualify leads automatically, and close more — without hiring.
+            Amira resolves customer inquiries, creates tickets, updates systems, and escalates only the issues that need a human agent.
           </p>
 
-          {/* VAPI Web SDK — loads once, initialises global vapi instance */}
           <Script
             src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/dist/vapi.umd.js"
             strategy="afterInteractive"
@@ -294,491 +280,270 @@ export default function LandingPage() {
             }}
           />
 
-          <div className={styles.vapiWidgetContainer}>
-            <div className={styles.vapiWidgetInner}>
-              <button
-                className={styles.vapiButton}
-                onClick={handleTalkToAmira}
-                disabled={vapiLoading}
-                style={{ opacity: vapiLoading ? 0.7 : 1, cursor: vapiLoading ? 'wait' : 'pointer' }}
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.vapiIcon}>
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                </svg>
-                {vapiLoading ? 'Connecting...' : vapiCallActive ? '⏹ End Call' : 'Talk to Amira'}
-              </button>
-            </div>
-            <div className={styles.vapiMeta}>
-              <span className={styles.vapiMetaText}>
-                {vapiCallActive ? '🟢 Live call active — speak now' : 'Mic permissions needed • No credit card required'}
-              </span>
-            </div>
+          <div className={styles.heroCtas}>
+            <button 
+              onClick={handleTalkToAmira} 
+              disabled={vapiLoading}
+              className={styles.heroCtaPrimary}
+            >
+              {vapiLoading ? 'Connecting...' : vapiCallActive ? '⏹ End Live Call' : 'Book a Demo'}
+            </button>
+            <a href="#interactive-demo" className={styles.heroCtaSecondary}>
+              Listen to a Live Call
+            </a>
           </div>
 
-          {/* INTERACTIVE DASHBOARD DEMO CONTAINER */}
-          <div className={styles.dashboardContainer}>
-            <div className={styles.dashboardHeader}>
+          <div className={styles.heroTrust}>
+            Built for ISPs and Fintechs handling thousands of customer inquiries every month.
+          </div>
+
+          {/* VISUAL WORKFLOW CONTAINER */}
+          <div className={styles.workflowContainer} id="workflow">
+            <div className={styles.workflowHeader}>
               <div className={styles.headerDots}>
                 <span className={styles.dot} />
                 <span className={styles.dot} />
                 <span className={styles.dot} />
               </div>
-              <div className={styles.headerTitle}>Amira Agent Dashboard v2.1</div>
+              <div className={styles.headerTitle}>Customer Call Resolution Flow</div>
               <div className={styles.headerStatus}>
                 <span className={styles.pulseIndicator} />
-                System Active
+                Active Workflow
               </div>
             </div>
 
-            <div className={styles.dashboardBody}>
-              {/* Sidebar */}
-              <div className={styles.dashSidebar}>
-                <div className={`${styles.sidebarItem} ${styles.sidebarItemActive}`}>
-                  <span className={styles.sidebarIcon}>📞</span> Inbound Voice Lines
-                </div>
-                <div className={styles.sidebarItem}>
-                  <span className={styles.sidebarIcon}>🤖</span> Voice AI Profiles
-                </div>
-                <div className={styles.sidebarItem}>
-                  <span className={styles.sidebarIcon}>📈</span> Campaign Dialer
-                </div>
-                <div className={styles.sidebarItem}>
-                  <span className={styles.sidebarIcon}>🗂️</span> CRM Integrations
-                </div>
-                <div className={styles.sidebarItem}>
-                  <span className={styles.sidebarIcon}>⚙️</span> Settings
-                </div>
+            <div className={styles.workflowSteps}>
+              <div className={styles.workflowStep}>
+                <div className={styles.stepNum}>1</div>
+                <div className={styles.stepTitle}>Customer Calls</div>
+                <p className={styles.stepText}>Customer rings your support line with a routine outage or transfer issue.</p>
               </div>
 
-              {/* Main Content Area */}
-              <div className={styles.dashMain}>
-                <div className={styles.dashGrid}>
-                  {/* Left Column - Live Caller Console */}
-                  <div className={styles.consoleCard}>
-                    <div className={styles.cardHeader}>
-                      <h3>Live Calling Console</h3>
-                      {currentCallStatus === "connected" && (
-                        <span className={styles.badgeLive}>Connected</span>
-                      )}
-                      {currentCallStatus === "calling" && (
-                        <span className={styles.badgeCalling}>Dialing...</span>
-                      )}
-                      {currentCallStatus === "ended" && (
-                        <span className={styles.badgeEnded}>Call Ended</span>
-                      )}
-                      {currentCallStatus === "idle" && (
-                        <span className={styles.badgeIdle}>Ready</span>
-                      )}
-                    </div>
-                    
-                    <div className={styles.transcriptBox}>
-                      {currentCallStatus === "idle" && (
-                        <div className={styles.emptyTranscript}>
-                          <span className={styles.emptyIcon}>🎙️</span>
-                          <p>Click below to simulate a real customer call with Amira</p>
-                          <button onClick={startDemoCall} className={styles.simulateBtn}>
-                            Simulate Call
-                          </button>
-                        </div>
-                      )}
+              <div className={styles.workflowArrow}>➔</div>
 
-                      {currentCallStatus !== "idle" && (
-                        <div className={styles.transcriptLines}>
-                          {liveTranscript.map((line, index) => (
-                            <div 
-                              key={index} 
-                              className={`${styles.transcriptBubble} ${
-                                line.sender === "ai" ? styles.bubbleAi : styles.bubbleUser
-                              }`}
-                            >
-                              <div className={styles.bubbleSender}>
-                                {line.sender === "ai" ? "Amira (AI Agent)" : "Customer"}
-                              </div>
-                              <div className={styles.bubbleText}>{line.text}</div>
-                            </div>
-                          ))}
-                          {currentCallStatus === "calling" && (
-                            <div className={styles.dialingState}>
-                              <span className={styles.spinner} /> Calling demo interface...
-                            </div>
-                          )}
-                          {currentCallStatus === "connected" && liveTranscript.length % 2 === 1 && (
-                            <div className={styles.typingState}>
-                              <span></span><span></span><span></span>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
+              <div className={styles.workflowStep}>
+                <div className={styles.stepNum}>2</div>
+                <div className={styles.stepTitle}>Amira Answers</div>
+                <p className={styles.stepText}>Answers in under 500ms using a premium, warm, conversational voice.</p>
+              </div>
 
-                    {currentCallStatus !== "idle" && (
-                      <div className={styles.consoleFooter}>
-                        <button 
-                          onClick={() => setCurrentCallStatus("idle")} 
-                          className={styles.resetBtn}
-                        >
-                          Reset Simulation
-                        </button>
-                      </div>
-                    )}
-                  </div>
+              <div className={styles.workflowArrow}>➔</div>
 
-                  {/* Right Column - Live CRM Leads feed */}
-                  <div className={styles.crmCard}>
-                    <div className={styles.cardHeader}>
-                      <h3>Automated CRM Feeds</h3>
-                      <span className={styles.crmSyncBadge}>Synced</span>
-                    </div>
+              <div className={styles.workflowStep}>
+                <div className={styles.stepNum}>3</div>
+                <div className={styles.stepTitle}>Queries Systems</div>
+                <p className={styles.stepText}>Checks router signals, transaction logs, or billing data in real-time.</p>
+              </div>
 
-                    <div className={styles.leadsList}>
-                      {crmLeads.map((lead, index) => (
-                        <div key={index} className={styles.leadItem}>
-                          <div className={styles.leadInfo}>
-                            <div className={styles.leadName}>{lead.name}</div>
-                            <div className={styles.leadPhone}>{lead.phone}</div>
-                          </div>
-                          <div className={styles.leadMeta}>
-                            <span className={`${styles.leadStatus} ${
-                              lead.status === "Qualified" ? styles.statusQual : styles.statusBook
-                            }`}>
-                              {lead.status}
-                            </span>
-                            <div className={styles.leadTime}>{lead.date}</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+              <div className={styles.workflowArrow}>➔</div>
+
+              <div className={styles.workflowStep}>
+                <div className={styles.stepNum}>4</div>
+                <div className={styles.stepTitle}>Resolves &amp; Logs</div>
+                <p className={styles.stepText}>Resets port, confirms transfer, updates CRM and logs Zendesk ticket.</p>
+              </div>
+
+              <div className={styles.workflowArrow}>➔</div>
+
+              <div className={styles.workflowStep}>
+                <div className={styles.stepNum}>5</div>
+                <div className={styles.stepTitle}>Warm Escalation</div>
+                <p className={styles.stepText}>Only complex cases route to humans, complete with full logs and details.</p>
               </div>
             </div>
           </div>
         </div>
       </header>
 
-      {/* INTEGRATIONS TICKER */}
-      <section className={styles.trusted}>
-        <div className={styles.trustedContainer}>
-          <p className={styles.trustedLabel}>Integrates with your tools and takes action in real time</p>
-          <div style={{ overflow: 'hidden', position: 'relative', width: '100%', maskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)' }}>
-            <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center', animation: 'amiraTicker 30s linear infinite', width: 'max-content' }}>
-              {['HubSpot', 'Salesforce', 'Slack', 'Gmail', 'Stripe', 'Google Calendar', 'GoHighLevel', 'Notion', 'Airtable', 'Shopify', 'Calendly', 'Zendesk', 'Twilio', 'WhatsApp Business', 'Monday.com', 'Pipedrive', 'Zoho CRM', 'QuickBooks', 'DocuSign', 'Mailchimp', '1,000+ More', 'HubSpot', 'Salesforce', 'Slack', 'Gmail', 'Stripe', 'Google Calendar', 'GoHighLevel', 'Notion', 'Airtable', 'Shopify', 'Calendly', 'Zendesk', 'Twilio', 'WhatsApp Business', 'Monday.com', 'Pipedrive', 'Zoho CRM', 'QuickBooks', 'DocuSign', 'Mailchimp', '1,000+ More'].map((tool, i) => (
-                <span key={i} style={{ whiteSpace: 'nowrap', padding: '7px 18px', borderRadius: '999px', border: '1px solid rgba(255,255,255,0.12)', backgroundColor: 'rgba(255,255,255,0.05)', fontSize: '13px', fontWeight: tool === '1,000+ More' ? 700 : 500, color: tool === '1,000+ More' ? '#818cf8' : 'rgba(255,255,255,0.75)', backdropFilter: 'blur(8px)', letterSpacing: '0.01em' }}>{tool}</span>
-              ))}
-            </div>
-          </div>
-          <style>{`@keyframes amiraTicker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }`}</style>
-        </div>
-      </section>
-
-      {/* GO LIVE IN 5 MINUTES */}
-      <section className={styles.featureBlock}>
-        <div className={styles.innerBlockCentered}>
-          <span className={styles.sectionTag}>Instant Deployment</span>
-          <h2 className={styles.sectionTitle}>Go Live in Under 5 Minutes.</h2>
-          <p className={styles.sectionSubtitle}>
-            No code. No tech team. No waiting. Sign up, connect your number, and your AI is live today.
-          </p>
-        </div>
-      </section>
-
-      {/* SPLIT SCREEN FEATURES (MIRRORING JOHA) */}
-      <section className={styles.splitFeatures} id="features">
-        <div className={styles.splitContainer}>
-          
-          {/* BLOCK 1: Connect channels */}
-          <div className={styles.splitRow}>
-            <div className={styles.splitTextCol}>
-              <span className={styles.rowTag}>Step 1</span>
-              <h3 className={styles.rowTitle}>Connect every phone line in 60 seconds. Zero IT.</h3>
-              <p className={styles.rowSubtitle}>
-                Inbound support lines. Outbound dialing. Web call widgets. All in one dashboard.
-              </p>
-              <ul className={styles.rowList}>
-                <li>
-                  <span className={styles.listCheck}>✓</span>
-                  Local &amp; international numbers in 40+ countries
-                </li>
-                <li>
-                  <span className={styles.listCheck}>✓</span>
-                  Web voice call widget, ready with one line of code
-                </li>
-                <li>
-                  <span className={styles.listCheck}>✓</span>
-                  All channels active simultaneously from day one
-                </li>
-              </ul>
-            </div>
-            <div className={styles.splitGraphicCol}>
-              <div className={styles.graphicBox}>
-                <div className={styles.channelWidget}>
-                  <div className={styles.channelItem}>
-                    <div className={styles.channelIconBg}>📞</div>
-                    <div>
-                      <div className={styles.channelName}>Twilio Integration</div>
-                      <div className={styles.channelStatus}>Connected</div>
-                    </div>
-                  </div>
-                  <div className={styles.channelItem}>
-                    <div className={styles.channelIconBg}>🌐</div>
-                    <div>
-                      <div className={styles.channelName}>Web Widget</div>
-                      <div className={styles.channelStatus}>Connected</div>
-                    </div>
-                  </div>
-                  <div className={styles.channelItem}>
-                    <div className={styles.channelIconBg}>🧬</div>
-                    <div>
-                      <div className={styles.channelName}>Telnyx Trunking</div>
-                      <div className={styles.channelStatus}>Active</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* BLOCK 2: Teach business */}
-          <div className={`${styles.splitRow} ${styles.rowInverse}`}>
-            <div className={styles.splitTextCol}>
-              <span className={styles.rowTag}>Step 2</span>
-              <h3 className={styles.rowTitle}>Train your AI on your business — in minutes.</h3>
-              <p className={styles.rowSubtitle}>
-                Your knowledge. Your voice. Fully automated.
-              </p>
-              <ul className={styles.rowList}>
-                <li>
-                  <span className={styles.listCheck}>✓</span>
-                  Upload FAQs, PDFs, and sales scripts in any format
-                </li>
-                <li>
-                  <span className={styles.listCheck}>✓</span>
-                  Set custom brand voice, vocabulary, and escalation rules
-                </li>
-                <li>
-                  <span className={styles.listCheck}>✓</span>
-                  Test your AI's voice responses in real time before going live
-                </li>
-              </ul>
-            </div>
-            <div className={styles.splitGraphicCol}>
-              <div className={styles.graphicBox}>
-                <div className={styles.knowledgeWidget}>
-                  <div className={styles.knowledgeHeader}>
-                    <span>Knowledge Source</span>
-                    <button className={styles.uploadBtn}>+ Upload</button>
-                  </div>
-                  <div className={styles.fileItem}>
-                    <span>📄 Product_Catalog_2026.pdf</span>
-                    <span className={styles.fileStatus}>Trained</span>
-                  </div>
-                  <div className={styles.fileItem}>
-                    <span>📄 Support_FAQ_Sheet.txt</span>
-                    <span className={styles.fileStatus}>Trained</span>
-                  </div>
-                  <div className={styles.fileItem}>
-                    <span>📄 Outbound_Script.md</span>
-                    <span className={styles.fileStatus}>Trained</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* BLOCK 3: Go live / Autopilot */}
-          <div className={styles.splitRow}>
-            <div className={styles.splitTextCol}>
-              <span className={styles.rowTag}>Step 3</span>
-              <h3 className={styles.rowTitle}>Go live. Let your AI run voice operations on autopilot.</h3>
-              <p className={styles.rowSubtitle}>
-                Every call answered. Every lead qualified. Every customer served.
-              </p>
-              <ul className={styles.rowList}>
-                <li>
-                  <span className={styles.listCheck}>✓</span>
-                  Instant voice responses with ultra-low latency (under 500ms)
-                </li>
-                <li>
-                  <span className={styles.listCheck}>✓</span>
-                  Every call auto-captured as a structured CRM contact
-                </li>
-                <li>
-                  <span className={styles.listCheck}>✓</span>
-                  One-click live handoff to your human team when it matters
-                </li>
-              </ul>
-            </div>
-            <div className={styles.splitGraphicCol}>
-              <div className={styles.graphicBox}>
-                <div className={styles.autopilotWidget}>
-                  <div className={styles.autopilotTitle}>Active Calls Processing</div>
-                  <div className={styles.activeCallList}>
-                    <div className={styles.activeCallItem}>
-                      <div className={styles.avatarMini}>AM</div>
-                      <div className={styles.activeCallDetails}>
-                        <div className={styles.activeCallNumber}>+1 (555) 492-2034</div>
-                        <div className={styles.activeCallProgress}>Solving Billing issue • 1m 45s</div>
-                      </div>
-                      <div className={styles.liveBadgeMini}>Live</div>
-                    </div>
-                    <div className={styles.activeCallItem}>
-                      <div className={styles.avatarMini}>AM</div>
-                      <div className={styles.activeCallDetails}>
-                        <div className={styles.activeCallNumber}>+1 (555) 782-9012</div>
-                        <div className={styles.activeCallProgress}>Booking Appointment • 42s</div>
-                      </div>
-                      <div className={styles.liveBadgeMini}>Live</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* BLOCK 4: Dynamic Tool Integrations & Actions */}
-          <div className={`${styles.splitRow} ${styles.rowInverse}`}>
-            <div className={styles.splitTextCol}>
-              <span className={styles.rowTag}>Step 4</span>
-              <h3 className={styles.rowTitle}>Connect your stack. Trigger actions on every call.</h3>
-              <p className={styles.rowSubtitle}>
-                Allow your AI voice agent to read, write, and execute tasks across 1,000+ business applications in real time during a call.
-              </p>
-              <ul className={styles.rowList}>
-                <li>
-                  <span className={styles.listCheck}>✓</span>
-                  Sync CRM pipelines instantly (Salesforce, HubSpot, GoHighLevel)
-                </li>
-                <li>
-                  <span className={styles.listCheck}>✓</span>
-                  Trigger instant notifications and updates (Gmail, Slack, Twilio)
-                </li>
-                <li>
-                  <span className={styles.listCheck}>✓</span>
-                  Process secure payments, top-ups, and transactions (Stripe)
-                </li>
-              </ul>
-            </div>
-            <div className={styles.splitGraphicCol}>
-              <div className={styles.graphicBox}>
-                <div className={styles.integrationsWidget}>
-                  <div className={styles.integrationsHeader}>
-                    <span>App Integrations Status</span>
-                    <span className={styles.liveBadgeMini}>Live Sync</span>
-                  </div>
-                  <div className={styles.integrationsList}>
-                    <div className={styles.integrationItem}>
-                      <span className={styles.integrationLogo}>🟠</span>
-                      <div className={styles.integrationDetails}>
-                        <div className={styles.integrationName}>HubSpot CRM</div>
-                        <div className={styles.integrationAction}>Updating deal stage...</div>
-                      </div>
-                      <span className={styles.integrationState}>Active</span>
-                    </div>
-                    <div className={styles.integrationItem}>
-                      <span className={styles.integrationLogo}>💬</span>
-                      <div className={styles.integrationDetails}>
-                        <div className={styles.integrationName}>Slack Channel</div>
-                        <div className={styles.integrationAction}>Sending call logs...</div>
-                      </div>
-                      <span className={styles.integrationState}>Active</span>
-                    </div>
-                    <div className={styles.integrationItem}>
-                      <span className={styles.integrationLogo}>💳</span>
-                      <div className={styles.integrationDetails}>
-                        <div className={styles.integrationName}>Stripe Payments</div>
-                        <div className={styles.integrationAction}>Awaiting charge...</div>
-                      </div>
-                      <span className={styles.integrationState}>Ready</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* CORE CAPABILITIES GRID (MIRRORING JOHA) */}
-      <section className={styles.capabilities} id="how-it-works">
+      {/* PROBLEM SECTION */}
+      <section className={styles.problemSection} id="problem">
         <div className={styles.sectionHeaderCentered}>
-          <span className={styles.sectionTag}>Key Advantages</span>
-          <h2 className={styles.sectionTitle}>Build once. Let it handle every call.</h2>
+          <span className={styles.sectionTag}>The Pain Point</span>
+          <h2 className={styles.sectionTitle}>Your Team Is Answering The Same Questions Every Day</h2>
           <p className={styles.sectionSubtitle}>
-            24/7 availability. Human-quality voice. Zero overhead.
+            Routine support calls trap your human agents in repetitive answers, driving support costs up and making frustrated customers wait in queue.
           </p>
         </div>
 
-        <div className={styles.capabilitiesGrid}>
-          {/* CARD 1 */}
-          <div className={styles.capabilityCard}>
-            <div className={styles.capIcon}>🎙️</div>
-            <h4 className={styles.capTitle}>One setup. Handles every call, every time.</h4>
-            <p className={styles.capDesc}>
-              Amira works across all your local lines, toll-free numbers, and website widgets.
-              Train on your PDF catalogs, txt instructions, or pricing files.
-            </p>
+        <div className={styles.problemGrid}>
+          <div className={styles.problemCard}>
+            <div className={styles.problemCardHeader}>
+              <span className={styles.industryTag}>Internet Service Providers (ISPs)</span>
+            </div>
+            <ul className={styles.problemList}>
+              <li>
+                <span className={styles.bulletX}>✖</span>
+                <div>
+                  <strong>"My internet is down."</strong>
+                  <p>Requires checking signal strength and resetting line ports.</p>
+                </div>
+              </li>
+              <li>
+                <span className={styles.bulletX}>✖</span>
+                <div>
+                  <strong>"How do I reset my router?"</strong>
+                  <p>Guiding router restarts and checking billing status.</p>
+                </div>
+              </li>
+              <li>
+                <span className={styles.bulletX}>✖</span>
+                <div>
+                  <strong>"When is my next billing payment due?"</strong>
+                  <p>Lookup account statements and update details.</p>
+                </div>
+              </li>
+            </ul>
           </div>
 
-          {/* CARD 2 */}
-          <div className={styles.capabilityCard}>
-            <div className={styles.capIcon}>📊</div>
-            <h4 className={styles.capTitle}>Every call becomes a lead. Automatically.</h4>
-            <p className={styles.capDesc}>
-              Your CRM fills itself while you sleep. Auto-capture names, phone numbers,
-              deal stages, and sentiment analytics directly into your unified dashboard.
-            </p>
+          <div className={styles.problemCard}>
+            <div className={styles.problemCardHeader}>
+              <span className={styles.industryTag}>Fintechs &amp; Payments</span>
+            </div>
+            <ul className={styles.problemList}>
+              <li>
+                <span className={styles.bulletX}>✖</span>
+                <div>
+                  <strong>"I haven't received my transfer."</strong>
+                  <p>Requires querying transaction ledger logs and bank APIs.</p>
+                </div>
+              </li>
+              <li>
+                <span className={styles.bulletX}>✖</span>
+                <div>
+                  <strong>"Why was my debit card declined?"</strong>
+                  <p>Verifying card locks, balances, and security holds.</p>
+                </div>
+              </li>
+              <li>
+                <span className={styles.bulletX}>✖</span>
+                <div>
+                  <strong>"How do I update my KYC documentation?"</strong>
+                  <p>Verifying identification limits and screening records.</p>
+                </div>
+              </li>
+            </ul>
           </div>
+        </div>
 
-          {/* CARD 3 */}
-          <div className={styles.capabilityCard}>
-            <div className={styles.capIcon}>🚀</div>
-            <h4 className={styles.capTitle}>Reach thousands of leads in one click.</h4>
-            <p className={styles.capDesc}>
-              Import lead lists and fire automated outbound call sequences. Amira rings
-              them up, pitches your offers, answers objections, and captures results.
-            </p>
+        <div className={styles.metricsGrid}>
+          <div className={styles.metricCard}>
+            <div className={styles.metricValue}>$3.50+</div>
+            <div className={styles.metricTitle}>Cost Per Routine Call</div>
+            <p className={styles.metricDesc}>Every password reset, signal check, or payment status check drains cash flow.</p>
           </div>
-
-          {/* CARD 4 */}
-          <div className={styles.capabilityCard}>
-            <div className={styles.capIcon}>🤝</div>
-            <h4 className={styles.capTitle}>Your whole team, one dashboard.</h4>
-            <p className={styles.capDesc}>
-              Review transcripts, listen to voice recordings, assign call actions, and leave internal notes.
-              Connect Zapier, Salesforce, Hubspot, and GoHighLevel in seconds.
-            </p>
+          <div className={styles.metricCard}>
+            <div className={styles.metricValue}>72%</div>
+            <div className={styles.metricTitle}>Customer Churn Risk</div>
+            <p className={styles.metricDesc}>Customers hang up or switch brands if hold times exceed 5 minutes.</p>
           </div>
-
-          {/* CARD 5 */}
-          <div className={styles.capabilityCard}>
-            <div className={styles.capIcon}>📅</div>
-            <h4 className={styles.capTitle}>Talk to them. Book them. In the same place.</h4>
-            <p className={styles.capDesc}>
-              Sync your Google Calendar or Cal.com. Amira answers available slot times,
-              books appointments, and sends confirmations without you lifting a finger.
-            </p>
+          <div className={styles.metricCard}>
+            <div className={styles.metricValue}>85%</div>
+            <div className={styles.metricTitle}>Human Agent Burnout</div>
+            <p className={styles.metricDesc}>Answering the same ten questions repeatedly leads to high agent turnover.</p>
           </div>
         </div>
       </section>
 
-      {/* INTERACTIVE CALLING PLAYGROUND */}
-      <section className={styles.demoPlayground} id="demo">
+      {/* SOLUTION / SYSTEM INTEGRATIONS */}
+      <section className={styles.integrationsSection} id="integrations">
         <div className={styles.sectionHeaderCentered}>
-          <span className={styles.sectionTag}>Live Playground</span>
-          <h2 className={styles.sectionTitle}>Hear Amira in Action</h2>
+          <span className={styles.sectionTag}>Operations Automation</span>
+          <h2 className={styles.sectionTitle}>Amira Resolves Issues. She Doesn't Just Answer Them.</h2>
           <p className={styles.sectionSubtitle}>
-            Every word, every pause, every response — indistinguishable from a human. Hear it yourself.
+            Instead of giving generic answers, Amira integrates with your database, billing APIs, and CRM platforms to look up info and trigger actions.
           </p>
         </div>
-        
-        <div className={styles.demoFrame}>
-          <iframe 
-            src="https://amira-call-demo.vercel.app/" 
-            title="Amira Interactive Call Demo"
-            allow="microphone"
-            className={styles.demoIframe}
-          />
+
+        <div className={styles.trusted}>
+          <div className={styles.trustedContainer}>
+            <p className={styles.trustedLabel}>Integrates with your stack to check systems and update logs</p>
+            <div style={{ overflow: 'hidden', position: 'relative', width: '100%', maskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)' }}>
+              <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center', animation: 'amiraTicker 30s linear infinite', width: 'max-content' }}>
+                {['Zendesk', 'Salesforce', 'HubSpot', 'Stripe', 'Twilio', 'Telnyx', 'Slack', 'Gmail', 'Monday.com', 'Zoho CRM', 'Intercom', 'Freshdesk', 'Zendesk', 'Salesforce', 'HubSpot', 'Stripe', 'Twilio', 'Telnyx', 'Slack', 'Gmail', 'Monday.com', 'Zoho CRM', 'Intercom', 'Freshdesk'].map((tool, i) => (
+                  <span key={i} className={styles.tickerItem}>{tool}</span>
+                ))}
+              </div>
+            </div>
+            <style>{`@keyframes amiraTicker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }`}</style>
+          </div>
+        </div>
+      </section>
+
+      {/* INTERACTIVE CALL PLAYER / SCENARIO SANDBOX */}
+      <section className={styles.demoPlayground} id="interactive-demo">
+        <div className={styles.sectionHeaderCentered}>
+          <span className={styles.sectionTag}>Live Interaction</span>
+          <h2 className={styles.sectionTitle}>Listen to Amira Resolve a Call</h2>
+          <p className={styles.sectionSubtitle}>
+            Choose a scenario below to hear how Amira interfaces with backend systems to solve real inquiries.
+          </p>
+        </div>
+
+        <div className={styles.playerWrapper}>
+          <div className={styles.scenarioSelector}>
+            <button 
+              className={`${styles.scenarioTab} ${demoScenario === "isp" ? styles.scenarioTabActive : ""}`}
+              onClick={() => handleSelectScenario("isp")}
+            >
+              🌐 ISP Connection Check
+            </button>
+            <button 
+              className={`${styles.scenarioTab} ${demoScenario === "fintech" ? styles.scenarioTabActive : ""}`}
+              onClick={() => handleSelectScenario("fintech")}
+            >
+              💳 Fintech Ledger Inquiry
+            </button>
+          </div>
+
+          <div className={styles.audioPlayer}>
+            <div className={styles.playerControls}>
+              <button className={styles.playBtn} onClick={handleTogglePlay}>
+                {isPlayingCall ? "⏸ Pause Call" : "▶ Play Call"}
+              </button>
+              <button className={styles.resetBtn} onClick={handleResetCall}>
+                ↺ Reset
+              </button>
+              <div className={styles.timeDisplay}>
+                0:{playbackTime.toString().padStart(2, "0")} / 0:{maxCallTime.toString().padStart(2, "0")}
+              </div>
+            </div>
+
+            {/* Moving wave animation when playing */}
+            <div className={styles.waveVisualizer}>
+              <div className={`${styles.waveBar} ${isPlayingCall ? styles.waveBarPlay : ""}`} style={{ animationDelay: "0.1s" }} />
+              <div className={`${styles.waveBar} ${isPlayingCall ? styles.waveBarPlay : ""}`} style={{ animationDelay: "0.4s" }} />
+              <div className={`${styles.waveBar} ${isPlayingCall ? styles.waveBarPlay : ""}`} style={{ animationDelay: "0.2s" }} />
+              <div className={`${styles.waveBar} ${isPlayingCall ? styles.waveBarPlay : ""}`} style={{ animationDelay: "0.6s" }} />
+              <div className={`${styles.waveBar} ${isPlayingCall ? styles.waveBarPlay : ""}`} style={{ animationDelay: "0.3s" }} />
+              <div className={`${styles.waveBar} ${isPlayingCall ? styles.waveBarPlay : ""}`} style={{ animationDelay: "0.8s" }} />
+              <div className={`${styles.waveBar} ${isPlayingCall ? styles.waveBarPlay : ""}`} style={{ animationDelay: "0.5s" }} />
+            </div>
+
+            {/* Scrollable conversation transcript */}
+            <div className={styles.transcriptView}>
+              {transcriptIndex === -1 ? (
+                <div className={styles.transcriptPlaceholder}>
+                  Click Play Call to hear the simulated conversation.
+                </div>
+              ) : (
+                <div className={styles.transcriptBubbles}>
+                  {dialogue.slice(0, transcriptIndex + 1).map((item, idx) => (
+                    <div 
+                      key={idx} 
+                      className={`${styles.bubble} ${
+                        item.sender === "ai" ? styles.bubbleAi : item.sender === "system" ? styles.bubbleSys : styles.bubbleUser
+                      }`}
+                    >
+                      <div className={styles.bubbleSender}>
+                        {item.sender === "ai" ? "Amira (AI Agent)" : item.sender === "system" ? "Backend System" : "Customer"}
+                      </div>
+                      <div className={styles.bubbleText}>{item.text}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -813,7 +578,7 @@ export default function LandingPage() {
             <h4 className={styles.planName}>Starter</h4>
             <p className={styles.planDesc}>Perfect for solo operators and small projects testing out AI voice support.</p>
             <div className={styles.planPrice}>
-              ${activePlan === "monthly" ? "49" : "39"}<span>/mo</span>
+              <LocalPrice basePriceUsd={activePlan === "monthly" ? 49 : 39} /><span>/mo</span>
             </div>
             <p className={styles.planPeriod}>Billed {activePlan}</p>
             
@@ -825,7 +590,7 @@ export default function LandingPage() {
               <li>Webhooks &amp; email support</li>
             </ul>
 
-            <a href="#" className={`${styles.btnPlan} ${styles.btnPlanOutline}`}>Start Free Trial</a>
+            <a href="/dashboard" className={`${styles.btnPlan} ${styles.btnPlanOutline}`}>Start Free Trial</a>
           </div>
 
           {/* PROFESSIONAL */}
@@ -834,7 +599,7 @@ export default function LandingPage() {
             <h4 className={styles.planName}>Professional</h4>
             <p className={styles.planDesc}>Ideal for growing teams automating medium to high voice support volume.</p>
             <div className={styles.planPrice}>
-              ${activePlan === "monthly" ? "199" : "159"}<span>/mo</span>
+              <LocalPrice basePriceUsd={activePlan === "monthly" ? 199 : 159} /><span>/mo</span>
             </div>
             <p className={styles.planPeriod}>Billed {activePlan}</p>
             
@@ -847,7 +612,7 @@ export default function LandingPage() {
               <li>Priority customer support</li>
             </ul>
 
-            <a href="#" className={`${styles.btnPlan} ${styles.btnPlanFilled}`}>Go Professional</a>
+            <a href="/dashboard" className={`${styles.btnPlan} ${styles.btnPlanFilled}`}>Go Professional</a>
           </div>
 
           {/* ENTERPRISE */}
@@ -868,28 +633,28 @@ export default function LandingPage() {
               <li>Dedicated account manager &amp; 24/7 support</li>
             </ul>
 
-            <a href="#" className={`${styles.btnPlan} ${styles.btnPlanOutline}`}>Contact Sales</a>
+            <a href="/dashboard" className={`${styles.btnPlan} ${styles.btnPlanOutline}`}>Contact Sales</a>
           </div>
         </div>
       </section>
 
-      {/* AGENT LIBRARY */}
-      <section style={{ padding: '5rem 1.5rem', background: 'transparent' }} id="agents">
+      {/* READY-DEPLOMED AGENT GALLERY */}
+      <section style={{ padding: '5rem 1.5rem', background: 'transparent' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <span className={styles.sectionTag}>Agent Library</span>
-            <h2 className={styles.sectionTitle} style={{ marginTop: '0.75rem' }}>Deploy a ready-made AI Agent in seconds</h2>
-            <p className={styles.sectionSubtitle}>Pick a pre-built voice agent for your industry. Customise the script, train it on your docs, and go live immediately.</p>
+            <span className={styles.sectionTag}>Operations Templates</span>
+            <h2 className={styles.sectionTitle} style={{ marginTop: '0.75rem' }}>Deploy a Pre-Trained Support Agent in Seconds</h2>
+            <p className={styles.sectionSubtitle}>Select a layout pre-configured with the database queries and escalation rules for your exact operations.</p>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: '1.25rem' }}>
             {[
-              { icon: '🏠', name: 'Real Estate Agent', tag: 'Sales', desc: 'Books property viewings, qualifies buyer intent, and follows up on listings automatically.', stat: '3.2× more bookings' },
-              { icon: '🏥', name: 'Medical Receptionist', tag: 'Healthcare', desc: 'Books appointments, handles patient inquiries, and reduces front desk call volume by 60%.', stat: '60% fewer missed calls' },
-              { icon: '🚗', name: 'Auto Dealership Agent', tag: 'Automotive', desc: 'Qualifies trade-in leads, books test drives, and handles finance inquiries 24/7.', stat: '4× lead response rate' },
-              { icon: '⚖️', name: 'Legal Intake Agent', tag: 'Legal', desc: 'Screens new case inquiries, captures contact details, and books attorney consultations automatically.', stat: 'Zero missed intakes' },
-              { icon: '📦', name: 'E-commerce Support', tag: 'Retail', desc: 'Handles order status, returns, and product questions over voice — without a support team.', stat: '80% query deflection' },
-              { icon: '🏋️', name: 'Gym & Wellness Agent', tag: 'Fitness', desc: 'Books trial classes, handles membership queries, and recovers churned members with outbound calls.', stat: '2× membership signups' },
+              { icon: '🌐', name: 'ISP Outage Diagnostic', tag: 'ISP Support', desc: 'Checks line signal status, runs terminal port resets, and logs local Zendesk tickets.', stat: '65% query deflection' },
+              { icon: '💳', name: 'Ledger Audit Rep', tag: 'Fintech Support', desc: 'Queries transfer logs, resolves network clearing delays, and logs tracking IDs.', stat: '2.5 min avg resolution' },
+              { icon: '🔒', name: 'KYC Document Agent', tag: 'Compliance', desc: 'Validates identification limits, screens credentials, and guides details update.', stat: 'Zero missed screenings' },
+              { icon: '📈', name: 'Account & Billing rep', tag: 'Billing', desc: 'Checks statement balances, processes plan renewals, and prints invoices.', stat: '90% cost reduction' },
+              { icon: '📦', name: 'Delivery Status Check', tag: 'Logistics', desc: 'Queries shipment tracks, prints shipping labels, and updates dispatch status.', stat: '80% deflection rate' },
+              { icon: '📞', name: 'General Support Router', tag: 'Operations', desc: 'Qualifies customer issues and handles warm transfers to human agents.', stat: 'Under 500ms voice latency' },
             ].map((agent, i) => (
               <a
                 key={i}
@@ -909,69 +674,13 @@ export default function LandingPage() {
               </a>
             ))}
           </div>
-
-          <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
-            <a href="/login" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 2rem', borderRadius: '8px', border: '1px solid rgba(76,175,80,0.5)', color: '#a5b4fc', fontSize: '14px', fontWeight: 600, textDecoration: 'none', background: 'rgba(76,175,80,0.1)', transition: 'all 0.2s' }}>Browse All Agents →</a>
-          </div>
         </div>
       </section>
 
-      {/* CLIENT TESTIMONIALS */}
+      {/* GUARANTEE & CALLOUT */}
       <section className={styles.testimonials}>
-        <div className={styles.sectionHeaderCentered}>
-          <span className={styles.sectionTag}>Client Stories</span>
-          <h2 className={styles.sectionTitle}>What Happens When You Stop Missing Calls</h2>
-          <p className={styles.sectionSubtitle}>
-            Real results from real businesses. No cherry-picked demos. Just numbers.
-          </p>
-        </div>
-
-        <div className={styles.testimonialsGrid}>
-          <div className={styles.testimonialCard}>
-            <div className={styles.stars}>★★★★★</div>
-            <p className={styles.testimonialText}>
-              "Our AI chatbot handled over 800 conversations in the first month. We closed 23 new clients without a single manual sales call. Amira built something I genuinely didn't think was possible at this scale or price point."
-            </p>
-            <div className={styles.testimonialAuthor}>
-              <div className={styles.avatar}>SJ</div>
-              <div>
-                <p className={styles.authorName}>Sarah Jenkins</p>
-                <p className={styles.authorRole}>Operations Lead, ScaleFlow</p>
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.testimonialCard}>
-            <div className={styles.stars}>★★★★★</div>
-            <p className={styles.testimonialText}>
-              "The AI voice agent answers our inbound calls 24/7 and books property viewings automatically. We went from missing 60% of after-hours leads to capturing every single one. Revenue is up 40% quarter-on-quarter."
-            </p>
-            <div className={styles.testimonialAuthor}>
-              <div className={styles.avatar}>MK</div>
-              <div>
-                <p className={styles.authorName}>Marcus Kincaid</p>
-                <p className={styles.authorRole}>VP of Sales, Zenith Inc.</p>
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.testimonialCard}>
-            <div className={styles.stars}>★★★★★</div>
-            <p className={styles.testimonialText}>
-              "Within 6 weeks of launching our AI voice agents, our team's outbound call productivity jumped from 1.8× to 4.2×. The voice response is indistinguishable from real operators. Our competitors have no idea how we're doing it."
-            </p>
-            <div className={styles.testimonialAuthor}>
-              <div className={styles.avatar}>DR</div>
-              <div>
-                <p className={styles.authorName}>Daniel Ryan</p>
-                <p className={styles.authorRole}>Co-Founder, Apex Group</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <p className={styles.guaranteeText}>
-          🔒 <strong>No lock-in:</strong> Cancel anytime. If your call response rate and lead capture don't improve in 30 days, we work with you until they do, or refund you in full.
+          🔒 <strong>No Lock-in:</strong> Cancel anytime. If Amira doesn't reduce your repeat call volume and average hold time in 30 days, we'll refund you in full.
         </p>
       </section>
 
@@ -979,27 +688,20 @@ export default function LandingPage() {
       <section className={styles.footerCtaBanner}>
         <div className={styles.footerCtaContainer}>
           <div className={styles.footerCtaLeft}>
-            <h2 className={styles.footerCtaTitle}>Ready to stop missing calls?</h2>
+            <h2 className={styles.footerCtaTitle}>Ready to stop drowning in support calls?</h2>
             <p className={styles.footerCtaDesc}>
-              Join hundreds of businesses already using Amira to answer every call, qualify every lead, and close more deals — automatically.
+              Join hundreds of operations managers using Amira to resolve repetitive inquiries, lower hold times, and free up agents for complex problems.
             </p>
           </div>
           <div className={styles.footerCtaRight}>
-            {/* Abstract radiating burst of thick angled stripes in our electric blue/indigo theme */}
             <div className={styles.stripesBurst}>
               <div className={styles.stripeBar} style={{ transform: 'rotate(12deg) translate(80px, -20px)', width: '130px', height: '24px', backgroundColor: 'rgba(76, 175, 80, 0.9)' }}></div>
               <div className={styles.stripeBar} style={{ transform: 'rotate(38deg) translate(90px, 10px)', width: '150px', height: '28px', backgroundColor: 'rgba(0, 101, 255, 0.9)' }}></div>
               <div className={styles.stripeBar} style={{ transform: 'rotate(72deg) translate(100px, 30px)', width: '115px', height: '22px', backgroundColor: 'rgba(76, 175, 80, 0.9)' }}></div>
               <div className={styles.stripeBar} style={{ transform: 'rotate(108deg) translate(95px, 20px)', width: '140px', height: '26px', backgroundColor: 'rgba(0, 101, 255, 0.9)' }}></div>
               <div className={styles.stripeBar} style={{ transform: 'rotate(148deg) translate(80px, 0px)', width: '120px', height: '24px', backgroundColor: 'rgba(76, 175, 80, 0.9)' }}></div>
-              <div className={styles.stripeBar} style={{ transform: 'rotate(185deg) translate(95px, -15px)', width: '160px', height: '28px', backgroundColor: 'rgba(0, 101, 255, 0.9)' }}></div>
-              <div className={styles.stripeBar} style={{ transform: 'rotate(232deg) translate(90px, 10px)', width: '110px', height: '22px', backgroundColor: 'rgba(76, 175, 80, 0.9)' }}></div>
-              <div className={styles.stripeBar} style={{ transform: 'rotate(268deg) translate(100px, -5px)', width: '130px', height: '26px', backgroundColor: 'rgba(0, 101, 255, 0.9)' }}></div>
-              <div className={styles.stripeBar} style={{ transform: 'rotate(308deg) translate(85px, -20px)', width: '140px', height: '24px', backgroundColor: 'rgba(76, 175, 80, 0.9)' }}></div>
-              <div className={styles.stripeBar} style={{ transform: 'rotate(342deg) translate(90px, -10px)', width: '150px', height: '28px', backgroundColor: 'rgba(0, 101, 255, 0.9)' }}></div>
             </div>
             
-            {/* Slanted Beveled Octagon button in white */}
             <a href="/dashboard" className={styles.beveledCtaBtn}>
               Start Free — No Card Needed
             </a>
@@ -1019,17 +721,17 @@ export default function LandingPage() {
               />
             </div>
             <p className={styles.footerBrandDesc}>
-              The AI call center platform that helps businesses respond faster, qualify leads, and close more sales.
+              The operations automation call center platform that resolves repetitive questions, clears agent backlogs, and integrates with your support desk.
             </p>
           </div>
 
           <div className={styles.footerCol}>
             <h4>Product</h4>
             <ul>
-              <li><a href="#features">Features</a></li>
+              <li><a href="#problem">Repetitive Calls</a></li>
+              <li><a href="#workflow">How It Works</a></li>
               <li><a href="#pricing">Pricing</a></li>
-              <li><a href="#how-it-works">How It Works</a></li>
-              <li><a href="#demo">Live Demo</a></li>
+              <li><a href="#interactive-demo">Listen to Call</a></li>
             </ul>
           </div>
 

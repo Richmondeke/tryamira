@@ -86,7 +86,50 @@ export async function getAgents() {
 }
 
 export async function createAgent(name: string, customConfig?: any) {
-  const id = uuidv4();
+  let id = uuidv4();
+  
+  const apiKey = process.env.VAPI_PRIVATE_API_KEY;
+  if (apiKey && apiKey !== 'undefined' && apiKey !== 'null' && apiKey.trim() !== '') {
+    try {
+      const vapiRes = await fetch('https://api.vapi.ai/assistant', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: name,
+          firstMessage: 'Hello, how can I help you today?',
+          model: {
+            provider: 'openai',
+            model: 'gpt-4o',
+            messages: [{ role: 'system', content: 'You are a helpful assistant.' }]
+          },
+          voice: {
+            provider: 'playht',
+            voiceId: 'jennifer'
+          },
+          transcriber: {
+            provider: 'deepgram',
+            language: 'en',
+            model: 'nova-2'
+          }
+        })
+      });
+
+      if (vapiRes.ok) {
+        const vapiData = await vapiRes.json();
+        if (vapiData.id) {
+          id = vapiData.id;
+        }
+      } else {
+        console.warn('Failed to provision Vapi assistant on creation:', await vapiRes.text());
+      }
+    } catch (err) {
+      console.warn('Error calling Vapi during agent creation:', err);
+    }
+  }
+
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
     return { success: true, data: { id, name } };
   }

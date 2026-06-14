@@ -38,9 +38,77 @@ export default function FormBuilderPage({ params }: { params: { id: string } }) 
     customFields: [] as CustomField[],
     successMessage: 'Thank you for your inquiry! We will be in touch soon.',
     agentTriggerId: '',
+    integrationSequence: '',
   });
 
   const [agents, setAgents] = useState<any[]>([]);
+  
+  const [slashMenuOpen, setSlashMenuOpen] = useState(false);
+  const [slashSearch, setSlashSearch] = useState('');
+  const [cursorPos, setCursorPos] = useState({ top: 0, left: 0 });
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
+  const availableIntegrations = [
+    { id: 'hubspot', name: 'HubSpot', active: true, icon: '🧲' },
+    { id: 'salesforce', name: 'Salesforce', active: false, icon: '☁️' },
+    { id: 'zendesk', name: 'Zendesk', active: true, icon: '🎧' },
+    { id: 'make', name: 'Make.com', active: true, icon: '⚙️' },
+    { id: 'zapier', name: 'Zapier', active: false, icon: '⚡' },
+    { id: 'slack', name: 'Slack', active: true, icon: '💬' },
+  ];
+
+  const handleSequenceChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value;
+    setFormConfig({ ...formConfig, integrationSequence: val });
+
+    const cursorIdx = e.target.selectionStart;
+    const textBeforeCursor = val.slice(0, cursorIdx);
+    
+    // Check if we are currently typing a slash command
+    const slashIndex = textBeforeCursor.lastIndexOf('/');
+    if (slashIndex !== -1 && !textBeforeCursor.slice(slashIndex).includes(' ') && !textBeforeCursor.slice(slashIndex).includes('\\n')) {
+      const search = textBeforeCursor.slice(slashIndex + 1).toLowerCase();
+      setSlashSearch(search);
+      setSlashMenuOpen(true);
+
+      // Rough approximation for cursor position (could be improved with a library like get-caret-coordinates)
+      if (textareaRef.current) {
+        setCursorPos({ top: 20, left: 10 }); 
+      }
+    } else {
+      setSlashMenuOpen(false);
+    }
+  };
+
+  const insertIntegration = (integrationName: string, active: boolean) => {
+    if (!active) {
+      setToast(`Integration '${integrationName}' is not connected. Please connect it first.`);
+      setSlashMenuOpen(false);
+      return;
+    }
+
+    const val = formConfig.integrationSequence;
+    const cursorIdx = textareaRef.current?.selectionStart || val.length;
+    const textBeforeCursor = val.slice(0, cursorIdx);
+    const textAfterCursor = val.slice(cursorIdx);
+    
+    const slashIndex = textBeforeCursor.lastIndexOf('/');
+    if (slashIndex !== -1) {
+      const newBefore = textBeforeCursor.slice(0, slashIndex);
+      const newText = `${newBefore}[${integrationName}] ${textAfterCursor}`;
+      setFormConfig({ ...formConfig, integrationSequence: newText });
+      
+      setTimeout(() => {
+        if (textareaRef.current) {
+          const newCursorPos = newBefore.length + integrationName.length + 3;
+          textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
+          textareaRef.current.focus();
+        }
+      }, 0);
+    }
+    
+    setSlashMenuOpen(false);
+  };
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -350,6 +418,51 @@ export default function FormBuilderPage({ params }: { params: { id: string } }) 
                     <option key={agent.id} value={agent.id}>{agent.name}</option>
                   ))}
                 </select>
+              </div>
+              
+              <div style={{ position: 'relative' }}>
+                <label style={{ display: 'block', fontSize: '12px', color: '#475569', fontWeight: 500, marginBottom: '4px' }}>Integration Sequence (Prompt)</label>
+                <p style={{ fontSize: '11px', color: '#64748b', marginBottom: '8px' }}>Describe what should happen when the form is submitted. Type <strong style={{color: '#4caf50'}}>/</strong> to reference your connected apps.</p>
+                <div style={{ position: 'relative' }}>
+                  <textarea 
+                    ref={textareaRef}
+                    value={formConfig.integrationSequence} 
+                    onChange={handleSequenceChange} 
+                    style={{ width: '100%', padding: '0.6rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px', resize: 'vertical', minHeight: '100px', backgroundColor: '#fff', color: '#0f172a' }} 
+                    placeholder="e.g. When the form is submitted, send the lead to /HubSpot and alert the team on /Slack..."
+                  />
+                  {slashMenuOpen && (
+                    <div style={{ 
+                      position: 'absolute', top: '100%', left: 0, marginTop: '4px',
+                      width: '100%', maxHeight: '200px', overflowY: 'auto',
+                      backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '6px', 
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)', zIndex: 50 
+                    }}>
+                      <div style={{ padding: '8px 12px', fontSize: '11px', fontWeight: 600, color: '#64748b', backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>AVAILABLE APPS</div>
+                      {availableIntegrations.filter(i => i.name.toLowerCase().includes(slashSearch)).map(integration => (
+                        <div 
+                          key={integration.id}
+                          onClick={() => insertIntegration(integration.name, integration.active)}
+                          style={{ 
+                            padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer',
+                            backgroundColor: '#fff', borderBottom: '1px solid #f1f5f9', opacity: integration.active ? 1 : 0.6
+                          }}
+                          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
+                          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#fff'}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '14px' }}>{integration.icon}</span>
+                            <span style={{ fontSize: '13px', fontWeight: 500, color: '#334155' }}>{integration.name}</span>
+                          </div>
+                          {!integration.active && <span style={{ fontSize: '10px', color: '#ef4444', backgroundColor: '#fef2f2', padding: '2px 6px', borderRadius: '12px', fontWeight: 500 }}>Disconnected</span>}
+                        </div>
+                      ))}
+                      {availableIntegrations.filter(i => i.name.toLowerCase().includes(slashSearch)).length === 0 && (
+                        <div style={{ padding: '8px 12px', fontSize: '12px', color: '#94a3b8', textAlign: 'center' }}>No apps match "{slashSearch}"</div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

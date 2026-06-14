@@ -357,7 +357,7 @@ export default function PhoneAgentPage() {
 
           {/* Detailed Campaign Modal */}
           {selectedCampaign && (
-            <Modal isOpen={!!selectedCampaign} onClose={() => { setSelectedCampaign(null); setSelectedCallTranscript(null); }} title="" maxWidth="800px">
+            <Modal isOpen={!!selectedCampaign} onClose={() => { setSelectedCampaign(null); setSelectedCallTranscript(null); }} title="">
               {(() => {
                 const content = selectedCampaign.content ? JSON.parse(selectedCampaign.content) : {};
                 const totalContacts = content.leadsCount || (isDemoMode ? Math.max(8, campaignCalls.length) : campaignCalls.length);
@@ -370,7 +370,7 @@ export default function PhoneAgentPage() {
                 
                 const avgMin = Math.floor(avgDurationSec / 60);
                 const avgSec = avgDurationSec % 60;
-                const avgDurationStr = avgMin > 0 ? \`\${avgMin}m \${avgSec}s\` : \`\${avgSec}s\`;
+                const avgDurationStr = avgMin > 0 ? `${avgMin}m ${avgSec}s` : `${avgSec}s`;
                 
                 const answerRate = dialedCount > 0 ? Math.round((answeredCalls.length / dialedCount) * 100) : 0;
                 const totalCost = campaignCalls.reduce((acc, c) => acc + (c.cost || 0), 0).toFixed(2);
@@ -395,7 +395,7 @@ export default function PhoneAgentPage() {
                         <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--stripe-navy)' }}>{dialedCount} / {totalContacts} Contacts</span>
                       </div>
                       <div style={{ width: '100%', height: '8px', backgroundColor: '#e2e8f0', borderRadius: '4px', overflow: 'hidden', marginBottom: '0.75rem' }}>
-                        <div style={{ width: \`\${progressVal || (isDemoMode ? 15 : 0)}%\`, height: '100%', backgroundColor: '#4caf50', borderRadius: '4px', transition: 'width 0.5s ease-out' }}></div>
+                        <div style={{ width: `${progressVal || (isDemoMode ? 15 : 0)}%`, height: '100%', backgroundColor: '#4caf50', borderRadius: '4px', transition: 'width 0.5s ease-out' }}></div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#4caf50', fontWeight: 500 }}>
                         <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#4caf50', animation: 'pulse 2s infinite' }}></div>
@@ -427,7 +427,7 @@ export default function PhoneAgentPage() {
                     {loadingCalls ? (
                       <p style={{ fontSize: '13px', color: 'var(--stripe-label)' }}>Loading call logs...</p>
                     ) : (
-                      <div style={{ border: '1px solid var(--stripe-border)', borderRadius: '8px', overflow: 'hidden' }}>
+                      <div style={{ border: '1px solid var(--stripe-border)', borderRadius: '8px', overflowX: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontFeatureSettings: '"tnum", "ss01"' }}>
                           <thead>
                             <tr style={{ backgroundColor: '#ffffff', borderBottom: '1px solid var(--stripe-border)' }}>
@@ -464,12 +464,12 @@ export default function PhoneAgentPage() {
 
                               const durM = Math.floor((call.duration_seconds || 0) / 60);
                               const durS = (call.duration_seconds || 0) % 60;
-                              const durStr = durM > 0 ? \`\${durM}m \${durS}s\` : \`\${durS}s\`;
+                              const durStr = durM > 0 ? `${durM}m ${durS}s` : `${durS}s`;
                               
                               return (
                                 <tr key={call.id || idx} style={{ borderBottom: '1px solid var(--stripe-border)', backgroundColor: '#fff' }}>
                                   <td style={{ padding: '0.85rem 1rem' }}>
-                                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--stripe-navy)' }}>{call.customer?.name || \`Lead #\${call.id?.substring(0,4) || idx}\`}</div>
+                                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--stripe-navy)' }}>{call.customer?.name || `Lead #${call.id?.substring(0,4) || idx}`}</div>
                                     <div style={{ fontSize: '11px', color: 'var(--stripe-muted)', marginTop: '2px' }}>{call.customer?.number || '+1 (---) --- ----'}</div>
                                   </td>
                                   <td style={{ padding: '0.85rem 1rem' }}>
@@ -495,7 +495,7 @@ export default function PhoneAgentPage() {
                                   { name: 'Linda Vance', phone: '+14159820011', status: 'Voicemail', color: '#475467', bg: '#f1f5f9', dur: '0m 22s', hasTranscript: true },
                                   { name: 'Chief Olumide', phone: '+2348055554321', status: 'Answered', color: '#027a48', bg: 'rgba(18,183,106,0.1)', dur: '2m 15s', hasTranscript: true },
                                   { name: 'Marcus Sterling', phone: '+12128930192', status: 'Queued', color: '#64748b', bg: '#f8fafc', dur: '0s', hasTranscript: false },
-                                  { name: 'Brian O\\'Connor', phone: '+13109923849', status: 'Queued', color: '#64748b', bg: '#f8fafc', dur: '0s', hasTranscript: false },
+                                  { name: "Brian O'Connor", phone: '+13109923849', status: 'Queued', color: '#64748b', bg: '#f8fafc', dur: '0s', hasTranscript: false },
                                   { name: 'Fatima Musa', phone: '+2348187654321', status: 'Queued', color: '#64748b', bg: '#f8fafc', dur: '0s', hasTranscript: false },
                                 ].map((mock, idx) => (
                                   <tr key={idx} style={{ borderBottom: '1px solid var(--stripe-border)', backgroundColor: '#fff' }}>

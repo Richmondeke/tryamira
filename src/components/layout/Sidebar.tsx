@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useDemoMode } from '@/contexts/DemoModeContext';
 import { usePathname, useRouter } from 'next/navigation';
 import { useUserProfile } from '@/contexts/UserProfileContext';
 import { createClient } from '@/utils/supabase/client';

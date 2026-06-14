@@ -4,13 +4,15 @@ import { useState, useEffect } from 'react';
 import Modal from '../../../../components/ui/Modal';
 import Toast from '../../../../components/ui/Toast';
 import { getAgents } from '@/app/actions/agent';
+import { searchPhoneNumbers, buyPhoneNumber } from '@/app/actions/vapi';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { useRouter } from 'next/navigation';
 
 interface PhoneNumber {
   id: string;
   number: string;
-  carrier: 'Vapi Owned' | 'Twilio' | 'Vonage' | 'SignalWire';
+  carrier: 'Owned' | 'Twilio' | 'Vonage' | 'SignalWire';
   assignedAgentId: string | null;
   assignedAgentName: string | null;
   billingStatus: string;
@@ -24,7 +26,7 @@ export default function PhoneNumbersPage() {
     {
       id: 'num_1',
       number: '+1 (415) 801-3920',
-      carrier: 'Vapi Owned',
+      carrier: 'Owned',
       assignedAgentId: null,
       assignedAgentName: null,
       billingStatus: '$2.00 / mo',
@@ -48,11 +50,12 @@ export default function PhoneNumbersPage() {
   // Buy form state
   const [areaCode, setAreaCode] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const [availableNumbers, setAvailableNumbers] = useState<string[]>([]);
+  const [availableNumbers, setAvailableNumbers] = useState<{phoneNumber: string, areaCode: string}[]>([]);
   const [isBuying, setIsBuying] = useState<string | null>(null);
 
   // Link Agent form state
   const [selectedAgentId, setSelectedAgentId] = useState<string>('');
+  const router = useRouter();
 
   useEffect(() => {
     // Load active workspace agents so we can link them to phone numbers
@@ -94,32 +97,34 @@ export default function PhoneNumbersPage() {
   };
 
   // Search Mock Numbers by Area Code
-  const handleSearchNumbers = () => {
+  const handleSearchNumbers = async () => {
     if (!areaCode.trim() || areaCode.length !== 3) {
       setToast({ message: 'Please enter a valid 3-digit Area Code.', type: 'error' });
       return;
     }
     setIsSearching(true);
     setAvailableNumbers([]);
-    setTimeout(() => {
-      const mockNumbers = [
-        `+1 (${areaCode}) 555-0192`,
-        `+1 (${areaCode}) 555-8390`,
-        `+1 (${areaCode}) 555-4721`,
-      ];
-      setAvailableNumbers(mockNumbers);
-      setIsSearching(false);
-    }, 1000);
+    
+    const res = await searchPhoneNumbers(areaCode);
+    if (res.success && res.data) {
+      setAvailableNumbers(res.data);
+    } else {
+      setToast({ message: res.error || 'Failed to search phone numbers', type: 'error' });
+    }
+    
+    setIsSearching(false);
   };
 
-  // Purchase Mock Number
-  const handleBuyNumber = (num: string) => {
+  // Purchase Number
+  const handleBuyNumber = async (num: string) => {
     setIsBuying(num);
-    setTimeout(() => {
+    const res = await buyPhoneNumber(num);
+    
+    if (res.success) {
       const newNum: PhoneNumber = {
-        id: `num_${Date.now()}`,
+        id: res.data?.id || `num_${Date.now()}`,
         number: num,
-        carrier: 'Vapi Owned',
+        carrier: 'Owned',
         assignedAgentId: null,
         assignedAgentName: null,
         billingStatus: '$2.00 / mo',
@@ -131,7 +136,10 @@ export default function PhoneNumbersPage() {
       setToast({ message: `Successfully purchased ${num}! It is now active in your workspace.`, type: 'success' });
       setAreaCode('');
       setAvailableNumbers([]);
-    }, 1500);
+    } else {
+      setToast({ message: res.error || 'Failed to purchase number', type: 'error' });
+      setIsBuying(null);
+    }
   };
 
   // Open Link Agent Modal
@@ -265,15 +273,15 @@ export default function PhoneNumbersPage() {
               <label style={{ fontSize: '12px', color: 'var(--stripe-label)', fontWeight: 600 }}>Available Numbers:</label>
               {availableNumbers.map((num, i) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.85rem 1.25rem', border: '1px solid var(--stripe-border)', borderRadius: '8px', backgroundColor: '#f8fafc' }}>
-                  <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--stripe-navy)' }}>{num}</span>
+                  <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--stripe-navy)' }}>{num.phoneNumber}</span>
                   <Button 
                     type="button" 
                     size="sm"
                     style={{ backgroundColor: '#10b981', color: '#fff' }}
-                    onClick={() => handleBuyNumber(num)}
-                    disabled={isBuying === num}
+                    onClick={() => handleBuyNumber(num.phoneNumber)}
+                    disabled={isBuying === num.phoneNumber}
                   >
-                    {isBuying === num ? 'Provisioning...' : 'Buy ($2.00/mo)'}
+                    {isBuying === num.phoneNumber ? 'Provisioning...' : 'Buy ($2.00/mo)'}
                   </Button>
                 </div>
               ))}
@@ -350,8 +358,10 @@ export default function PhoneNumbersPage() {
               boxShadow: 'var(--stripe-shadow-ambient)',
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'center'
+              alignItems: 'center',
+              cursor: 'pointer'
             }}
+            onClick={() => router.push(`/dashboard/integrations/phone/${num.id}`)}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
               <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(76,175,80,0.06)', color: '#4caf50', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
@@ -377,7 +387,7 @@ export default function PhoneNumbersPage() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', gap: '0.75rem' }} onClick={(e) => e.stopPropagation()}>
               <Button 
                 type="button" 
                 variant="outline" 

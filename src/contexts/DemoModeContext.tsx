@@ -26,14 +26,14 @@ export function DemoModeProvider({
   const [isDemoMode, setIsDemoMode] = useState(false);
 
   useEffect(() => {
-    if (isAdminUser && typeof window !== 'undefined') {
+    if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(DEMO_MODE_KEY);
       setIsDemoMode(stored === 'true');
     }
   }, [isAdminUser]);
 
   const toggleDemoMode = () => {
-    if (!isAdminUser) return;
+    
     setIsDemoMode(prev => {
       const next = !prev;
       if (typeof window !== 'undefined') {

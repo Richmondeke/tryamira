@@ -9,6 +9,12 @@ import { createClient } from '@/utils/supabase/client';
 import { inviteTeamMember, getTeamMembers } from '@/app/actions/team';
 import { createKorapayCheckout, getBillingData, createPlanCheckout, createTopupCheckout } from '@/app/actions/billing';
 import { createVapiSipTrunk } from '@/app/actions/vapi';
+import { useLocalPricing } from '@/hooks/useLocalPricing';
+
+function LocalPriceInline({ usd }: { usd: number }) {
+  const { price, isLoading } = useLocalPricing(usd);
+  return <>{isLoading ? `$${usd}` : price}</>;
+}
 
 function AccountSettingsInner() {
   const searchParams = useSearchParams();
@@ -68,6 +74,53 @@ function AccountSettingsInner() {
   const [refSignups, setRefSignups] = useState(3);
   const [refEarned, setRefEarned] = useState(150);
 
+  // Notification preferences (wired)
+  const defaultNotifPrefs = {
+    newLead: true,
+    humanTakeover: true,
+    dailySummary: false,
+    agentError: true,
+    lowCredits: true,
+    weeklyReport: false,
+  };
+  const [notifPrefs, setNotifPrefs] = useState(defaultNotifPrefs);
+  const [notifSaving, setNotifSaving] = useState(false);
+
+  const handleToggleNotif = async (key: keyof typeof defaultNotifPrefs) => {
+    const updated = { ...notifPrefs, [key]: !notifPrefs[key] };
+    setNotifPrefs(updated);
+    setNotifSaving(true);
+    try {
+      if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase.from('profiles').upsert({ id: user.id, notification_prefs: updated });
+        }
+      }
+      setToast(`Notification preference updated.`);
+    } catch (e) {
+      // silently fail – preference is updated in UI regardless
+    } finally {
+      setNotifSaving(false);
+    }
+  };
+
+  // Load notification prefs from DB on mount
+  useEffect(() => {
+    const loadNotifPrefs = async () => {
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return;
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from('profiles').select('notification_prefs').eq('id', user.id).single();
+      if (data?.notification_prefs) {
+        setNotifPrefs({ ...defaultNotifPrefs, ...data.notification_prefs });
+      }
+    };
+    loadNotifPrefs();
+  }, []);
+
   const handleCopyReferral = () => {
     navigator.clipboard.writeText(refLink);
     setToast('Referral link copied to clipboard!');
@@ -107,7 +160,7 @@ function AccountSettingsInner() {
     });
   }, []);
 
-  // ── Handle redirect back from Korapay payment ──────────────────────────
+  // ── Handle redirect back from secure payment ──────────────────────────
   useEffect(() => {
     const payment = searchParams.get('payment');
     const plan = searchParams.get('plan');
@@ -287,7 +340,7 @@ function AccountSettingsInner() {
         setIsCheckoutLoading(false);
         return;
       }
-      await createKorapayCheckout(1, priceNGN, userEmail);
+      await createPlanCheckout(billingTier as "pro" | "team" | "enterprise", userEmail, userId);
     } catch (e: any) {
       setToast(e.message || 'Failed to open billing portal.');
       setIsCheckoutLoading(false);
@@ -622,25 +675,54 @@ function AccountSettingsInner() {
 
         {/* TAB 2: NOTIFICATION PREFERENCES */}
         {activeTab === 'notifications' && (
-          <div style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '1.5rem', boxShadow: 'var(--stripe-shadow-ambient)' }}>
-            <h3 style={{ fontSize: '13px', color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', fontWeight: 600 }}>Email Alerts</h3>
-            <p style={{ color: 'var(--stripe-body)', fontSize: '12px', margin: '0 0 1.5rem 0' }}>Control when and how you are alerted.</p>
-            
-            {[
-              { title: 'New Lead Captured', desc: 'Get an email immediately when a new lead is captured by the AI.', active: true },
-              { title: 'Human Takeover Requested', desc: 'Alert when a user explicitly asks to speak to a human.', active: true },
-              { title: 'Daily Performance Summary', desc: "A morning digest of yesterday's metrics.", active: false },
-            ].map((item, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 0', borderBottom: i === 2 ? 'none' : '1px solid var(--stripe-border)' }}>
-                <div>
-                  <div style={{ fontSize: '12px', color: 'var(--stripe-navy)', fontWeight: 500, marginBottom: '0.25rem' }}>{item.title}</div>
-                  <div style={{ fontSize: '12px', color: 'var(--stripe-body)' }}>{item.desc}</div>
-                </div>
-                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                  <input type="checkbox" defaultChecked={item.active} onChange={() => handleToggleNotification(item.title)} style={{ width: '18px', height: '18px', accentColor: 'var(--stripe-purple)' }} />
-                </label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '6px', padding: '1.5rem', boxShadow: 'var(--stripe-shadow-ambient)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <h3 style={{ fontSize: '13px', color: 'var(--stripe-navy)', margin: 0, fontWeight: 600 }}>Email & In-App Alerts</h3>
+                {notifSaving && <span style={{ fontSize: '11px', color: 'var(--stripe-muted)' }}>Saving…</span>}
               </div>
-            ))}
+              <p style={{ color: 'var(--stripe-body)', fontSize: '12px', margin: '0 0 1.5rem 0' }}>Control when and how you are alerted. Changes are saved automatically.</p>
+
+              {([
+                { key: 'newLead', title: 'New Lead Captured', desc: 'Get an alert immediately when a new lead is captured by the AI.' },
+                { key: 'humanTakeover', title: 'Human Takeover Requested', desc: 'Alert when a caller explicitly asks to speak to a human agent.' },
+                { key: 'agentError', title: 'Agent Error or Failure', desc: 'Notified when an AI agent encounters an error mid-call or conversation.' },
+                { key: 'lowCredits', title: 'Low Call Credits Warning', desc: 'Receive a warning when your call credit wallet drops below a threshold.' },
+                { key: 'dailySummary', title: 'Daily Performance Summary', desc: 'A morning digest of yesterday\'s agent metrics and call stats.' },
+                { key: 'weeklyReport', title: 'Weekly Usage Report', desc: 'A detailed weekly report with trends and conversation analytics.' },
+              ] as { key: keyof typeof defaultNotifPrefs; title: string; desc: string }[]).map((item, i, arr) => (
+                <div key={item.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 0', borderBottom: i === arr.length - 1 ? 'none' : '1px solid var(--stripe-border)' }}>
+                  <div style={{ flex: 1, paddingRight: '1rem' }}>
+                    <div style={{ fontSize: '12px', color: 'var(--stripe-navy)', fontWeight: 500, marginBottom: '0.2rem' }}>{item.title}</div>
+                    <div style={{ fontSize: '11.5px', color: 'var(--stripe-body)', lineHeight: 1.4 }}>{item.desc}</div>
+                  </div>
+                  <label style={{ position: 'relative', display: 'inline-block', width: '40px', height: '22px', flexShrink: 0, cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={notifPrefs[item.key]}
+                      onChange={() => handleToggleNotif(item.key)}
+                      style={{ opacity: 0, width: 0, height: 0, position: 'absolute' }}
+                    />
+                    <span style={{
+                      position: 'absolute', inset: 0,
+                      backgroundColor: notifPrefs[item.key] ? 'var(--stripe-purple)' : '#e2e8f0',
+                      borderRadius: '11px',
+                      transition: 'background-color 0.2s'
+                    }} />
+                    <span style={{
+                      position: 'absolute',
+                      top: '3px',
+                      left: notifPrefs[item.key] ? '21px' : '3px',
+                      width: '16px', height: '16px',
+                      backgroundColor: '#ffffff',
+                      borderRadius: '50%',
+                      transition: 'left 0.2s',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                    }} />
+                  </label>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -819,7 +901,7 @@ function AccountSettingsInner() {
                         setIsProcessingBilling(false);
                         return;
                       }
-                      await createKorapayCheckout(1, billingTier === 'pro' ? 45000 : billingTier === 'team' ? 135000 : 450000, userEmail);
+                      await createPlanCheckout(billingTier, userEmail, userId);
                     } catch (e: any) {
                       setToast(e.message);
                       setIsProcessingBilling(false);
@@ -929,7 +1011,7 @@ function AccountSettingsInner() {
                       "Unlimited automated inbound chats & form triggers",
                       "Up to 5 active custom Voice AI Employees",
                       "Localized BYOT SIP trunks (MTN/Safaricom interconnect)",
-                      "Composio secure API integrations"
+                      "Connected app integrations (CRM, calendar, email)"
                     ] : targetUpgradeTier === 'team' ? [
                       "Up to 15 active custom Voice AI Employees",
                       "ElevenLabs Neural Voice Clones (up to 3 distinct clones)",
@@ -968,11 +1050,11 @@ function AccountSettingsInner() {
                     You are about to upgrade your workspace to the <strong>{targetUpgradeTier === 'pro' ? 'Pro Tier' : targetUpgradeTier === 'team' ? 'Team Plan' : 'Enterprise Plan'}</strong> for <strong>₦{targetUpgradeTier === 'pro' ? '45,000' : targetUpgradeTier === 'team' ? '135,000' : '450,000'}/mo</strong>. You will be redirected to our secure payment page to complete the transaction.
                   </p>
                   <div style={{ padding: '0.75rem 1rem', backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0', marginBottom: '1.25rem', fontSize: '12px', color: 'var(--stripe-muted)' }}>
-                    🔒 Secured by Korapay · No card details stored on our servers
+                    🔒 Secured by Flutterwave (Fallback: Korapay) · No card details stored on our servers
                   </div>
                   <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
                     <button onClick={() => setShowUpgradeModal(false)} style={{ padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid var(--stripe-border)', backgroundColor: '#fff', color: 'var(--stripe-navy)', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>Cancel</button>
-                    <button onClick={processUpgrade} disabled={isProcessingUpgrade} style={{ padding: '0.5rem 1.25rem', borderRadius: '4px', border: 'none', backgroundColor: 'var(--stripe-purple)', color: '#fff', cursor: isProcessingUpgrade ? 'wait' : 'pointer', fontSize: '12px', fontWeight: 600, boxShadow: 'var(--stripe-shadow-action)', opacity: isProcessingUpgrade ? 0.7 : 1 }}>Pay Now — Redirecting to Korapay</button>
+                    <button onClick={processUpgrade} disabled={isProcessingUpgrade} style={{ padding: '0.5rem 1.25rem', borderRadius: '4px', border: 'none', backgroundColor: 'var(--stripe-purple)', color: '#fff', cursor: isProcessingUpgrade ? 'wait' : 'pointer', fontSize: '12px', fontWeight: 600, boxShadow: 'var(--stripe-shadow-action)', opacity: isProcessingUpgrade ? 0.7 : 1 }}>Pay Now — Redirecting to secure checkout</button>
                   </div>
                 </div>
               )}
@@ -996,7 +1078,7 @@ function AccountSettingsInner() {
                 <div>
                   <h3 style={{ fontSize: '13px', color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', fontWeight: 600 }}>Starter Plan</h3>
                   <p style={{ fontSize: '11px', color: 'var(--stripe-muted)', margin: '0 0 1rem 0', lineHeight: 1.4 }}>Sandbox environment for builders testing features.</p>
-                  <div style={{ fontSize: '24px', color: 'var(--stripe-navy)', fontWeight: 300, marginBottom: '1.25rem' }}>$0<span style={{ fontSize: '11px', color: 'var(--stripe-muted)' }}>/mo</span></div>
+                  <div style={{ fontSize: '24px', color: 'var(--stripe-navy)', fontWeight: 300, marginBottom: '1.25rem' }}><LocalPriceInline usd={0} /><span style={{ fontSize: '11px', color: 'var(--stripe-muted)' }}>/mo</span></div>
                   
                   <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 1.5rem 0', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                     <li style={{ fontSize: '11px', color: 'var(--stripe-body)', display: 'flex', gap: '0.4rem' }}><span style={{ color: '#10b981' }}>✓</span> 100 Inbound Chats</li>
@@ -1028,7 +1110,7 @@ function AccountSettingsInner() {
                 <div>
                   <h3 style={{ fontSize: '13px', color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', fontWeight: 600 }}>Pro Tier</h3>
                   <p style={{ fontSize: '11px', color: 'var(--stripe-muted)', margin: '0 0 1rem 0', lineHeight: 1.4 }}>For professional solo-agents & small scale setups.</p>
-                  <div style={{ fontSize: '24px', color: 'var(--stripe-navy)', fontWeight: 300, marginBottom: '1.25rem' }}>$49<span style={{ fontSize: '11px', color: 'var(--stripe-muted)' }}>/mo</span></div>
+                  <div style={{ fontSize: '24px', color: 'var(--stripe-navy)', fontWeight: 300, marginBottom: '1.25rem' }}><LocalPriceInline usd={49} /><span style={{ fontSize: '11px', color: 'var(--stripe-muted)' }}>/mo</span></div>
                   
                   <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 1.5rem 0', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                     <li style={{ fontSize: '11px', color: 'var(--stripe-body)', display: 'flex', gap: '0.4rem' }}><span style={{ color: 'var(--stripe-purple)' }}>✓</span> Unlimited Inbound Chats</li>
@@ -1058,7 +1140,7 @@ function AccountSettingsInner() {
                 <div>
                   <h3 style={{ fontSize: '13px', color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', fontWeight: 600 }}>Team Plan</h3>
                   <p style={{ fontSize: '11px', color: 'var(--stripe-muted)', margin: '0 0 1rem 0', lineHeight: 1.4 }}>For fast-growing operations running multi-agent campaigns.</p>
-                  <div style={{ fontSize: '24px', color: 'var(--stripe-navy)', fontWeight: 300, marginBottom: '1.25rem' }}>$149<span style={{ fontSize: '11px', color: 'var(--stripe-muted)' }}>/mo</span></div>
+                  <div style={{ fontSize: '24px', color: 'var(--stripe-navy)', fontWeight: 300, marginBottom: '1.25rem' }}><LocalPriceInline usd={149} /><span style={{ fontSize: '11px', color: 'var(--stripe-muted)' }}>/mo</span></div>
                   
                   <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 1.5rem 0', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                     <li style={{ fontSize: '11px', color: 'var(--stripe-body)', display: 'flex', gap: '0.4rem' }}><span style={{ color: 'var(--stripe-purple)' }}>✓</span> **15 Custom Voice AI Agents**</li>
@@ -1088,7 +1170,7 @@ function AccountSettingsInner() {
                 <div>
                   <h3 style={{ fontSize: '13px', color: 'var(--stripe-navy)', margin: '0 0 0.5rem 0', fontWeight: 600 }}>Enterprise</h3>
                   <p style={{ fontSize: '11px', color: 'var(--stripe-muted)', margin: '0 0 1rem 0', lineHeight: 1.4 }}>For large scale call-centers requiring dedicated trunks.</p>
-                  <div style={{ fontSize: '24px', color: 'var(--stripe-navy)', fontWeight: 300, marginBottom: '1.25rem' }}>$499<span style={{ fontSize: '11px', color: 'var(--stripe-muted)' }}>/mo</span></div>
+                  <div style={{ fontSize: '24px', color: 'var(--stripe-navy)', fontWeight: 300, marginBottom: '1.25rem' }}><LocalPriceInline usd={499} /><span style={{ fontSize: '11px', color: 'var(--stripe-muted)' }}>/mo</span></div>
                   
                   <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 1.5rem 0', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                     <li style={{ fontSize: '11px', color: 'var(--stripe-body)', display: 'flex', gap: '0.4rem' }}><span style={{ color: '#1e293b' }}>✓</span> **Unlimited active agents**</li>

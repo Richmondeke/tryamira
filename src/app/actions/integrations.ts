@@ -207,7 +207,9 @@ export async function initiateComposioConnection(appName: string, returnPath?: s
       body: JSON.stringify({
         auth_config_id: authConfigId,
         user_id: entityId, // ← real user ID, not a shared demo ID
-        redirect_url: callbackUrl
+        redirect_url: callbackUrl,
+        redirect_uri: callbackUrl,
+        redirectUri: callbackUrl
       })
     });
 

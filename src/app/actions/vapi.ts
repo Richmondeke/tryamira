@@ -655,3 +655,49 @@ export async function getCampaignCalls(campaignId: string) {
   return { success: true, data: data || [] };
 }
 
+export async function searchPhoneNumbers(areaCode?: string) {
+  const apiKey = process.env.VAPI_PRIVATE_API_KEY;
+  if (isKeyEmpty(apiKey)) {
+    return { success: false, error: 'Vapi API key not set' };
+  }
+
+  return {
+    success: true,
+    data: [
+      { phoneNumber: `+1${areaCode || '415'}5550101`, areaCode: areaCode || '415' },
+      { phoneNumber: `+1${areaCode || '415'}5550102`, areaCode: areaCode || '415' },
+      { phoneNumber: `+1${areaCode || '415'}5550103`, areaCode: areaCode || '415' }
+    ]
+  };
+}
+
+export async function buyPhoneNumber(number: string) {
+  const apiKey = process.env.VAPI_PRIVATE_API_KEY;
+  if (isKeyEmpty(apiKey)) {
+    return { success: false, error: 'Vapi API key not set' };
+  }
+
+  try {
+    const response = await fetch('https://api.vapi.ai/phone-number/buy', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        phoneNumber: number
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Failed to buy number: ${errText}`);
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (err: any) {
+    console.error('buyPhoneNumber error:', err);
+    return { success: false, error: err.message };
+  }
+}

@@ -287,7 +287,8 @@ export default function Page() {
               <h3 style={{ fontSize: '12px', color: 'var(--stripe-navy)', margin: 0, fontWeight: 500 }}>Available Email Integrations</h3>
             </div>
 
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--stripe-border)', textAlign: 'left' }}>
                   <th style={{ padding: '0.75rem 0', fontSize: '12px', color: 'var(--stripe-label)', fontWeight: 500 }}>PROVIDER</th>
@@ -363,7 +364,8 @@ export default function Page() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+              </table>
+            </div>
           </>
         )}
       </div>

@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/Input';
 import Modal from '@/components/ui/Modal';
 import SuccessConfirmation from '@/components/ui/SuccessConfirmation';
 import Vapi from '@vapi-ai/web';
-
+import { useDemoMode } from '@/contexts/DemoModeContext';
 
 const templatesData = [
   {
@@ -168,18 +168,7 @@ You are warm, inviting, and highly organized.
   }
 ];
 
-const allIntegrations = [
-  { id: 'hubspot', name: 'HubSpot', desc: 'Sync leads to your HubSpot CRM.', icon: '🟠' },
-  { id: 'salesforce', name: 'Salesforce', desc: 'Two-way sync for Salesforce records.', icon: '☁️' },
-  { id: 'zapier', name: 'Zapier', desc: 'Connect Amira to 5,000+ apps.', icon: '⚡' },
-  { id: 'stripe', name: 'Stripe', desc: 'Capture payments directly in chat.', icon: '💳' },
-  { id: 'slack', name: 'Slack', desc: 'Send notifications to Slack channels.', icon: '💬' },
-  { id: 'googlecalendar', name: 'Google Calendar', desc: 'Book meetings directly on your calendar.', icon: '📅' },
-  { id: 'zendesk', name: 'Zendesk', desc: 'Create and manage support tickets.', icon: '🎧' },
-  { id: 'mailchimp', name: 'Mailchimp', desc: 'Sync email subscribers automatically.', icon: '✉️' },
-  { id: 'shopify', name: 'Shopify', desc: 'Manage e-commerce orders and customers.', icon: '🛍️' },
-  { id: 'notion', name: 'Notion', desc: 'Sync data to Notion databases.', icon: '📝' }
-];
+
 
 const namesList = [
   'Rachel', 'Josh', 'Kemi', 'Chinedu', 'Nova', 'Alloy', 'Fin', 'Bella', 'Thomas', 'Serena',
@@ -267,12 +256,28 @@ const generate100Voices = () => {
 const initialVoicesList = generate100Voices();
 
 function AgentContent() {
+  const { isDemoMode } = useDemoMode();
   const searchParams = useSearchParams();
   const router = useRouter();
   const templateId = searchParams.get('template');
   const isPreview = searchParams.get('preview') === 'true';
 
   const [agents, setAgents] = useState<any[]>([]);
+  const [allIntegrations, setAllIntegrations] = useState<any[]>(() => {
+    if (typeof window !== "undefined") {
+      const cached = localStorage.getItem("amira_cached_integrations");
+      if (cached) {
+        try { return JSON.parse(cached); } catch (e) {}
+      }
+    }
+    return [
+      { id: "hubspot", name: "HubSpot", desc: "Sync leads to your HubSpot CRM.", icon: "🟠" },
+      { id: "salesforce", name: "Salesforce", desc: "Two-way sync for Salesforce records.", icon: "☁️" },
+      { id: "zapier", name: "Zapier", desc: "Connect Amira to 5,000+ apps.", icon: "⚡" },
+      { id: "stripe", name: "Stripe", desc: "Capture payments directly in chat.", icon: "💳" }
+    ];
+  });
+
   const [billingTier, setBillingTier] = useState<'starter' | 'pro' | 'team' | 'enterprise'>('starter');
   const [isLoading, setIsLoading] = useState(true);
 
@@ -325,8 +330,18 @@ function AgentContent() {
   const [connectedIntegrations, setConnectedIntegrations] = useState<Record<string, boolean>>({});
   const [isConnecting, setIsConnecting] = useState<string | null>(null);
 
+  // Rich media chat message type
+  type ChatMessage = {
+    sender: 'user' | 'agent' | 'system';
+    text?: string;
+    image?: string;
+    video?: string;
+    searchResults?: Array<{ title: string; url: string; snippet: string }>;
+    actionChip?: { integration: string; action: string; status: 'pending' | 'success' | 'failed' };
+  };
+
   // Playground simulated chat state
-  const [messages, setMessages] = useState<{ sender: 'user' | 'agent'; text: string }[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
 
@@ -663,13 +678,14 @@ function AgentContent() {
     setCallStatus('connecting');
     const activeVoiceObj = voices.find(v => v.id === customVoice);
     
-    let providerStr = activeVoiceObj?.provider?.toLowerCase() || 'eleven-labs';
-    if (providerStr === 'elevenlabs') {
-      providerStr = 'eleven-labs';
+    let providerStr = activeVoiceObj?.provider?.toLowerCase() || '11labs';
+    // Vapi SDK expects '11labs' not 'eleven-labs' or 'elevenlabs'
+    if (providerStr === 'elevenlabs' || providerStr === 'eleven-labs') {
+      providerStr = '11labs';
     }
 
     try {
-      vapiInstance.start({
+      await vapiInstance.start({
         name: customName || 'HeyAmira Live Test Agent',
         model: {
           provider: 'openai',
@@ -686,9 +702,10 @@ function AgentContent() {
           voiceId: customVoice
         }
       });
-    } catch (err) {
+    } catch (err: any) {
       console.error("Vapi WebRTC call failed to start:", err);
-      setToast({ message: 'WebRTC Call failed to start. Falling back to voice simulation.', type: 'error' });
+      const errMsg = err?.message || err?.toString() || 'Unknown error';
+      setToast({ message: `WebRTC failed: ${errMsg}. Falling back to voice simulation.`, type: 'error' });
       setCallStatus('idle');
       setIsCallActive(false);
     }
@@ -981,7 +998,7 @@ function AgentContent() {
       setKbProgress(prev => {
         if (prev >= 80) {
           clearInterval(timer);
-          return 80;
+          return 100;
         }
         return prev + 15;
       });
@@ -1184,21 +1201,28 @@ function AgentContent() {
     setChatInput('');
     setIsTyping(true);
 
-    // Simulate Agent intelligent responses based on prompt
+    // Live mode: no backend connected yet
+    if (!isDemoMode) {
+      setTimeout(() => {
+        setMessages(prev => [...prev, { sender: 'system', text: 'Live backend not connected. Switch to Demo Mode to test simulation.' }]);
+        setIsTyping(false);
+      }, 1000);
+      return;
+    }
+
+    // Demo mode: rich media responses
     setTimeout(() => {
-      let responseText = "Understood. I will process that request using my attached integrations.";
-      
-      // Semantic custom fact checking (RAG Simulation)
       const userLower = userMsg.toLowerCase();
+      const newMessages: ChatMessage[] = [];
+
+      // --- RAG Knowledge Base Check ---
       let matchedDoc = null;
-      
       for (const doc of trainedDocs) {
         const docTitleClean = doc.title.toLowerCase().replace(/\.(pdf|txt|csv)$/, '').replace(/_|-/g, ' ');
         const hasTitleMatch = docTitleClean.split(' ').some(word => word.length > 2 && userLower.includes(word));
-        const hasContentMatch = doc.content.toLowerCase().split(/[\s,.:;?]+/).some(word => 
+        const hasContentMatch = doc.content.toLowerCase().split(/[\s,.:;?]+/).some(word =>
           word.length > 3 && userLower.includes(word) && !['this', 'that', 'with', 'from', 'your', 'about', 'firm', 'our', 'what', 'where', 'when', 'how', 'much'].includes(word)
         );
-
         if (hasTitleMatch || hasContentMatch || userLower.includes(doc.title.toLowerCase())) {
           matchedDoc = doc;
           break;
@@ -1206,32 +1230,100 @@ function AgentContent() {
       }
 
       if (matchedDoc) {
-        responseText = `[RAG Retrieval Verified from ${matchedDoc.title}]: "${matchedDoc.content}" — Is there anything else I can check in my knowledge base for you?`;
-      } else if (templateId === 'customer-support-bot') {
-        if (userMsg.toLowerCase().includes('return') || userMsg.toLowerCase().includes('refund')) {
-          responseText = "Sure, I can process that return. I've initiated the workflow, queried Stripe, and a confirmation email has been dispatched via Gmail!";
+        newMessages.push({ sender: 'agent', text: `📄 Found in "${matchedDoc.title}":\n\n"${matchedDoc.content}"\n\nIs there anything else I can check in my knowledge base for you?` });
+      }
+      // --- Search query detection ---
+      else if (userLower.includes('search') || userLower.includes('find') || userLower.includes('look up') || userLower.includes('lookup')) {
+        const query = userMsg.replace(/search|find|look\s*up|for|me/gi, '').trim() || 'your query';
+        newMessages.push({
+          sender: 'agent',
+          text: `🔍 Here are the top results I found for "${query}":`,
+          searchResults: [
+            { title: `${query} — Getting Started Guide`, url: 'https://docs.example.com/guide', snippet: `Comprehensive guide covering everything about ${query} including setup, configuration, and best practices.` },
+            { title: `${query} FAQ & Troubleshooting`, url: 'https://support.example.com/faq', snippet: `Common questions and solutions related to ${query}. Updated weekly by our support team.` },
+            { title: `${query} — Community Forum`, url: 'https://community.example.com', snippet: `Join the discussion with 5,000+ members sharing tips and experiences about ${query}.` },
+          ]
+        });
+      }
+      // --- Image request detection ---
+      else if (userLower.includes('image') || userLower.includes('photo') || userLower.includes('picture') || userLower.includes('show me')) {
+        newMessages.push({
+          sender: 'agent',
+          text: '📸 Here\'s what I found:',
+          image: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=600&h=400&fit=crop'
+        });
+      }
+      // --- Video request detection ---
+      else if (userLower.includes('video') || userLower.includes('tutorial') || userLower.includes('demo') || userLower.includes('watch')) {
+        newMessages.push({
+          sender: 'agent',
+          text: '🎬 Here\'s a relevant video for you:',
+          video: 'https://www.w3schools.com/html/mov_bbb.mp4'
+        });
+      }
+      // --- Template-specific logic with action chips ---
+      else if (templateId === 'customer-support-bot') {
+        if (userLower.includes('return') || userLower.includes('refund')) {
+          newMessages.push({ sender: 'agent', actionChip: { integration: 'Stripe', action: 'Initiated refund #RF-4821', status: 'success' } });
+          newMessages.push({ sender: 'agent', actionChip: { integration: 'Gmail', action: 'Sent confirmation email', status: 'success' } });
+          newMessages.push({ sender: 'agent', text: 'Done! I\'ve processed the return via Stripe and sent a confirmation email through Gmail. The refund should appear in 3–5 business days.' });
+        } else if (userLower.includes('ticket') || userLower.includes('issue') || userLower.includes('bug') || userLower.includes('problem')) {
+          newMessages.push({ sender: 'agent', actionChip: { integration: 'Zendesk', action: 'Created ticket #ZD-9032', status: 'success' } });
+          newMessages.push({ sender: 'agent', actionChip: { integration: 'Slack', action: 'Notified #support channel', status: 'success' } });
+          newMessages.push({ sender: 'agent', text: 'I\'ve created a support ticket in Zendesk and notified the team on Slack. Someone will follow up within 2 hours.' });
         } else {
-          responseText = "I've checked our database and created a ticket in Zendesk. I'll ping the team on Slack to make sure it gets handled immediately.";
+          newMessages.push({ sender: 'agent', actionChip: { integration: 'Zendesk', action: 'Searched knowledge base', status: 'success' } });
+          newMessages.push({ sender: 'agent', text: 'I\'ve checked our database. Let me know more details about your request so I can route it to the right team.' });
         }
       } else if (templateId === 'sales-qualifier') {
-        if (userMsg.toLowerCase().includes('price') || userMsg.toLowerCase().includes('cost') || userMsg.toLowerCase().includes('budget')) {
-          responseText = "Our services start at $5,000/mo, as specified in our BANT Sales Guide. Let's reserve a spot on Google Calendar for Monday to map this out!";
+        if (userLower.includes('price') || userLower.includes('cost') || userLower.includes('budget')) {
+          newMessages.push({ sender: 'agent', actionChip: { integration: 'HubSpot', action: 'Updated deal stage to "Pricing"', status: 'success' } });
+          newMessages.push({ sender: 'agent', text: 'Our services start at $5,000/mo as specified in our BANT Sales Guide. Let\'s reserve a spot on Google Calendar for Monday to map this out!' });
+        } else if (userLower.includes('book') || userLower.includes('schedule') || userLower.includes('meeting') || userLower.includes('call')) {
+          newMessages.push({ sender: 'agent', actionChip: { integration: 'Google Calendar', action: 'Booked Mon 10:00 AM', status: 'success' } });
+          newMessages.push({ sender: 'agent', actionChip: { integration: 'HubSpot', action: 'Synced contact record', status: 'success' } });
+          newMessages.push({ sender: 'agent', text: 'Done! I just booked a slot on Google Calendar for Monday at 10 AM and synced everything to your HubSpot record.' });
         } else {
-          responseText = "Great! I've qualified your budget and timeline. I just booked a slot on our Google Calendar for Monday and synced everything directly into HubSpot.";
+          newMessages.push({ sender: 'agent', actionChip: { integration: 'HubSpot', action: 'Logged interaction', status: 'success' } });
+          newMessages.push({ sender: 'agent', text: 'Great! I\'ve qualified your needs and logged the interaction in HubSpot. Would you like to schedule a call with our team?' });
         }
       } else if (templateId === 'ecommerce-concierge') {
-        responseText = "I checked Shopify and your package is currently out for delivery! I'll email you the tracking link via Gmail.";
-      } else if (templateId === 'medspa-receptionist') {
-        if (userMsg.toLowerCase().includes('botox') || userMsg.toLowerCase().includes('price') || userMsg.toLowerCase().includes('unit') || userMsg.toLowerCase().includes('cost')) {
-          responseText = "Botox treatments at Amira MedSpa are priced at $12 per unit, as registered in our MedSpa Pricing FAQs. Would you like me to reserve an appointment slot on our Google Calendar?";
+        if (userLower.includes('track') || userLower.includes('order') || userLower.includes('delivery') || userLower.includes('package')) {
+          newMessages.push({ sender: 'agent', actionChip: { integration: 'Shopify', action: 'Fetched order #SH-1247', status: 'success' } });
+          newMessages.push({ sender: 'agent', text: 'Your order #SH-1247 is currently out for delivery and should arrive by 5 PM today! I\'ll email you the tracking link.', image: 'https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=500&h=300&fit=crop' });
         } else {
-          responseText = "Of course! I can assist you with booking or managing treatments. Would you like me to query open slots on our Google Calendar?";
+          newMessages.push({ sender: 'agent', actionChip: { integration: 'Shopify', action: 'Searched product catalog', status: 'success' } });
+          newMessages.push({ sender: 'agent', text: 'I checked Shopify for you. How can I help — are you looking for order tracking, product recommendations, or something else?' });
         }
+      } else if (templateId === 'medspa-receptionist') {
+        if (userLower.includes('botox') || userLower.includes('price') || userLower.includes('unit') || userLower.includes('cost')) {
+          newMessages.push({ sender: 'agent', text: 'Botox treatments at our MedSpa are priced at $12 per unit, as listed in our pricing guide. Would you like me to check available appointment slots?' });
+        } else if (userLower.includes('book') || userLower.includes('appointment') || userLower.includes('schedule')) {
+          newMessages.push({ sender: 'agent', actionChip: { integration: 'Google Calendar', action: 'Found 3 open slots this week', status: 'success' } });
+          newMessages.push({ sender: 'agent', text: 'I found available slots on:\n• Tuesday 2:00 PM\n• Wednesday 10:00 AM\n• Friday 3:30 PM\n\nWhich works best for you?' });
+        } else {
+          newMessages.push({ sender: 'agent', text: 'Of course! I can assist with booking, treatment information, or rescheduling. What would you like help with?' });
+        }
+      } else {
+        // Generic fallback
+        newMessages.push({ sender: 'agent', text: 'Understood. I will process that request using my attached integrations. Is there anything specific you\'d like me to help with?' });
       }
-      
-      setMessages(prev => [...prev, { sender: 'agent', text: responseText }]);
-      setIsTyping(false);
-    }, 1500);
+
+      // Stagger the messages for a natural feel
+      let delay = 0;
+      newMessages.forEach((msg, idx) => {
+        setTimeout(() => {
+          setMessages(prev => [...prev, msg]);
+          if (idx === newMessages.length - 1) {
+            setIsTyping(false);
+          }
+        }, delay);
+        delay += msg.actionChip ? 400 : 600;
+      });
+
+      // If no messages at all (shouldn't happen), stop typing
+      if (newMessages.length === 0) setIsTyping(false);
+    }, 1200);
   };
 
   // Multi-tier dynamic filter engine for up to 100 voices
@@ -1730,7 +1822,7 @@ function AgentContent() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <div>
                   <h4 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--stripe-navy)', margin: '0 0 2px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    🧠 Cognitive Knowledge Base (RAG)
+                    🧠 Upload Knowledgebase
                   </h4>
                   <p style={{ fontSize: '11px', color: 'var(--stripe-muted)', margin: 0 }}>
                     Train your agent on custom pricing sheets, FAQs, and policies so they cite facts accurately.
@@ -1850,7 +1942,7 @@ function AgentContent() {
                       onClick={handleAddKbSubmit}
                       style={{ backgroundColor: '#4caf50', color: '#fff', fontSize: '11px' }}
                     >
-                      Vectorize & Index
+                      Save to Knowledgebase
                     </Button>
                   </div>
                 </div>
@@ -1868,7 +1960,7 @@ function AgentContent() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                     <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--stripe-navy)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>🔄</span> 
-                      {kbProgress < 30 ? 'Extracting text chunks...' : kbProgress < 60 ? 'Generating semantic embeddings...' : kbProgress < 90 ? 'Upserting vectors into database...' : 'Finalizing RAG vector index...'}
+                      {kbProgress < 30 ? 'Reading file...' : kbProgress < 60 ? 'Processing content...' : kbProgress < 90 ? 'Saving files...' : 'Finishing up...'}
                     </span>
                     <span style={{ fontSize: '11px', fontWeight: 600, color: '#4caf50' }}>
                       {kbProgress}%
@@ -2189,17 +2281,92 @@ function AgentContent() {
                             key={i} 
                             style={{
                               alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-                              backgroundColor: msg.sender === 'user' ? '#4caf50' : '#ffffff',
-                              color: msg.sender === 'user' ? '#ffffff' : 'var(--stripe-navy)',
-                              padding: '0.5rem 0.85rem',
-                              borderRadius: '8px',
-                              fontSize: '12px',
-                              maxWidth: '85%',
-                              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                              lineHeight: 1.4
+                              maxWidth: msg.sender === 'user' ? '75%' : '90%',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '0.35rem'
                             }}
                           >
-                            {msg.text}
+                            {/* Action Chip */}
+                            {msg.actionChip && (
+                              <div style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.4rem',
+                                padding: '0.35rem 0.7rem',
+                                borderRadius: '20px',
+                                fontSize: '11px',
+                                fontWeight: 500,
+                                backgroundColor: msg.actionChip.status === 'success' ? 'rgba(16, 185, 129, 0.08)' : msg.actionChip.status === 'failed' ? 'rgba(239, 68, 68, 0.08)' : 'rgba(59, 130, 246, 0.08)',
+                                color: msg.actionChip.status === 'success' ? '#059669' : msg.actionChip.status === 'failed' ? '#dc2626' : '#2563eb',
+                                border: `1px solid ${msg.actionChip.status === 'success' ? 'rgba(16, 185, 129, 0.2)' : msg.actionChip.status === 'failed' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(59, 130, 246, 0.2)'}`,
+                                width: 'fit-content'
+                              }}>
+                                <span>{msg.actionChip.status === 'success' ? '✅' : msg.actionChip.status === 'failed' ? '❌' : '⏳'}</span>
+                                <span style={{ fontWeight: 600 }}>{msg.actionChip.integration}</span>
+                                <span style={{ color: 'var(--stripe-muted)' }}>—</span>
+                                <span>{msg.actionChip.action}</span>
+                              </div>
+                            )}
+
+                            {/* Text bubble */}
+                            {msg.text && (
+                              <div style={{
+                                backgroundColor: msg.sender === 'user' ? '#4caf50' : msg.sender === 'system' ? '#fff3cd' : '#ffffff',
+                                color: msg.sender === 'user' ? '#ffffff' : msg.sender === 'system' ? '#856404' : 'var(--stripe-navy)',
+                                padding: '0.5rem 0.85rem',
+                                borderRadius: '8px',
+                                fontSize: '12px',
+                                boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                                lineHeight: 1.5,
+                                whiteSpace: 'pre-wrap'
+                              }}>
+                                {msg.text}
+                              </div>
+                            )}
+
+                            {/* Image */}
+                            {msg.image && (
+                              <div style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--stripe-border)' }}>
+                                <img src={msg.image} alt="Agent response" style={{ width: '100%', maxWidth: '320px', height: 'auto', display: 'block' }} />
+                              </div>
+                            )}
+
+                            {/* Video */}
+                            {msg.video && (
+                              <div style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--stripe-border)' }}>
+                                <video src={msg.video} controls style={{ width: '100%', maxWidth: '320px', height: 'auto', display: 'block' }} />
+                              </div>
+                            )}
+
+                            {/* Search Results */}
+                            {msg.searchResults && msg.searchResults.length > 0 && (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                                {msg.searchResults.map((result, ri) => (
+                                  <a 
+                                    key={ri}
+                                    href={result.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                      display: 'block',
+                                      padding: '0.6rem 0.75rem',
+                                      backgroundColor: '#f8f9fb',
+                                      border: '1px solid var(--stripe-border)',
+                                      borderRadius: '8px',
+                                      textDecoration: 'none',
+                                      transition: 'border-color 0.15s ease, box-shadow 0.15s ease'
+                                    }}
+                                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#4caf50'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(76,175,80,0.1)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--stripe-border)'; e.currentTarget.style.boxShadow = 'none'; }}
+                                  >
+                                    <div style={{ fontSize: '12px', fontWeight: 600, color: '#1a73e8', marginBottom: '2px' }}>{result.title}</div>
+                                    <div style={{ fontSize: '10px', color: '#15803d', marginBottom: '3px' }}>{result.url}</div>
+                                    <div style={{ fontSize: '11px', color: 'var(--stripe-body)', lineHeight: 1.3 }}>{result.snippet}</div>
+                                  </a>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         ))}
                         {isTyping && (

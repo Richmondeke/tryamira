@@ -8,7 +8,7 @@ type Message = {
   role: 'user' | 'agent';
   content: string;
   timestamp: string;
-  mediaType?: 'text' | 'image' | 'table' | 'graph';
+  mediaType?: 'text' | 'image' | 'video' | 'table' | 'graph' | 'options';
   mediaPayload?: any;
 };
 
@@ -20,7 +20,7 @@ export default function AgentChatPage() {
     {
       id: '1',
       role: 'agent',
-      content: `Hello! I'm your AI employee. I'm connected to your apps via Composio. How can I help you today?`,
+      content: `Hello! I'm your AI employee. I'm connected to your apps and integrations. How can I help you today?`,
       timestamp: new Date().toISOString(),
       mediaType: 'text'
     }
@@ -82,8 +82,20 @@ export default function AgentChatPage() {
         responseMessage.content = "Here is the image you requested:";
         responseMessage.mediaType = 'image';
         responseMessage.mediaPayload = "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&h=400&fit=crop";
+      } else if (lowerInput.includes('video')) {
+        responseMessage.content = "Here is the video walkthrough:";
+        responseMessage.mediaType = 'video';
+        responseMessage.mediaPayload = "https://www.w3schools.com/html/mov_bbb.mp4"; // Sample standard video
+      } else if (lowerInput.includes('action') || lowerInput.includes('option')) {
+        responseMessage.content = "Please select an option to proceed:";
+        responseMessage.mediaType = 'options';
+        responseMessage.mediaPayload = [
+          { label: "Update CRM", action: "update_crm" },
+          { label: "Create Ticket", action: "create_ticket" },
+          { label: "Send Email", action: "send_email" }
+        ];
       } else {
-        responseMessage.content = `I understood: "${userMessage.content}". Since I'm in demo mode, I'm just echoing this back. Once my Composio backend is fully wired, I'll execute this action in your connected apps!`;
+        responseMessage.content = `I understood: "${userMessage.content}". Since I'm in demo mode, I'm just echoing this back. Once my integrations backend is fully wired, I'll execute this action in your connected apps!`;
       }
       
       setMessages(prev => [...prev, responseMessage]);
@@ -135,7 +147,7 @@ export default function AgentChatPage() {
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: '1rem', height: '120px' }}>
             {data.map((val: number, i: number) => (
               <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-                <div style={{ width: '100%', backgroundColor: '#0ea5e9', borderRadius: '4px 4px 0 0', height: \`\${(val / max) * 100}%\`, transition: 'height 0.3s ease' }} />
+                <div style={{ width: '100%', backgroundColor: '#0ea5e9', borderRadius: '4px 4px 0 0', height: `${(val / max) * 100}%`, transition: 'height 0.3s ease' }} />
                 <span style={{ fontSize: '11px', color: 'var(--stripe-muted)' }}>{labels[i]}</span>
               </div>
             ))}
@@ -153,6 +165,40 @@ export default function AgentChatPage() {
       );
     }
     
+    if (msg.mediaType === 'video' && msg.mediaPayload) {
+      return (
+        <div style={{ marginTop: '0.75rem', borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--stripe-border)' }}>
+          <video src={msg.mediaPayload} controls style={{ width: '100%', display: 'block' }} />
+        </div>
+      );
+    }
+    
+    if (msg.mediaType === 'options' && msg.mediaPayload) {
+      const options = msg.mediaPayload as { label: string; action: string }[];
+      return (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.75rem' }}>
+          {options.map((opt, i) => (
+            <button key={i} onClick={() => setInputValue(`Trigger action: ${opt.label}`)} style={{
+              padding: '0.5rem 1rem',
+              backgroundColor: '#f1f5f9',
+              color: 'var(--stripe-navy)',
+              border: '1px solid var(--stripe-border)',
+              borderRadius: '20px',
+              fontSize: '13px',
+              fontWeight: 500,
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+            onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#e2e8f0' }}
+            onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#f1f5f9' }}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      );
+    }
+    
     return null;
   };
 
@@ -162,7 +208,7 @@ export default function AgentChatPage() {
       {/* HEADER */}
       <div style={{ display: 'flex', alignItems: 'center', padding: '1.5rem 0', borderBottom: '1px solid var(--stripe-border)' }}>
         <button 
-          onClick={() => router.push(\`/dashboard/ai-agent/\${params.id}\`)}
+          onClick={() => router.push(`/dashboard/ai-agent/${params.id}`)}
           style={{ background: 'none', border: 'none', color: 'var(--stripe-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '0.25rem', fontSize: '13px', marginRight: '1rem' }}
         >
           ← Back to Config
@@ -263,7 +309,7 @@ export default function AgentChatPage() {
           </button>
         </div>
         <p style={{ fontSize: '11px', color: 'var(--stripe-muted)', margin: '0.5rem 0 0 0', textAlign: 'center' }}>
-          Agent tasks and outputs are simulated in this interface until Composio backend routing is complete.
+          Agent tasks and outputs are simulated in this interface until the integrations backend routing is complete.
         </p>
       </div>
 

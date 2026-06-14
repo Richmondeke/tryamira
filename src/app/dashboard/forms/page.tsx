@@ -58,8 +58,8 @@ export default function Page() {
       const res = await createForm(name);
       if (res.success && res.data) {
         setShowModal(false);
-        setToast('Form created as Draft. Publish it when ready.');
-        setForms(prev => [res.data, ...prev]);
+        setToast('Form created. Redirecting to builder...');
+        router.push(`/dashboard/forms/${res.data.id}`);
       } else {
         setToast(res.error || 'Failed to create form.');
       }
