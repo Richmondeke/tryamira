@@ -110,7 +110,7 @@ export async function createPlanCheckout(tier: PlanTier, userEmail: string, user
       const sessionResult = await sessionResponse.json();
 
       if (sessionResponse.ok && sessionResult.data?.id) {
-        redirect(`https://checkout.flutterwave.com/v3/hosted/pay/${sessionResult.data.id}`);
+        return { url: `https://checkout.flutterwave.com/v3/hosted/pay/${sessionResult.data.id}` };
       } else {
         throw new Error(sessionResult.message || 'Failed to initialize Flutterwave session');
       }
@@ -133,7 +133,7 @@ export async function createPlanCheckout(tier: PlanTier, userEmail: string, user
       plan: tier,
       status: 'pending',
     });
-    redirect(`/dashboard/account?tab=billing&payment=success&plan=${tier}`);
+    return { url: `/dashboard/account?tab=billing&payment=success&plan=${tier}` };
   }
 
   // Pre-create invoice record in pending state using Korapay reference
@@ -173,7 +173,7 @@ export async function createPlanCheckout(tier: PlanTier, userEmail: string, user
   const result = await response.json();
 
   if (result.status && result.data?.checkout_url) {
-    redirect(result.data.checkout_url);
+    return { url: result.data.checkout_url };
   }
 
   throw new Error(result.message || 'Failed to initialize payment. Please try again.');
@@ -256,7 +256,7 @@ export async function createTopupCheckout(
       const sessionResult = await sessionResponse.json();
 
       if (sessionResponse.ok && sessionResult.data?.id) {
-        redirect(`https://checkout.flutterwave.com/v3/hosted/pay/${sessionResult.data.id}`);
+        return { url: `https://checkout.flutterwave.com/v3/hosted/pay/${sessionResult.data.id}` };
       } else {
         throw new Error(sessionResult.message || 'Failed to initialize Flutterwave session');
       }
@@ -277,7 +277,7 @@ export async function createTopupCheckout(
       type: 'topup',
       status: 'pending',
     });
-    redirect(`/dashboard/account?tab=billing&payment=topup_success&amount=${amountNGN}`);
+    return { url: `/dashboard/account?tab=billing&payment=topup_success&amount=${amountNGN}` };
   }
 
   const supa = serviceSupabase();
@@ -311,7 +311,7 @@ export async function createTopupCheckout(
   const result = await response.json();
 
   if (result.status && result.data?.checkout_url) {
-    redirect(result.data.checkout_url);
+    return { url: result.data.checkout_url };
   }
 
   throw new Error(result.message || 'Failed to initialize top-up. Please try again.');
@@ -381,5 +381,5 @@ export async function createKorapayCheckout(
   }
 
   // Delegate to createPlanCheckout which handles Flutterwave primarily and Korapay fallback
-  await createPlanCheckout(tier, customerEmail, userId);
+  return await createPlanCheckout(tier, customerEmail, userId);
 }

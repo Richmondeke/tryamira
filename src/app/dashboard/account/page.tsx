@@ -340,7 +340,11 @@ function AccountSettingsInner() {
         setIsCheckoutLoading(false);
         return;
       }
-      await createPlanCheckout(billingTier as "pro" | "team" | "enterprise", userEmail, userId);
+      const res = await createPlanCheckout(billingTier as "pro" | "team" | "enterprise", userEmail, userId);
+      if (res?.url) {
+        window.location.href = res.url;
+        return;
+      }
     } catch (e: any) {
       setToast(e.message || 'Failed to open billing portal.');
       setIsCheckoutLoading(false);
@@ -355,7 +359,11 @@ function AccountSettingsInner() {
     }
     setIsTopupLoading(true);
     try {
-      await createTopupCheckout(topupAmount, userEmail, userId);
+      const res = await createTopupCheckout(topupAmount, userEmail, userId);
+      if (res?.url) {
+        window.location.href = res.url;
+        return;
+      }
     } catch (e: any) {
       setToast(e.message || 'Failed to start top-up. Please try again.');
       setIsTopupLoading(false);
@@ -370,7 +378,11 @@ function AccountSettingsInner() {
     }
     setIsProcessingUpgrade(true);
     try {
-      await createPlanCheckout(targetUpgradeTier, userEmail, userId);
+      const res = await createPlanCheckout(targetUpgradeTier, userEmail, userId);
+      if (res?.url) {
+        window.location.href = res.url;
+        return;
+      }
       // If no redirect happened (dev/demo mode), simulate success
       setBillingTier(targetUpgradeTier);
       if (typeof window !== 'undefined') {
