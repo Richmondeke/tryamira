@@ -202,8 +202,28 @@ export default function LeadsPage() {
     const email = formData.get('email') as string;
     const phone = formData.get('phone') as string;
 
+    let wsId = profile?.workspace_id;
+    if (!wsId) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: member } = await supabase
+          .from('workspace_members')
+          .select('workspace_id')
+          .eq('user_id', user.id)
+          .limit(1)
+          .maybeSingle();
+        wsId = member?.workspace_id;
+      }
+    }
+
+    if (!wsId) {
+      setToast({ message: 'Error: Workspace not found. Please refresh.', type: 'error' });
+      setShowAddModal(false);
+      return;
+    }
+
     const { error } = await supabase.from('leads').insert({
-      workspace_id: '11111111-1111-1111-1111-111111111111', 
+      workspace_id: wsId, 
       name,
       email,
       phone,
@@ -212,7 +232,7 @@ export default function LeadsPage() {
     });
 
     if (error) {
-      setToast({ message: 'Error adding lead. Check Supabase keys.', type: 'error' });
+      setToast({ message: `Error adding lead: ${error.message}`, type: 'error' });
       setShowAddModal(false);
     } else {
       setToast({ message: 'New lead added successfully to Supabase.', type: 'success' });
