@@ -393,51 +393,13 @@ export default function LandingPage() {
                 </div>
               </div>
             </li>
-            <li className={styles.navLinkWrapper}><a href="#problem" className={styles.navLink}>Repetitive Calls</a></li>
-            <li className={styles.navLinkWrapper}><a href="#workflow" className={styles.navLink}>How Amira Works</a></li>
-            <li className={styles.navLinkWrapper}><a href="#integrations" className={styles.navLink}>Integrations</a></li>
-            <li className={styles.navLinkWrapper}><a href="#interactive-demo" className={styles.navLink}>Listen to Call</a></li>
+            <li className={styles.navLinkWrapper}><a href="#workflow" className={styles.navLink}>How It Works</a></li>
             <li className={styles.navLinkWrapper}><a href="#pricing" className={styles.navLink}>Pricing</a></li>
           </ul>
 
           <div className={styles.navActions}>
-            {/* Language Switcher */}
-            <div style={{ position: 'relative', display: 'inline-block' }}>
-              <button 
-                onClick={() => setShowLangMenu(!showLangMenu)}
-                className={styles.langBtn}
-              >
-                <span style={{ fontSize: '15px' }}>
-                  {languagesList.find(l => l.code === currentLang)?.flag || '🇺🇸'}
-                </span>
-                <span>
-                  {languagesList.find(l => l.code === currentLang)?.label || 'English'}
-                </span>
-                <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.6)' }}>▼</span>
-              </button>
-              
-              {showLangMenu && (
-                <div className={styles.langMenu}>
-                  {languagesList.map(lang => (
-                    <button
-                      key={lang.code}
-                      onClick={() => {
-                        changeLanguage(lang.code);
-                        setShowLangMenu(false);
-                      }}
-                      className={`${styles.langMenuItem} ${currentLang === lang.code ? styles.langMenuItemActive : ""}`}
-                    >
-                      <span style={{ fontSize: '14px' }}>{lang.flag}</span>
-                      <span>{lang.label}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
             <a href="/dashboard" className={styles.navSignIn}>Login</a>
-            <a href="#interactive-demo" className={styles.navSecondaryBtn}>Talk to Sales</a>
-            <a href="/dashboard" className={styles.navCta}>Start Free Trial</a>
+            <a href="/dashboard" className={styles.navCta}>Start Free</a>
           </div>
 
           <button 
@@ -465,15 +427,11 @@ export default function LandingPage() {
             <a href="/login?redirect=/dashboard/ai-agent" onClick={() => setMobileMenuOpen(false)}>Twilio SMS</a>
             
             <hr />
-            <a href="#problem" onClick={() => setMobileMenuOpen(false)}>Repetitive Calls</a>
-            <a href="#workflow" onClick={() => setMobileMenuOpen(false)}>How Amira Works</a>
-            <a href="#integrations" onClick={() => setMobileMenuOpen(false)}>Integrations</a>
-            <a href="#interactive-demo" onClick={() => setMobileMenuOpen(false)}>Listen to Call</a>
+            <a href="#workflow" onClick={() => setMobileMenuOpen(false)}>How It Works</a>
             <a href="#pricing" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
             <hr />
             <a href="/dashboard">Login</a>
-            <a href="#interactive-demo" onClick={() => setMobileMenuOpen(false)}>Talk to Sales</a>
-            <a href="/dashboard" className={styles.mobileMenuCta}>Start Free Trial</a>
+            <a href="/dashboard" className={styles.mobileMenuCta}>Start Free</a>
           </div>
         )}
       </nav>
@@ -949,6 +907,39 @@ export default function LandingPage() {
             <p className={styles.footerBrandDesc}>
               The AI dispatching platform that schedules trade service calls, charges booking deposits, and dispatches technicians 24/7.
             </p>
+            {/* Language Switcher */}
+            <div style={{ position: 'relative', display: 'inline-block', marginTop: '1.25rem' }}>
+              <button 
+                onClick={() => setShowLangMenu(!showLangMenu)}
+                className={styles.langBtn}
+              >
+                <span style={{ fontSize: '15px' }}>
+                  {languagesList.find(l => l.code === currentLang)?.flag || '🇺🇸'}
+                </span>
+                <span>
+                  {languagesList.find(l => l.code === currentLang)?.label || 'English'}
+                </span>
+                <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.6)' }}>▼</span>
+              </button>
+              
+              {showLangMenu && (
+                <div className={styles.langMenu}>
+                  {languagesList.map(lang => (
+                    <button
+                      key={lang.code}
+                      onClick={() => {
+                        changeLanguage(lang.code);
+                        setShowLangMenu(false);
+                      }}
+                      className={`${styles.langMenuItem} ${currentLang === lang.code ? styles.langMenuItemActive : ""}`}
+                    >
+                      <span style={{ fontSize: '14px' }}>{lang.flag}</span>
+                      <span>{lang.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className={styles.footerCol}>
