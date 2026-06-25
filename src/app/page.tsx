@@ -18,7 +18,7 @@ export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Call simulation states
-  const [demoScenario, setDemoScenario] = useState<"isp" | "fintech">("isp");
+  const [demoScenario, setDemoScenario] = useState<"hvac" | "plumbing">("hvac");
   const [isPlayingCall, setIsPlayingCall] = useState(false);
   const [playbackTime, setPlaybackTime] = useState(0);
   const [transcriptIndex, setTranscriptIndex] = useState(-1);
@@ -37,31 +37,33 @@ export default function LandingPage() {
     { code: 'ja', label: '日本語', flag: '🇯🇵' },
   ];
 
-  const ispDialogue = [
-    { time: 2, sender: "user", text: "Hey, my internet has been offline for the last hour. I tried restarting the router but nothing happened." },
-    { time: 7, sender: "ai", text: "I'm sorry to hear that. Let me look up your account details using your registered phone number. One moment..." },
-    { time: 13, sender: "ai", text: "Okay, I see your account under John Doe. I'm querying your optical terminal status right now." },
-    { time: 19, sender: "system", text: "[System Check] Sending ping request to port ONT-559-X..." },
-    { time: 22, sender: "ai", text: "I see a signal loss at your line port. I've initiated a remote port reset on our end. Can you check if the broadband light on your router is blinking now?" },
-    { time: 29, sender: "user", text: "Oh wait... the light just turned solid green! The WiFi is back up. Wow, that was fast." },
-    { time: 34, sender: "ai", text: "Fantastic! I've updated your ticket status in Zendesk to resolved. Is there anything else I can assist you with?" },
-    { time: 39, sender: "user", text: "No, that's all. Thank you so much." },
-    { time: 42, sender: "ai", text: "You're very welcome! Have a great day." }
+  const hvacDialogue = [
+    { time: 2, sender: "user", text: "Hi, my AC has stopped working completely and it's 95 degrees outside. Can you get a technician out here today?" },
+    { time: 8, sender: "ai", text: "Oh, that sounds incredibly uncomfortable! I can absolutely help schedule a technician for you. Let me check our team's schedule for today." },
+    { time: 14, sender: "system", text: "[System Check] Querying Housecall Pro calendar for next available HVAC tech..." },
+    { time: 18, sender: "ai", text: "I have an emergency slot available with our tech, Marcus, between 2 PM and 4 PM today. Would that time slot work for you?" },
+    { time: 25, sender: "user", text: "Yes, that's perfect. Please book it." },
+    { time: 28, sender: "ai", text: "Great! I have locked in that time. Since this is an emergency dispatch, there is a fifty dollar dispatch fee to secure the booking. I am sending a secure payment link to your mobile number now." },
+    { time: 36, sender: "system", text: "[System Check] Generating Stripe payment link & SMS dispatch notification to Marcus..." },
+    { time: 40, sender: "ai", text: "I've just sent that over. Marcus is fully briefed and is heading your way. Is there anything else you need help with?" },
+    { time: 46, sender: "user", text: "No, that's it. Thanks a lot!" },
+    { time: 49, sender: "ai", text: "You're welcome! Stay cool, and Marcus will see you shortly." }
   ];
 
-  const fintechDialogue = [
-    { time: 2, sender: "user", text: "Hi, I sent a transfer of 50,000 Naira to my mom's account two hours ago, but she hasn't received it yet. Can you check it?" },
-    { time: 8, sender: "ai", text: "I understand your concern. Let me check our transaction logs for you. Can you confirm the transaction reference code or your registered email address?" },
-    { time: 15, sender: "user", text: "Yes, the reference code is TXN-8902-LK." },
-    { time: 20, sender: "ai", text: "Thank you. Checking ledger logs... One moment." },
-    { time: 23, sender: "system", text: "[System Check] Querying billing API for reference TXN-8902-LK..." },
-    { time: 26, sender: "ai", text: "I see the transaction has been approved by our system, but it is currently held up at the destination bank's clearinghouse. I've just pinged their API to expedite the confirmation." },
-    { time: 34, sender: "ai", text: "You should receive a delivery confirmation notification on your mom's end within the next 3 to 5 minutes. I've also logged a tracking ticket." },
-    { time: 41, sender: "user", text: "Ah, ok, that makes sense. Thank you for checking that so quickly!" },
-    { time: 45, sender: "ai", text: "You're very welcome! Let me know if you need help with anything else." }
+  const plumbingDialogue = [
+    { time: 2, sender: "user", text: "Hey, my kitchen sink is backing up and flooding the floor. I need someone immediately." },
+    { time: 8, sender: "ai", text: "I understand this is an emergency. Let's get someone out to help. I am looking up our emergency plumber schedule right now." },
+    { time: 14, sender: "system", text: "[System Check] Checking plumbing dispatch routes & calendar availability..." },
+    { time: 18, sender: "ai", text: "Our emergency plumber, David, is nearby and can be at your location in forty-five minutes. Would you like me to dispatch him?" },
+    { time: 25, sender: "user", text: "Yes, please send him right away!" },
+    { time: 28, sender: "ai", text: "Done! I've dispatched David and sent the job details to his phone. I'm also emailing you a booking confirmation right now." },
+    { time: 35, sender: "system", text: "[System Check] Creating ticket in Jobber & triggering Gmail confirmation message..." },
+    { time: 39, sender: "ai", text: "All set. David will call you when he's five minutes away. Please keep the main water valve shut if possible." },
+    { time: 46, sender: "user", text: "Alright, will do. Thank you." },
+    { time: 49, sender: "ai", text: "You're very welcome. Help is on the way!" }
   ];
 
-  const dialogue = demoScenario === "isp" ? ispDialogue : fintechDialogue;
+  const dialogue = demoScenario === "hvac" ? hvacDialogue : plumbingDialogue;
   const maxCallTime = dialogue[dialogue.length - 1].time + 3;
 
   useEffect(() => {
@@ -125,7 +127,7 @@ export default function LandingPage() {
     setTranscriptIndex(-1);
   };
 
-  const handleSelectScenario = (scenario: "isp" | "fintech") => {
+  const handleSelectScenario = (scenario: "hvac" | "plumbing") => {
     setIsPlayingCall(false);
     setDemoScenario(scenario);
     setPlaybackTime(0);
@@ -257,16 +259,16 @@ export default function LandingPage() {
       <header className={styles.hero}>
         <div className={styles.heroContainer}>
           <div className={styles.heroBadge}>
-            <span className={styles.heroBadgeHighlight}>Customer Support Operations</span>
-            <span className={styles.heroBadgeText}>Resolve Repetitive Calls 24/7</span>
+            <span className={styles.heroBadgeHighlight}>AI Operations Dispatcher</span>
+            <span className={styles.heroBadgeText}>Book Jobs & Dispatch Techs 24/7</span>
           </div>
 
           <h1 className={styles.heroTitle}>
-            Stop Drowning Your Support Team in Repetitive Customer Calls
+            Stop Missing Inbound Leads and Dispatch Calls
           </h1>
 
           <p className={styles.heroSubtitle}>
-            Amira resolves customer inquiries, creates tickets, updates systems, and escalates only the issues that need a human agent.
+            Amira is the 24/7 AI dispatcher for trade and field service businesses. She answers calls, qualifies emergencies, schedules jobs on your calendar, and processes dispatch fees—instantly.
           </p>
 
           <Script
@@ -294,7 +296,7 @@ export default function LandingPage() {
           </div>
 
           <div className={styles.heroTrust}>
-            Built for ISPs and Fintechs handling thousands of customer inquiries every month.
+            Built for Plumbing, HVAC, Electrical, and Field Service businesses looking to save missed revenue.
           </div>
 
           {/* VISUAL WORKFLOW CONTAINER */}
@@ -305,7 +307,7 @@ export default function LandingPage() {
                 <span className={styles.dot} />
                 <span className={styles.dot} />
               </div>
-              <div className={styles.headerTitle}>Customer Call Resolution Flow</div>
+              <div className={styles.headerTitle}>AI Dispatch &amp; Scheduling Flow</div>
               <div className={styles.headerStatus}>
                 <span className={styles.pulseIndicator} />
                 Active Workflow
@@ -316,7 +318,7 @@ export default function LandingPage() {
               <div className={styles.workflowStep}>
                 <div className={styles.stepNum}>1</div>
                 <div className={styles.stepTitle}>Customer Calls</div>
-                <p className={styles.stepText}>Customer rings your support line with a routine outage or transfer issue.</p>
+                <p className={styles.stepText}>Customer rings your line with an emergency plumbing issue or service request.</p>
               </div>
 
               <div className={styles.workflowArrow}>➔</div>
@@ -324,31 +326,31 @@ export default function LandingPage() {
               <div className={styles.workflowStep}>
                 <div className={styles.stepNum}>2</div>
                 <div className={styles.stepTitle}>Amira Answers</div>
-                <p className={styles.stepText}>Answers in under 500ms using a premium, warm, conversational voice.</p>
+                <p className={styles.stepText}>Answers instantly, greeting them warmly as your trade dispatcher.</p>
               </div>
 
               <div className={styles.workflowArrow}>➔</div>
 
               <div className={styles.workflowStep}>
                 <div className={styles.stepNum}>3</div>
-                <div className={styles.stepTitle}>Queries Systems</div>
-                <p className={styles.stepText}>Checks router signals, transaction logs, or billing data in real-time.</p>
+                <div className={styles.stepTitle}>Checks Schedule</div>
+                <p className={styles.stepText}>Queries Google Calendar or Jobber in real-time to find open technician slots.</p>
               </div>
 
               <div className={styles.workflowArrow}>➔</div>
 
               <div className={styles.workflowStep}>
                 <div className={styles.stepNum}>4</div>
-                <div className={styles.stepTitle}>Resolves &amp; Logs</div>
-                <p className={styles.stepText}>Resets port, confirms transfer, updates CRM and logs Zendesk ticket.</p>
+                <div className={styles.stepTitle}>Books &amp; Charges</div>
+                <p className={styles.stepText}>Secures the booking, collects dispatch deposit via Stripe, and logs ticket details.</p>
               </div>
 
               <div className={styles.workflowArrow}>➔</div>
 
               <div className={styles.workflowStep}>
                 <div className={styles.stepNum}>5</div>
-                <div className={styles.stepTitle}>Warm Escalation</div>
-                <p className={styles.stepText}>Only complex cases route to humans, complete with full logs and details.</p>
+                <div className={styles.stepTitle}>Alerts Technician</div>
+                <p className={styles.stepText}>Instantly sends the job notes, address, and client details to the technician via Twilio.</p>
               </div>
             </div>
           </div>
@@ -359,37 +361,37 @@ export default function LandingPage() {
       <section className={styles.problemSection} id="problem">
         <div className={styles.sectionHeaderCentered}>
           <span className={styles.sectionTag}>The Pain Point</span>
-          <h2 className={styles.sectionTitle}>Your Team Is Answering The Same Questions Every Day</h2>
+          <h2 className={styles.sectionTitle}>Missed Calls Mean Lost Revenue for Your Trade Business</h2>
           <p className={styles.sectionSubtitle}>
-            Routine support calls trap your human agents in repetitive answers, driving support costs up and making frustrated customers wait in queue.
+            When you are out on a job, crawling under crawlspaces, or closed after hours, missing a call means the customer simply calls your competitor.
           </p>
         </div>
 
         <div className={styles.problemGrid}>
           <div className={styles.problemCard}>
             <div className={styles.problemCardHeader}>
-              <span className={styles.industryTag}>Internet Service Providers (ISPs)</span>
+              <span className={styles.industryTag}>Plumbing &amp; Drainage Services</span>
             </div>
             <ul className={styles.problemList}>
               <li>
                 <span className={styles.bulletX}>✖</span>
                 <div>
-                  <strong>"My internet is down."</strong>
-                  <p>Requires checking signal strength and resetting line ports.</p>
+                  <strong>"I have a major leak in my kitchen."</strong>
+                  <p>Triaging emergency flooding and immediately dispatching an on-call tech.</p>
                 </div>
               </li>
               <li>
                 <span className={styles.bulletX}>✖</span>
                 <div>
-                  <strong>"How do I reset my router?"</strong>
-                  <p>Guiding router restarts and checking billing status.</p>
+                  <strong>"When can someone come clear my drain?"</strong>
+                  <p>Checking live tech schedules and booking scheduling slots.</p>
                 </div>
               </li>
               <li>
                 <span className={styles.bulletX}>✖</span>
                 <div>
-                  <strong>"When is my next billing payment due?"</strong>
-                  <p>Lookup account statements and update details.</p>
+                  <strong>"What is your emergency dispatch call-out fee?"</strong>
+                  <p>Informing customers and pre-authorizing booking deposits.</p>
                 </div>
               </li>
             </ul>
@@ -397,28 +399,28 @@ export default function LandingPage() {
 
           <div className={styles.problemCard}>
             <div className={styles.problemCardHeader}>
-              <span className={styles.industryTag}>Fintechs &amp; Payments</span>
+              <span className={styles.industryTag}>HVAC &amp; Electrical Services</span>
             </div>
             <ul className={styles.problemList}>
               <li>
                 <span className={styles.bulletX}>✖</span>
                 <div>
-                  <strong>"I haven't received my transfer."</strong>
-                  <p>Requires querying transaction ledger logs and bank APIs.</p>
+                  <strong>"My heater stopped working and it is freezing outside."</strong>
+                  <p>Identifying emergency criteria and selecting local technicians.</p>
                 </div>
               </li>
               <li>
                 <span className={styles.bulletX}>✖</span>
                 <div>
-                  <strong>"Why was my debit card declined?"</strong>
-                  <p>Verifying card locks, balances, and security holds.</p>
+                  <strong>"I need an estimate on a new AC installation."</strong>
+                  <p>Booking consultations and matching leads to sales techs.</p>
                 </div>
               </li>
               <li>
                 <span className={styles.bulletX}>✖</span>
                 <div>
-                  <strong>"How do I update my KYC documentation?"</strong>
-                  <p>Verifying identification limits and screening records.</p>
+                  <strong>"Are you available for a safety inspection tomorrow?"</strong>
+                  <p>Cross-referencing open electrician slots and confirming slots.</p>
                 </div>
               </li>
             </ul>
@@ -427,19 +429,19 @@ export default function LandingPage() {
 
         <div className={styles.metricsGrid}>
           <div className={styles.metricCard}>
-            <div className={styles.metricValue}>$3.50+</div>
-            <div className={styles.metricTitle}>Cost Per Routine Call</div>
-            <p className={styles.metricDesc}>Every password reset, signal check, or payment status check drains cash flow.</p>
+            <div className={styles.metricValue}>35%+</div>
+            <div className={styles.metricTitle}>Calls Missed After Hours</div>
+            <p className={styles.metricDesc}>Over a third of trade business opportunities are lost to voicemail or missed calls.</p>
           </div>
           <div className={styles.metricCard}>
-            <div className={styles.metricValue}>72%</div>
-            <div className={styles.metricTitle}>Customer Churn Risk</div>
-            <p className={styles.metricDesc}>Customers hang up or switch brands if hold times exceed 5 minutes.</p>
+            <div className={styles.metricValue}>$150+</div>
+            <div className={styles.metricTitle}>Average Lost Job Value</div>
+            <p className={styles.metricDesc}>Every missed booking is money directly pocketed by a competing contractor.</p>
           </div>
           <div className={styles.metricCard}>
-            <div className={styles.metricValue}>85%</div>
-            <div className={styles.metricTitle}>Human Agent Burnout</div>
-            <p className={styles.metricDesc}>Answering the same ten questions repeatedly leads to high agent turnover.</p>
+            <div className={styles.metricValue}>82%</div>
+            <div className={styles.metricTitle}>Immediate Booking Rate</div>
+            <p className={styles.metricDesc}>Customers book immediately when answered by a live, friendly agent.</p>
           </div>
         </div>
       </section>
@@ -482,16 +484,16 @@ export default function LandingPage() {
         <div className={styles.playerWrapper}>
           <div className={styles.scenarioSelector}>
             <button 
-              className={`${styles.scenarioTab} ${demoScenario === "isp" ? styles.scenarioTabActive : ""}`}
-              onClick={() => handleSelectScenario("isp")}
+              className={`${styles.scenarioTab} ${demoScenario === "hvac" ? styles.scenarioTabActive : ""}`}
+              onClick={() => handleSelectScenario("hvac")}
             >
-              🌐 ISP Connection Check
+              🔥 HVAC Emergency Dispatch
             </button>
             <button 
-              className={`${styles.scenarioTab} ${demoScenario === "fintech" ? styles.scenarioTabActive : ""}`}
-              onClick={() => handleSelectScenario("fintech")}
+              className={`${styles.scenarioTab} ${demoScenario === "plumbing" ? styles.scenarioTabActive : ""}`}
+              onClick={() => handleSelectScenario("plumbing")}
             >
-              💳 Fintech Ledger Inquiry
+              🚰 Plumbing Scheduling
             </button>
           </div>
 

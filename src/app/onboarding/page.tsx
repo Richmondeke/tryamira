@@ -63,13 +63,14 @@ export default function OnboardingPage() {
           <div>
             <label style={{ display: 'block', fontSize: '13px', color: '#334155', fontWeight: 500, marginBottom: '6px' }}>Industry</label>
             <select name="industry" required style={{ width: '100%', padding: '0.75rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '14px', backgroundColor: '#fff', color: '#334155' }}>
-              <option value="">Select an industry...</option>
-              <option value="real_estate">Real Estate</option>
-              <option value="ecommerce">E-Commerce</option>
-              <option value="healthcare">Healthcare</option>
-              <option value="saas">SaaS / Software</option>
-              <option value="agency">Agency / Consulting</option>
-              <option value="other">Other</option>
+              <option value="">Select your trade / service...</option>
+              <option value="plumbing">Plumbing &amp; Drainage</option>
+              <option value="hvac">HVAC / Heating &amp; Cooling</option>
+              <option value="electrical">Electrical Services</option>
+              <option value="towing">Towing &amp; Roadside Logistics</option>
+              <option value="cleaning">Cleaning &amp; Home Services</option>
+              <option value="locksmith">Locksmith &amp; Security</option>
+              <option value="other">Other Field Services</option>
             </select>
           </div>
 
