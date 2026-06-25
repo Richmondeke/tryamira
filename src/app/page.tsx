@@ -4,11 +4,145 @@ import React, { useState, useEffect } from "react";
 import Script from "next/script";
 import styles from "./page.module.css";
 import { useLocalPricing } from "@/hooks/useLocalPricing";
+import { 
+  Droplet, 
+  Wind, 
+  Zap, 
+  Truck, 
+  Key, 
+  Calendar, 
+  CreditCard, 
+  PhoneCall, 
+  Check, 
+  X 
+} from "lucide-react";
 
 function LocalPrice({ basePriceUsd }: { basePriceUsd: number }) {
   const { price, isLoading } = useLocalPricing(basePriceUsd);
   if (isLoading) return <>{`$${basePriceUsd}`}</>;
   return <>{price}</>;
+}
+
+function MeshWaveCanvas() {
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animationFrameId: number;
+    let width = canvas.width = canvas.offsetWidth;
+    let height = canvas.height = canvas.offsetHeight;
+
+    const handleResize = () => {
+      if (!canvas) return;
+      width = canvas.width = canvas.offsetWidth;
+      height = canvas.height = canvas.offsetHeight;
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    // Grid parameters
+    const cols = 40;
+    const rows = 15;
+    const spacingX = width / (cols - 1);
+    const spacingY = height / (rows - 1);
+
+    let time = 0;
+
+    const draw = () => {
+      ctx.clearRect(0, 0, width, height);
+
+      // Draw a mesh of points
+      const points: { x: number; y: number }[][] = [];
+
+      for (let r = 0; r < rows; r++) {
+        points[r] = [];
+        for (let c = 0; c < cols; c++) {
+          const baseX = c * spacingX;
+          const baseY = r * spacingY;
+
+          const nx = (baseX / width) * 2 - 1;
+          const ny = (baseY / height); // 0 (back) to 1 (front)
+
+          const wave1 = Math.sin(nx * 4 + time + ny * 3) * 20;
+          const wave2 = Math.cos(ny * 5 - time * 1.5 + nx * 2) * 12;
+          const heightOffset = (wave1 + wave2) * ny; // fade out wave amplitude at the back
+
+          const perspectiveY = baseY + heightOffset;
+
+          points[r][c] = { x: baseX, y: perspectiveY };
+        }
+      }
+
+      // Draw lines
+      ctx.strokeStyle = "rgba(16, 185, 129, 0.15)";
+      ctx.lineWidth = 1;
+
+      // Horizontal lines
+      for (let r = 0; r < rows; r++) {
+        ctx.beginPath();
+        for (let c = 0; c < cols; c++) {
+          const p = points[r][c];
+          if (c === 0) {
+            ctx.moveTo(p.x, p.y);
+          } else {
+            ctx.lineTo(p.x, p.y);
+          }
+        }
+        const alpha = 0.05 + 0.18 * (r / (rows - 1));
+        ctx.strokeStyle = `rgba(16, 185, 129, ${alpha})`;
+        ctx.stroke();
+      }
+
+      // Vertical lines
+      for (let c = 0; c < cols; c++) {
+        ctx.beginPath();
+        for (let r = 0; r < rows; r++) {
+          const p = points[r][c];
+          if (r === 0) {
+            ctx.moveTo(p.x, p.y);
+          } else {
+            ctx.lineTo(p.x, p.y);
+          }
+        }
+        const alpha = 0.05 + 0.12 * (c / (cols - 1));
+        ctx.strokeStyle = `rgba(16, 185, 129, ${alpha})`;
+        ctx.stroke();
+      }
+
+      // Intersection glow dots
+      for (let r = 0; r < rows; r += 2) {
+        for (let c = 0; c < cols; c += 3) {
+          const p = points[r][c];
+          const alpha = 0.1 + 0.3 * (r / (rows - 1)) * Math.sin(time + c);
+          ctx.fillStyle = `rgba(16, 185, 129, ${alpha})`;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      time += 0.015;
+      animationFrameId = requestAnimationFrame(draw);
+    };
+
+    draw();
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  return (
+    <div className={styles.meshCanvasContainer}>
+      <canvas ref={canvasRef} className={styles.meshCanvas} />
+    </div>
+  );
 }
 
 export default function LandingPage() {
@@ -183,11 +317,87 @@ export default function LandingPage() {
           </a>
           
           <ul className={styles.navLinks}>
-            <li><a href="#problem" className={styles.navLink}>Repetitive Calls</a></li>
-            <li><a href="#workflow" className={styles.navLink}>How Amira Works</a></li>
-            <li><a href="#integrations" className={styles.navLink}>Integrations</a></li>
-            <li><a href="#interactive-demo" className={styles.navLink}>Listen to Call</a></li>
-            <li><a href="#pricing" className={styles.navLink}>Pricing</a></li>
+            <li className={styles.navLinkWrapper}>
+              <span className={styles.navLink}>Solutions ▼</span>
+              <div className={styles.megaMenu}>
+                <div className={styles.megaMenuColumn}>
+                  <div className={styles.megaMenuTitle}>Services</div>
+                  
+                  <a href="/login?redirect=/dashboard/ai-agent" className={styles.megaMenuItem}>
+                    <Droplet className={styles.megaMenuIcon} />
+                    <div className={styles.megaMenuText}>
+                      <div className={styles.megaMenuItemName}>Emergency Plumbing</div>
+                      <div className={styles.megaMenuItemDesc}>Qualify and dispatch plumbers for urgent leaks.</div>
+                    </div>
+                  </a>
+                  
+                  <a href="/login?redirect=/dashboard/ai-agent" className={styles.megaMenuItem}>
+                    <Wind className={styles.megaMenuIcon} />
+                    <div className={styles.megaMenuText}>
+                      <div className={styles.megaMenuItemName}>HVAC Repair</div>
+                      <div className={styles.megaMenuItemDesc}>Schedule techs, triage heat and AC calls 24/7.</div>
+                    </div>
+                  </a>
+                  
+                  <a href="/login?redirect=/dashboard/ai-agent" className={styles.megaMenuItem}>
+                    <Zap className={styles.megaMenuIcon} />
+                    <div className={styles.megaMenuText}>
+                      <div className={styles.megaMenuItemName}>Electrical</div>
+                      <div className={styles.megaMenuItemDesc}>Route calls, book inspections, alert electricians.</div>
+                    </div>
+                  </a>
+
+                  <a href="/login?redirect=/dashboard/ai-agent" className={styles.megaMenuItem}>
+                    <Truck className={styles.megaMenuIcon} />
+                    <div className={styles.megaMenuText}>
+                      <div className={styles.megaMenuItemName}>Towing</div>
+                      <div className={styles.megaMenuItemDesc}>Coordinate dispatch and road support.</div>
+                    </div>
+                  </a>
+
+                  <a href="/login?redirect=/dashboard/ai-agent" className={styles.megaMenuItem}>
+                    <Key className={styles.megaMenuIcon} />
+                    <div className={styles.megaMenuText}>
+                      <div className={styles.megaMenuItemName}>Locksmith</div>
+                      <div className={styles.megaMenuItemDesc}>Handle lockouts and schedule security installs.</div>
+                    </div>
+                  </a>
+                </div>
+
+                <div className={styles.megaMenuColumn}>
+                  <div className={styles.megaMenuTitle}>Workflows</div>
+
+                  <a href="/login?redirect=/dashboard/ai-agent" className={styles.megaMenuItem}>
+                    <Calendar className={styles.megaMenuIcon} />
+                    <div className={styles.megaMenuText}>
+                      <div className={styles.megaMenuItemName}>Google Calendar</div>
+                      <div className={styles.megaMenuItemDesc}>Sync bookings and check technician availability.</div>
+                    </div>
+                  </a>
+
+                  <a href="/login?redirect=/dashboard/ai-agent" className={styles.megaMenuItem}>
+                    <CreditCard className={styles.megaMenuIcon} />
+                    <div className={styles.megaMenuText}>
+                      <div className={styles.megaMenuItemName}>Stripe Payments</div>
+                      <div className={styles.megaMenuItemDesc}>Collect deposit or dispatch fee during the call.</div>
+                    </div>
+                  </a>
+
+                  <a href="/login?redirect=/dashboard/ai-agent" className={styles.megaMenuItem}>
+                    <PhoneCall className={styles.megaMenuIcon} />
+                    <div className={styles.megaMenuText}>
+                      <div className={styles.megaMenuItemName}>Twilio SMS</div>
+                      <div className={styles.megaMenuItemDesc}>Instantly notify technicians with dispatch details.</div>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            </li>
+            <li className={styles.navLinkWrapper}><a href="#problem" className={styles.navLink}>Repetitive Calls</a></li>
+            <li className={styles.navLinkWrapper}><a href="#workflow" className={styles.navLink}>How Amira Works</a></li>
+            <li className={styles.navLinkWrapper}><a href="#integrations" className={styles.navLink}>Integrations</a></li>
+            <li className={styles.navLinkWrapper}><a href="#interactive-demo" className={styles.navLink}>Listen to Call</a></li>
+            <li className={styles.navLinkWrapper}><a href="#pricing" className={styles.navLink}>Pricing</a></li>
           </ul>
 
           <div className={styles.navActions}>
@@ -242,6 +452,19 @@ export default function LandingPage() {
         {/* MOBILE MENU DROPDOWN */}
         {mobileMenuOpen && (
           <div className={styles.mobileMenu}>
+            <div className={styles.mobileSubMenuTitle}>Services</div>
+            <a href="/login?redirect=/dashboard/ai-agent" onClick={() => setMobileMenuOpen(false)}>Emergency Plumbing</a>
+            <a href="/login?redirect=/dashboard/ai-agent" onClick={() => setMobileMenuOpen(false)}>HVAC Repair</a>
+            <a href="/login?redirect=/dashboard/ai-agent" onClick={() => setMobileMenuOpen(false)}>Electrical</a>
+            <a href="/login?redirect=/dashboard/ai-agent" onClick={() => setMobileMenuOpen(false)}>Towing</a>
+            <a href="/login?redirect=/dashboard/ai-agent" onClick={() => setMobileMenuOpen(false)}>Locksmith</a>
+            
+            <div className={styles.mobileSubMenuTitle}>Workflows</div>
+            <a href="/login?redirect=/dashboard/ai-agent" onClick={() => setMobileMenuOpen(false)}>Google Calendar</a>
+            <a href="/login?redirect=/dashboard/ai-agent" onClick={() => setMobileMenuOpen(false)}>Stripe Payments</a>
+            <a href="/login?redirect=/dashboard/ai-agent" onClick={() => setMobileMenuOpen(false)}>Twilio SMS</a>
+            
+            <hr />
             <a href="#problem" onClick={() => setMobileMenuOpen(false)}>Repetitive Calls</a>
             <a href="#workflow" onClick={() => setMobileMenuOpen(false)}>How Amira Works</a>
             <a href="#integrations" onClick={() => setMobileMenuOpen(false)}>Integrations</a>
@@ -355,6 +578,7 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
+        <MeshWaveCanvas />
       </header>
 
       {/* PROBLEM SECTION */}
@@ -374,21 +598,21 @@ export default function LandingPage() {
             </div>
             <ul className={styles.problemList}>
               <li>
-                <span className={styles.bulletX}>✖</span>
+                <X className={styles.bulletXIcon} />
                 <div>
                   <strong>"I have a major leak in my kitchen."</strong>
                   <p>Triaging emergency flooding and immediately dispatching an on-call tech.</p>
                 </div>
               </li>
               <li>
-                <span className={styles.bulletX}>✖</span>
+                <X className={styles.bulletXIcon} />
                 <div>
                   <strong>"When can someone come clear my drain?"</strong>
                   <p>Checking live tech schedules and booking scheduling slots.</p>
                 </div>
               </li>
               <li>
-                <span className={styles.bulletX}>✖</span>
+                <X className={styles.bulletXIcon} />
                 <div>
                   <strong>"What is your emergency dispatch call-out fee?"</strong>
                   <p>Informing customers and pre-authorizing booking deposits.</p>
@@ -403,21 +627,21 @@ export default function LandingPage() {
             </div>
             <ul className={styles.problemList}>
               <li>
-                <span className={styles.bulletX}>✖</span>
+                <X className={styles.bulletXIcon} />
                 <div>
                   <strong>"My heater stopped working and it is freezing outside."</strong>
                   <p>Identifying emergency criteria and selecting local technicians.</p>
                 </div>
               </li>
               <li>
-                <span className={styles.bulletX}>✖</span>
+                <X className={styles.bulletXIcon} />
                 <div>
                   <strong>"I need an estimate on a new AC installation."</strong>
                   <p>Booking consultations and matching leads to sales techs.</p>
                 </div>
               </li>
               <li>
-                <span className={styles.bulletX}>✖</span>
+                <X className={styles.bulletXIcon} />
                 <div>
                   <strong>"Are you available for a safety inspection tomorrow?"</strong>
                   <p>Cross-referencing open electrician slots and confirming slots.</p>
@@ -585,11 +809,11 @@ export default function LandingPage() {
             <p className={styles.planPeriod}>Billed {activePlan}</p>
             
             <ul className={styles.planFeatures}>
-              <li>500 call minutes included</li>
-              <li>1 custom AI phone line</li>
-              <li>Knowledge base training (up to 5MB)</li>
-              <li>Basic dashboard logs &amp; analytics</li>
-              <li>Webhooks &amp; email support</li>
+              <li><Check className={styles.planFeatureIcon} /> 500 call minutes included</li>
+              <li><Check className={styles.planFeatureIcon} /> 1 custom AI phone line</li>
+              <li><Check className={styles.planFeatureIcon} /> Knowledge base training (up to 5MB)</li>
+              <li><Check className={styles.planFeatureIcon} /> Basic dashboard logs &amp; analytics</li>
+              <li><Check className={styles.planFeatureIcon} /> Webhooks &amp; email support</li>
             </ul>
 
             <a href="/dashboard" className={`${styles.btnPlan} ${styles.btnPlanOutline}`}>Start Free Trial</a>
@@ -606,12 +830,12 @@ export default function LandingPage() {
             <p className={styles.planPeriod}>Billed {activePlan}</p>
             
             <ul className={styles.planFeatures}>
-              <li>3,000 call minutes included</li>
-              <li>5 custom AI phone lines</li>
-              <li>Unlimited document training space</li>
-              <li>Smart human handoff &amp; escalation</li>
-              <li>Advanced dashboard analytics &amp; CRM</li>
-              <li>Priority customer support</li>
+              <li><Check className={styles.planFeatureIcon} /> 3,000 call minutes included</li>
+              <li><Check className={styles.planFeatureIcon} /> 5 custom AI phone lines</li>
+              <li><Check className={styles.planFeatureIcon} /> Unlimited document training space</li>
+              <li><Check className={styles.planFeatureIcon} /> Smart human handoff &amp; escalation</li>
+              <li><Check className={styles.planFeatureIcon} /> Advanced dashboard analytics &amp; CRM</li>
+              <li><Check className={styles.planFeatureIcon} /> Priority customer support</li>
             </ul>
 
             <a href="/dashboard" className={`${styles.btnPlan} ${styles.btnPlanFilled}`}>Go Professional</a>
@@ -627,12 +851,12 @@ export default function LandingPage() {
             <p className={styles.planPeriod}>Tailored options available</p>
             
             <ul className={styles.planFeatures}>
-              <li>Unlimited custom call minutes</li>
-              <li>Dedicated infrastructure (SLA guaranteed)</li>
-              <li>Custom voice model fine-tuning</li>
-              <li>Advanced API gateways &amp; webhooks</li>
-              <li>HIPAA &amp; enterprise compliance</li>
-              <li>Dedicated account manager &amp; 24/7 support</li>
+              <li><Check className={styles.planFeatureIcon} /> Unlimited custom call minutes</li>
+              <li><Check className={styles.planFeatureIcon} /> Dedicated infrastructure (SLA guaranteed)</li>
+              <li><Check className={styles.planFeatureIcon} /> Custom voice model fine-tuning</li>
+              <li><Check className={styles.planFeatureIcon} /> Advanced API gateways &amp; webhooks</li>
+              <li><Check className={styles.planFeatureIcon} /> HIPAA &amp; enterprise compliance</li>
+              <li><Check className={styles.planFeatureIcon} /> Dedicated account manager &amp; 24/7 support</li>
             </ul>
 
             <a href="/dashboard" className={`${styles.btnPlan} ${styles.btnPlanOutline}`}>Contact Sales</a>
@@ -645,18 +869,18 @@ export default function LandingPage() {
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
             <span className={styles.sectionTag}>Operations Templates</span>
-            <h2 className={styles.sectionTitle} style={{ marginTop: '0.75rem' }}>Deploy a Pre-Trained Support Agent in Seconds</h2>
+            <h2 className={styles.sectionTitle} style={{ marginTop: '0.75rem' }}>Deploy a Pre-Trained Operations Agent in Seconds</h2>
             <p className={styles.sectionSubtitle}>Select a layout pre-configured with the database queries and escalation rules for your exact operations.</p>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: '1.25rem' }}>
             {[
-              { icon: '🌐', name: 'ISP Outage Diagnostic', tag: 'ISP Support', desc: 'Checks line signal status, runs terminal port resets, and logs local Zendesk tickets.', stat: '65% query deflection' },
-              { icon: '💳', name: 'Ledger Audit Rep', tag: 'Fintech Support', desc: 'Queries transfer logs, resolves network clearing delays, and logs tracking IDs.', stat: '2.5 min avg resolution' },
-              { icon: '🔒', name: 'KYC Document Agent', tag: 'Compliance', desc: 'Validates identification limits, screens credentials, and guides details update.', stat: 'Zero missed screenings' },
-              { icon: '📈', name: 'Account & Billing rep', tag: 'Billing', desc: 'Checks statement balances, processes plan renewals, and prints invoices.', stat: '90% cost reduction' },
-              { icon: '📦', name: 'Delivery Status Check', tag: 'Logistics', desc: 'Queries shipment tracks, prints shipping labels, and updates dispatch status.', stat: '80% deflection rate' },
-              { icon: '📞', name: 'General Support Router', tag: 'Operations', desc: 'Qualifies customer issues and handles warm transfers to human agents.', stat: 'Under 500ms voice latency' },
+              { icon: '🚰', name: 'Emergency Plumbing Dispatcher', tag: 'Plumbing', desc: 'Qualifies emergency leaks, processes call-out fees via Stripe, and dispatches plumbers instantly.', stat: '80% dispatch deflection' },
+              { icon: '🔥', name: 'HVAC Repair Scheduler', tag: 'HVAC', desc: 'Checks active technician calendars, triages heating/AC outages, and logs calendar bookings.', stat: '90% scheduling accuracy' },
+              { icon: '⚡', name: 'Electrical Dispatcher', tag: 'Electrical', desc: 'Identifies emergency criteria, pre-authorizes dispatch deposits, and schedules electricians.', stat: '24/7 emergency coverage' },
+              { icon: '🚚', name: 'Tow Truck Coordinator', tag: 'Towing', desc: 'Collects vehicle details and breakdown coordinates, booking towing dispatches on active routes.', stat: 'Under 4 min dispatch time' },
+              { icon: '🔑', name: 'Emergency Locksmith Dispatcher', tag: 'Locksmith', desc: 'Qualifies residential/vehicle lockouts and schedules nearest technician with direct notification.', stat: '95% caller satisfaction' },
+              { icon: '🧹', name: 'Cleaning Services Intake', tag: 'Cleaning', desc: 'Handles regular and deep clean job bookings, collects addresses, and confirms appointments.', stat: '70% reduction in admin cost' },
             ].map((agent, i) => (
               <a
                 key={i}
@@ -682,7 +906,7 @@ export default function LandingPage() {
       {/* GUARANTEE & CALLOUT */}
       <section className={styles.testimonials}>
         <p className={styles.guaranteeText}>
-          🔒 <strong>No Lock-in:</strong> Cancel anytime. If Amira doesn't reduce your repeat call volume and average hold time in 30 days, we'll refund you in full.
+          🔒 <strong>No Lock-in:</strong> Cancel anytime. If Amira doesn't capture missed dispatch leads and book more trade jobs in 30 days, we'll refund you in full.
         </p>
       </section>
 
@@ -690,9 +914,9 @@ export default function LandingPage() {
       <section className={styles.footerCtaBanner}>
         <div className={styles.footerCtaContainer}>
           <div className={styles.footerCtaLeft}>
-            <h2 className={styles.footerCtaTitle}>Ready to stop drowning in support calls?</h2>
+            <h2 className={styles.footerCtaTitle}>Ready to stop missing high-value dispatch calls?</h2>
             <p className={styles.footerCtaDesc}>
-              Join hundreds of operations managers using Amira to resolve repetitive inquiries, lower hold times, and free up agents for complex problems.
+              Join hundreds of field service managers using Amira to book emergency dispatches, automate schedulers, and capture every lead.
             </p>
           </div>
           <div className={styles.footerCtaRight}>
@@ -723,7 +947,7 @@ export default function LandingPage() {
               />
             </div>
             <p className={styles.footerBrandDesc}>
-              The operations automation call center platform that resolves repetitive questions, clears agent backlogs, and integrates with your support desk.
+              The AI dispatching platform that schedules trade service calls, charges booking deposits, and dispatches technicians 24/7.
             </p>
           </div>
 
