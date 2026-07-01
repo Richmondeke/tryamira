@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Script from "next/script";
 import styles from "./page.module.css";
 import { useLocalPricing } from "@/hooks/useLocalPricing";
+import { AmiraLogo } from "@/components/ui/AmiraLogo";
 import { 
   Droplet, 
   Wind, 
@@ -309,11 +310,7 @@ export default function LandingPage() {
       <nav className={styles.nav}>
         <div className={styles.navContainer}>
           <a href="#" className={styles.navLogo}>
-            <img 
-              src="https://framerusercontent.com/assets/Wo30Sktse9esY3HXGesSUG8i0o.png" 
-              alt="Amira Logo" 
-              className={styles.navLogoImg} 
-            />
+            <AmiraLogo size={32} className={styles.navLogoImg} />
           </a>
           
           <ul className={styles.navLinks}>
@@ -898,11 +895,7 @@ export default function LandingPage() {
         <div className={styles.footerInner}>
           <div className={styles.footerBrand}>
             <div className={styles.footerBrandName}>
-              <img 
-                src="https://framerusercontent.com/assets/Wo30Sktse9esY3HXGesSUG8i0o.png" 
-                alt="Amira Logo" 
-                className={styles.footerLogoImg} 
-              />
+              <AmiraLogo size={32} className={styles.footerLogoImg} />
             </div>
             <p className={styles.footerBrandDesc}>
               The AI dispatching platform that schedules trade service calls, charges booking deposits, and dispatches technicians 24/7.

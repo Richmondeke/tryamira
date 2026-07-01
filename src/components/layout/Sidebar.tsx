@@ -5,9 +5,9 @@ import Link from 'next/link';
 import { useDemoMode } from '@/contexts/DemoModeContext';
 import { usePathname, useRouter } from 'next/navigation';
 import { useUserProfile } from '@/contexts/UserProfileContext';
+import { AmiraLogo } from '../ui/AmiraLogo';
+import { hapticMedium } from '../../utils/haptics';
 import { createClient } from '@/utils/supabase/client';
-
-
 
 interface NavItem {
   name: string;
@@ -107,11 +107,7 @@ export function Sidebar({ closeMobileMenu }: { closeMobileMenu?: () => void }) {
         borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
       }}>
         <Link href="/dashboard" onClick={() => closeMobileMenu?.()} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }}>
-          <img 
-            src="https://framerusercontent.com/assets/Wo30Sktse9esY3HXGesSUG8i0o.png" 
-            alt="Amira Logo" 
-            style={{ width: '96px', height: '96px', objectFit: 'contain' }} 
-          />
+          <AmiraLogo size={32} style={{ color: '#ffffff' }} />
         </Link>
       </div>
 
@@ -122,7 +118,7 @@ export function Sidebar({ closeMobileMenu }: { closeMobileMenu?: () => void }) {
           return (
             <div key={section} style={{ marginBottom: '2rem' }}> {/* Increased spacing between sections */}
               <div 
-                onClick={() => toggleSection(section)}
+                onClick={() => { hapticMedium(); toggleSection(section); }}
                 style={{ 
                   padding: '0 0.75rem 0.5rem', 
                   fontSize: '12px', 
@@ -152,7 +148,7 @@ export function Sidebar({ closeMobileMenu }: { closeMobileMenu?: () => void }) {
                         key={item.name} 
                         href={item.href} 
                         id={tourId}
-                        onClick={() => closeMobileMenu?.()}
+                        onClick={() => { hapticMedium(); closeMobileMenu?.(); }}
                         style={{
                           display: 'flex',
                           alignItems: 'center',

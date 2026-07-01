@@ -1,4 +1,5 @@
 import React from 'react';
+import { AmiraLogo } from '../ui/AmiraLogo';
 import styles from './AuthLayout.module.css';
 
 export function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -6,11 +7,7 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
     <div className={styles.container}>
       <div className={styles.leftPanel}>
         <div className={styles.logo}>
-          <img 
-            src="https://framerusercontent.com/assets/Wo30Sktse9esY3HXGesSUG8i0o.png" 
-            alt="Amira Logo" 
-            style={{ height: '96px', objectFit: 'contain', marginLeft: '-16px' }}
-          />
+          <AmiraLogo size={42} style={{ color: '#ffffff' }} />
         </div>
         <div className={styles.marketingCopy}>
           <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.2)', padding: '4px 12px', borderRadius: '16px', fontSize: '12px', marginBottom: '16px' }}>

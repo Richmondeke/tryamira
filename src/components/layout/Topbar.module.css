@@ -45,3 +45,19 @@
   border-radius: 50%;
   border: 2px solid var(--bg-surface);
 }
+
+@media (max-width: 600px) {
+  .topbar {
+    padding: 0 1rem;
+  }
+  .title {
+    font-size: 0.95rem;
+    max-width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .actions {
+    gap: 0.25rem;
+  }
+}

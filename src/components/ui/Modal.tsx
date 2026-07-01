@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode, useEffect } from 'react';
+import { hapticMedium } from '../../utils/haptics';
 
 interface ModalProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      hapticMedium();
     } else {
       document.body.style.overflow = 'unset';
     }
@@ -52,7 +54,8 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
       <div style={{
         backgroundColor: '#ffffff',
         borderRadius: '8px',
-        width: '100%',
+        width: 'calc(100% - 2rem)',
+        margin: '1rem',
         maxWidth: '500px',
         boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
         animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)',

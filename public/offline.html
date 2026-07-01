@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Amira — Offline</title>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #0a0b0e;
+      color: #ffffff;
+      font-family: 'Satoshi', system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+      box-sizing: border-box;
+      padding: 2rem;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    p {
+      color: #a0a8b5;
+      font-size: 14px;
+      margin-top: 0;
+      line-height: 1.5;
+      max-width: 320px;
+    }
+    button {
+      background-color: #0052cc;
+      color: #ffffff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: background-color 0.2s;
+    }
+    button:active {
+      background-color: #0047b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>You're Offline</h1>
+  <p>Please check your internet connection. Amira will be back as soon as you're online.</p>
+  <button onclick="window.location.reload()">Retry Connection</button>
+</body>
+</html>

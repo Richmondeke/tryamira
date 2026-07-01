@@ -1,41 +1,37 @@
-import type { Metadata } from "next";
-import { Paytone_One, Poppins, Inter, Quantico } from "next/font/google";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import Script from 'next/script';
 
-const paytoneOne = Paytone_One({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-paytone",
-});
-
-const poppins = Poppins({
-  weight: ["400", "500", "600", "700"],
-  subsets: ["latin"],
-  variable: "--font-poppins",
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
-
-const quantico = Quantico({
-  weight: ["400", "700"],
-  subsets: ["latin"],
-  variable: "--font-quantico",
-});
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)', color: '#0a0b0e' },
+    { media: '(prefers-color-scheme: light)', color: '#f8fafc' },
+  ],
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+};
 
 export const metadata: Metadata = {
-  title: "Amira | Your A.I Powered Call Center",
-  description: "Amira does the work of 1000 Call Center Agents, answering calls like a real human. Streamline customer interactions, reduce operational costs, and boost productivity with smart, scalable, and seamless solutions.",
+  title: "Amira — AI-Powered Multi-Channel Agent",
+  description: "Amira connects to 1,000+ tools and takes action across WhatsApp, Instagram, Messenger, Email and Voice — so your business never misses a customer.",
+  manifest: "/manifest.json",
   icons: {
     icon: "/icon.png",
     shortcut: "/icon.png",
     apple: "/apple-icon.png",
-  }
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Amira',
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
-
-import Script from 'next/script';
 
 export default function RootLayout({
   children,
@@ -43,8 +39,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${paytoneOne.variable} ${poppins.variable} ${inter.variable} ${quantico.variable}`}>
+    <html lang="en">
       <head>
+        {/* Satoshi Font — Fontshare CDN */}
+        <link
+          href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,600,700,800,900&display=swap"
+          rel="stylesheet"
+        />
         <Script
           src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
           strategy="afterInteractive"
@@ -58,6 +59,22 @@ export default function RootLayout({
                 layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
                 autoDisplay: false
               }, 'google_translate_element');
+            }
+          `}
+        </Script>
+        <Script id="register-sw" strategy="afterInteractive">
+          {`
+            if ('serviceWorker' in navigator) {
+              window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').then(
+                  function(registration) {
+                    console.log('Service Worker registration successful with scope: ', registration.scope);
+                  },
+                  function(err) {
+                    console.log('Service Worker registration failed: ', err);
+                  }
+                );
+              });
             }
           `}
         </Script>
@@ -85,4 +102,3 @@ export default function RootLayout({
     </html>
   );
 }
-

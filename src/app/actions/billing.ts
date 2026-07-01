@@ -46,36 +46,11 @@ export async function createPlanCheckout(tier: PlanTier, userEmail: string, user
   // Standard reference for Korapay
   const koraReference = `plan_${tier}_${userId}_${timestamp}`;
 
-  // 1. Try Flutterwave v4
-  const flwClientId = process.env.FLUTTERWAVE_CLIENT_ID;
-  const flwClientSecret = process.env.FLUTTERWAVE_CLIENT_SECRET;
+  // 1. Try Flutterwave v3
+  const flwSecretKey = process.env.FLUTTERWAVE_SECRET_KEY;
 
-  if (flwClientId && flwClientSecret) {
+  if (flwSecretKey) {
     try {
-      // Step A: Get OAuth Token
-      const tokenResponse = await fetch('https://idp.flutterwave.com/realms/flutterwave/protocol/openid-connect/token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          client_id: flwClientId,
-          client_secret: flwClientSecret,
-          grant_type: 'client_credentials',
-        }),
-      });
-
-      if (!tokenResponse.ok) {
-        throw new Error(`Failed to fetch Flutterwave token: ${tokenResponse.statusText}`);
-      }
-
-      const tokenData = await tokenResponse.json();
-      const accessToken = tokenData.access_token;
-
-      if (!accessToken) {
-        throw new Error('Flutterwave access token not found in response');
-      }
-
       // Pre-create invoice record in pending state using Flutterwave reference
       const supa = serviceSupabase();
       await supa.from('invoices').insert({
@@ -88,31 +63,35 @@ export async function createPlanCheckout(tier: PlanTier, userEmail: string, user
         status: 'pending',
       });
 
-      // Step B: Create Checkout Session
-      const sessionResponse = await fetch('https://f4bexperience.flutterwave.com/checkout/sessions', {
+      // Create Flutterwave v3 standard checkout payment
+      const sessionResponse = await fetch('https://api.flutterwave.com/v3/payments', {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${flwSecretKey}`,
           'Content-Type': 'application/json',
-          'X-Idempotency-Key': `flwidem${timestamp}`,
         },
         body: JSON.stringify({
+          tx_ref: flwReference,
           amount: plan.amountNGN,
           currency: 'NGN',
+          redirect_url: `${appUrl}/dashboard/account?tab=billing&payment=success&plan=${tier}`,
           customer: {
             email: userEmail,
           },
-          redirect_url: `${appUrl}/dashboard/account?tab=billing&payment=success&plan=${tier}`,
-          reference: flwReference,
+          customizations: {
+            title: 'Amira Premium Plan',
+            description: `Subscription to Amira ${tier} plan`,
+            logo: 'https://framerusercontent.com/assets/Wo30Sktse9esY3HXGesSUG8i0o.png',
+          }
         }),
       });
 
       const sessionResult = await sessionResponse.json();
 
-      if (sessionResponse.ok && sessionResult.data?.id) {
-        return { url: `https://checkout.flutterwave.com/v3/hosted/pay/${sessionResult.data.id}` };
+      if (sessionResponse.ok && sessionResult.status === 'success' && sessionResult.data?.link) {
+        return { url: sessionResult.data.link };
       } else {
-        throw new Error(sessionResult.message || 'Failed to initialize Flutterwave session');
+        throw new Error(sessionResult.message || 'Failed to initialize Flutterwave v3 session');
       }
     } catch (flwError: any) {
       console.error('Flutterwave flow failed, falling back to Korapay:', flwError);
@@ -193,36 +172,11 @@ export async function createTopupCheckout(
   const flwReference = `flwtopup${amountNGN}usr${cleanUserId}ts${timestamp}`;
   const koraReference = `topup_${amountNGN}_${userId}_${timestamp}`;
 
-  // 1. Try Flutterwave v4
-  const flwClientId = process.env.FLUTTERWAVE_CLIENT_ID;
-  const flwClientSecret = process.env.FLUTTERWAVE_CLIENT_SECRET;
+  // 1. Try Flutterwave v3
+  const flwSecretKey = process.env.FLUTTERWAVE_SECRET_KEY;
 
-  if (flwClientId && flwClientSecret) {
+  if (flwSecretKey) {
     try {
-      // Step A: Get OAuth Token
-      const tokenResponse = await fetch('https://idp.flutterwave.com/realms/flutterwave/protocol/openid-connect/token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          client_id: flwClientId,
-          client_secret: flwClientSecret,
-          grant_type: 'client_credentials',
-        }),
-      });
-
-      if (!tokenResponse.ok) {
-        throw new Error(`Failed to fetch Flutterwave token: ${tokenResponse.statusText}`);
-      }
-
-      const tokenData = await tokenResponse.json();
-      const accessToken = tokenData.access_token;
-
-      if (!accessToken) {
-        throw new Error('Flutterwave access token not found in response');
-      }
-
       // Pre-create invoice record in pending state using Flutterwave reference
       const supa = serviceSupabase();
       await supa.from('invoices').insert({
@@ -234,31 +188,35 @@ export async function createTopupCheckout(
         status: 'pending',
       });
 
-      // Step B: Create Checkout Session
-      const sessionResponse = await fetch('https://f4bexperience.flutterwave.com/checkout/sessions', {
+      // Create Flutterwave v3 standard checkout payment
+      const sessionResponse = await fetch('https://api.flutterwave.com/v3/payments', {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${flwSecretKey}`,
           'Content-Type': 'application/json',
-          'X-Idempotency-Key': `flwidem${timestamp}`,
         },
         body: JSON.stringify({
+          tx_ref: flwReference,
           amount: amountNGN,
           currency: 'NGN',
+          redirect_url: `${appUrl}/dashboard/account?tab=billing&payment=topup_success&amount=${amountNGN}`,
           customer: {
             email: userEmail,
           },
-          redirect_url: `${appUrl}/dashboard/account?tab=billing&payment=topup_success&amount=${amountNGN}`,
-          reference: flwReference,
+          customizations: {
+            title: 'Amira Credits Top-up',
+            description: `Top-up of $${(amountNGN / 1500).toFixed(2)} credits`,
+            logo: 'https://framerusercontent.com/assets/Wo30Sktse9esY3HXGesSUG8i0o.png',
+          }
         }),
       });
 
       const sessionResult = await sessionResponse.json();
 
-      if (sessionResponse.ok && sessionResult.data?.id) {
-        return { url: `https://checkout.flutterwave.com/v3/hosted/pay/${sessionResult.data.id}` };
+      if (sessionResponse.ok && sessionResult.status === 'success' && sessionResult.data?.link) {
+        return { url: sessionResult.data.link };
       } else {
-        throw new Error(sessionResult.message || 'Failed to initialize Flutterwave session');
+        throw new Error(sessionResult.message || 'Failed to initialize Flutterwave v3 session');
       }
     } catch (flwError: any) {
       console.error('Flutterwave flow failed, falling back to Korapay:', flwError);

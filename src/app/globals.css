@@ -29,7 +29,7 @@
   --warning: #ffea00;
 
   /* Typography */
-  --font-sans: var(--font-poppins), system-ui, sans-serif;
+  --font-sans: 'Satoshi', system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), monospace;
 
   /* Shadows */

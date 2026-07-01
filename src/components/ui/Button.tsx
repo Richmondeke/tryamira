@@ -1,6 +1,8 @@
 import React, { ButtonHTMLAttributes } from 'react';
 import styles from './Button.module.css';
 
+import { hapticLight } from '../../utils/haptics';
+
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
@@ -8,7 +10,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className = '', variant = 'primary', size = 'md', fullWidth, children, ...props }, ref) => {
+  ({ className = '', variant = 'primary', size = 'md', fullWidth, children, onClick, ...props }, ref) => {
     const classNames = [
       styles.btn,
       styles[variant],
@@ -17,8 +19,13 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       className
     ].filter(Boolean).join(' ');
 
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+      hapticLight();
+      onClick?.(e);
+    };
+
     return (
-      <button ref={ref} className={classNames} {...props}>
+      <button ref={ref} className={classNames} onClick={handleClick} {...props}>
         {children}
       </button>
     );

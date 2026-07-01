@@ -1,8 +1,19 @@
-import { type NextRequest } from 'next/server'
-import { updateSession } from '@/utils/supabase/middleware'
+import { NextResponse, type NextRequest } from 'next/server';
+import { updateSession } from '@/utils/supabase/middleware';
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request)
+  const hostname = request.headers.get('host') || '';
+  const url = request.nextUrl.clone();
+
+  // Route app.heyamira.com subdomains straight to dashboard, bypassing landing page
+  const isAppSubdomain = hostname.startsWith('app.heyamira.com') || hostname.startsWith('app.localhost');
+
+  if (isAppSubdomain && url.pathname === '/') {
+    url.pathname = '/dashboard';
+    return NextResponse.redirect(url);
+  }
+
+  return await updateSession(request);
 }
 
 export const config = {
@@ -16,4 +27,4 @@ export const config = {
      */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
-}
+};

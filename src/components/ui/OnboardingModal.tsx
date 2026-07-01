@@ -42,25 +42,60 @@ export default function OnboardingModal() {
         </button>
       </div>
 
+      <style>{`
+        .onboarding-step-wrapper {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.5rem;
+          z-index: 1;
+        }
+        .onboarding-step-icon {
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .onboarding-step-title {
+          font-size: 11px;
+          text-align: center;
+        }
+        @media (max-width: 500px) {
+          .onboarding-step-icon {
+            width: 32px !important;
+            height: 32px !important;
+            font-size: 14px !important;
+          }
+          .onboarding-step-title {
+            display: none;
+          }
+          .onboarding-progress-line {
+            top: 16px !important;
+          }
+        }
+      `}</style>
+
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2.5rem', position: 'relative' }}>
         {/* Progress Line */}
-        <div style={{ position: 'absolute', top: '24px', left: '10%', right: '10%', height: '2px', backgroundColor: '#e3e8ee', zIndex: 0 }}></div>
+        <div className="onboarding-progress-line" style={{ position: 'absolute', top: '24px', left: '10%', right: '10%', height: '2px', backgroundColor: '#e3e8ee', zIndex: 0 }}></div>
         
         {steps.map((step) => {
           const isCompleted = currentStep > step.id;
           const isActive = currentStep === step.id;
           
           return (
-            <div key={step.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', zIndex: 1 }}>
-              <div style={{ 
-                width: '48px', height: '48px', borderRadius: '50%', 
-                backgroundColor: isCompleted ? '#15be53' : (isActive ? '#f6f9fc' : '#ffffff'),
-                border: isActive ? '2px solid var(--stripe-purple)' : (isCompleted ? 'none' : '1px solid var(--stripe-border)'),
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: isActive ? '0 0 0 4px rgba(99,91,255,0.1)' : 'none',
-                color: isCompleted ? '#fff' : 'inherit',
-                fontSize: '20px'
-              }}>
+            <div key={step.id} className="onboarding-step-wrapper">
+              <div 
+                className="onboarding-step-icon"
+                style={{ 
+                  width: '48px', height: '48px', 
+                  backgroundColor: isCompleted ? '#15be53' : (isActive ? '#f6f9fc' : '#ffffff'),
+                  border: isActive ? '2px solid var(--stripe-purple)' : (isCompleted ? 'none' : '1px solid var(--stripe-border)'),
+                  boxShadow: isActive ? '0 0 0 4px rgba(99,91,255,0.1)' : 'none',
+                  color: isCompleted ? '#fff' : 'inherit',
+                  fontSize: '20px'
+                }}
+              >
                 {isCompleted ? (
                   <svg width="18" height="14" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M1 5L4.5 8.5L13 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -69,12 +104,13 @@ export default function OnboardingModal() {
                   step.icon
                 )}
               </div>
-              <span style={{ 
-                fontSize: '11px', 
-                fontWeight: isActive ? 500 : 400,
-                color: isActive ? 'var(--stripe-purple)' : (isCompleted ? '#15be53' : 'var(--stripe-muted)'),
-                textAlign: 'center'
-              }}>
+              <span 
+                className="onboarding-step-title"
+                style={{ 
+                  fontWeight: isActive ? 500 : 400,
+                  color: isActive ? 'var(--stripe-purple)' : (isCompleted ? '#15be53' : 'var(--stripe-muted)'),
+                }}
+              >
                 {step.title}
               </span>
             </div>
