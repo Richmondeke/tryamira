@@ -19,8 +19,8 @@ export const metadata: Metadata = {
   description: "Amira connects to 1,000+ tools and takes action across WhatsApp, Instagram, Messenger, Email and Voice — so your business never misses a customer.",
   manifest: "/manifest.json",
   icons: {
-    icon: "/icon.png",
-    shortcut: "/icon.png",
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
     apple: "/apple-icon.png",
   },
   appleWebApp: {
