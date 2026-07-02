@@ -16,6 +16,7 @@ export default function IntegrationsPage() {
   const [showModal, setShowModal] = useState(false);
   const [connectingApp, setConnectingApp] = useState<any | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [connectStep, setConnectStep] = useState(1);
   const [billingTier, setBillingTier] = useState<'starter' | 'pro' | 'team' | 'enterprise'>('starter');
 
   useEffect(() => {
@@ -140,20 +141,23 @@ export default function IntegrationsPage() {
     if (!connectingApp) return;
 
     setIsConnecting(true);
+    setConnectStep(1);
 
     try {
       // 1. Request dynamic connection link from server action (which links directly to Composio SDK)
       const res = await initiateComposioConnection(connectingApp.id);
       
       if (res.success && res.redirectUrl) {
+        setConnectStep(2);
         // 2. Local fallback save state (just in case they close before callback redirects)
         await saveIntegrationConfig(connectingApp.id, { connected: true });
         
-        setToast(`Redirecting to ${connectingApp.name} secure login...`);
-        
-        // 3. Perform redirect to Composio OAuth flows
         setTimeout(() => {
-          window.location.href = res.redirectUrl as string;
+          setConnectStep(3);
+          // 3. Perform redirect to Composio OAuth flows
+          setTimeout(() => {
+            window.location.href = res.redirectUrl as string;
+          }, 1000);
         }, 1200);
       } else {
         setToast(`Failed to establish OAuth link with ${connectingApp.name}.`);
@@ -173,12 +177,53 @@ export default function IntegrationsPage() {
       
       <Modal isOpen={showModal} onClose={() => !isConnecting && setShowModal(false)} title={`Install ${connectingApp?.name}`}>
         {isConnecting ? (
-          <div style={{ textAlign: 'center', padding: '2.5rem 0' }}>
-            <div style={{ display: 'inline-block', width: '32px', height: '32px', border: '3px solid #4caf50', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '1rem' }} />
-            <div style={{ color: '#4caf50', fontSize: '14px', fontWeight: 600 }}>Secure Authorization</div>
-            <p style={{ color: 'var(--stripe-body)', fontSize: '13px', marginTop: '0.5rem', marginInline: 'auto', maxWidth: '320px', lineHeight: 1.5 }}>
-              Redirecting you to the secure authorization portal to authorize {connectingApp?.name} securely...
-            </p>
+          <div style={{ textAlign: 'center', padding: '2rem 1.5rem' }}>
+            {/* Connection Visual Tunnel */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', marginBottom: '2rem' }}>
+              <div style={{ padding: '10px 16px', backgroundColor: 'rgba(0, 82, 204, 0.08)', border: '1px solid rgba(0, 82, 204, 0.15)', borderRadius: '8px', color: '#0052cc', fontWeight: 700, fontSize: '13px' }}>
+                Amira
+              </div>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <span style={{ width: '6px', height: '6px', backgroundColor: '#3b82f6', borderRadius: '50%', animation: 'pulse 1s infinite' }} />
+                <span style={{ width: '6px', height: '6px', backgroundColor: '#3b82f6', borderRadius: '50%', animation: 'pulse 1s infinite 0.2s' }} />
+                <span style={{ width: '6px', height: '6px', backgroundColor: '#3b82f6', borderRadius: '50%', animation: 'pulse 1s infinite 0.4s' }} />
+              </div>
+              <div style={{ padding: '10px 16px', backgroundColor: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '8px', color: '#334155', fontWeight: 700, fontSize: '13px' }}>
+                {connectingApp?.name?.substring(0, 10)}
+              </div>
+            </div>
+
+            {/* Stepper Status Indicators */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '320px', margin: '0 auto', textAlign: 'left' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: connectStep >= 1 ? '#0f172a' : '#94a3b8' }}>
+                <span style={{ color: connectStep > 1 ? '#4caf50' : '#3b82f6', fontWeight: 'bold' }}>
+                  {connectStep > 1 ? '✓' : '●'}
+                </span>
+                <span>Generating Composio OAuth session...</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: connectStep >= 2 ? '#0f172a' : '#94a3b8' }}>
+                <span style={{ color: connectStep > 2 ? '#4caf50' : connectStep === 2 ? '#3b82f6' : '#94a3b8', fontWeight: 'bold' }}>
+                  {connectStep > 2 ? '✓' : connectStep === 2 ? '●' : '○'}
+                </span>
+                <span>Configuring callback channels...</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: connectStep >= 3 ? '#0f172a' : '#94a3b8' }}>
+                <span style={{ color: connectStep === 3 ? '#3b82f6' : '#94a3b8', fontWeight: 'bold' }}>
+                  {connectStep === 3 ? '●' : '○'}
+                </span>
+                <span>Redirecting to secure login...</span>
+              </div>
+            </div>
+            
+            {/* Progress line */}
+            <div style={{ width: '100%', height: '4px', backgroundColor: '#e2e8f0', borderRadius: '2px', overflow: 'hidden', marginTop: '2rem' }}>
+              <div style={{ 
+                width: connectStep === 1 ? '33%' : connectStep === 2 ? '66%' : '100%', 
+                height: '100%', 
+                backgroundColor: '#3b82f6', 
+                transition: 'width 0.8s ease-in-out' 
+              }} />
+            </div>
           </div>
         ) : (
           <form onSubmit={performInstall}>
@@ -187,11 +232,19 @@ export default function IntegrationsPage() {
             </p>
 
             <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid var(--stripe-border)' }}>
-              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', fontSize: '12px', color: 'var(--stripe-body)', lineHeight: 1.5 }}>
-                <span style={{ fontSize: '16px' }}>🛡️</span>
-                <span>
-                  <strong>Secure Verified Connection:</strong> Authentication takes place directly through secure OAuth. Amira does not store your credentials.
-                </span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '12px', color: 'var(--stripe-body)', lineHeight: 1.5 }}>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <span style={{ color: '#4caf50', fontWeight: 'bold' }}>✓</span>
+                  <span>OAuth 2.0 connection powered securely by <strong>Composio</strong></span>
+                </div>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <span style={{ color: '#4caf50', fontWeight: 'bold' }}>✓</span>
+                  <span>Scoped read & write access only</span>
+                </div>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <span style={{ color: '#4caf50', fontWeight: 'bold' }}>✓</span>
+                  <span>Revocable at any time from Settings</span>
+                </div>
               </div>
             </div>
 
@@ -207,11 +260,11 @@ export default function IntegrationsPage() {
               </button>
               <button 
                 type="submit" 
-                style={{ padding: '0.5rem 1.25rem', borderRadius: '6px', border: 'none', backgroundColor: '#4caf50', color: '#fff', cursor: 'pointer', fontWeight: 600, boxShadow: '0 4px 12px rgba(76, 175, 80, 0.2)', transition: 'all 0.2s' }}
-                onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#4f46e5'; }}
-                onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#4caf50'; }}
+                style={{ padding: '0.5rem 1.25rem', borderRadius: '6px', border: 'none', backgroundColor: '#3b82f6', color: '#fff', cursor: 'pointer', fontWeight: 600, boxShadow: '0 4px 12px rgba(59, 130, 246, 0.2)', transition: 'all 0.2s' }}
+                onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#2563eb'; }}
+                onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#3b82f6'; }}
               >
-                Connect {connectingApp?.name}
+                Redirect & Authorize
               </button>
             </div>
           </form>

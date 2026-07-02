@@ -29,7 +29,9 @@ export default function SignupPage() {
       setLoading(false);
     } else if (result?.needsEmailConfirmation) {
       setToast({ message: result.message || 'Please check your email to verify your account.', type: 'success' });
-      setLoading(false);
+      setTimeout(() => {
+        router.push(`/login?message=${encodeURIComponent(result.message || 'Please check your email to verify your account.')}`);
+      }, 3000);
     } else {
       setToast({ message: 'Account created successfully!', type: 'success' });
       // Small delay to show the toast
