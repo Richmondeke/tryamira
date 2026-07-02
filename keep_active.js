@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
 
 // Parse environment variables from .env.local
 const envPath = path.join(__dirname, '.env.local');
@@ -29,30 +30,42 @@ if (!supabaseUrl || !supabaseServiceKey) {
   process.exit(1);
 }
 
-async function pingSupabase() {
+function pingSupabase() {
   const timestamp = new Date().toISOString();
   console.log(`[${timestamp}] Running keep-active ping query to Supabase PostgREST root...`);
-  
-  try {
-    const response = await fetch(`${supabaseUrl}/rest/v1/`, {
-      method: 'GET',
-      headers: {
-        'apikey': supabaseServiceKey,
-        'Authorization': `Bearer ${supabaseServiceKey}`
-      }
-    });
 
-    if (response.ok) {
-      console.log(`[${timestamp}] Ping successful! Response status: ${response.status}. Supabase is active.`);
-    } else {
-      const errorText = await response.text();
-      console.error(`[${timestamp}] Ping failed with status ${response.status}:`, errorText);
-      process.exit(1);
+  const url = new URL(`${supabaseUrl}/rest/v1/`);
+  const options = {
+    hostname: url.hostname,
+    port: url.port || 443,
+    path: url.pathname + url.search,
+    method: 'GET',
+    headers: {
+      'apikey': supabaseServiceKey,
+      'Authorization': `Bearer ${supabaseServiceKey}`
     }
-  } catch (error) {
-    console.error(`[${timestamp}] Network or fetch error:`, error.message);
+  };
+
+  const req = https.request(options, (res) => {
+    if (res.statusCode >= 200 && res.statusCode < 300) {
+      console.log(`[${timestamp}] Ping successful! Response status: ${res.statusCode}. Supabase is active.`);
+      process.exit(0);
+    } else {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        console.error(`[${timestamp}] Ping failed with status ${res.statusCode}:`, data);
+        process.exit(1);
+      });
+    }
+  });
+
+  req.on('error', (error) => {
+    console.error(`[${timestamp}] Network error:`, error.message);
     process.exit(1);
-  }
+  });
+
+  req.end();
 }
 
 pingSupabase();
