@@ -139,7 +139,7 @@ export async function getComposioStatus() {
   try {
     // Composio v3 REST API — fetch connected accounts scoped to this user's entity_id
     const res = await fetch(
-      `https://backend.composio.dev/api/v3/connected_accounts?user_uuid=${entityId}&limit=100`,
+      `https://backend.composio.dev/api/v3/connected_accounts?user_id=${entityId}&limit=100`,
       { headers: { 'x-api-key': apiKey } }
     );
 
@@ -257,7 +257,7 @@ export async function removeComposioIntegration(appName: string) {
 
     // Find the connected account for THIS user's entity_id only
     const listRes = await fetch(
-      `${BASE}/connected_accounts?user_uuid=${entityId}&toolkit_slug=${appName}&limit=10`,
+      `${BASE}/connected_accounts?user_id=${entityId}&toolkit_slug=${appName}&limit=10`,
       { headers: hdrs }
     );
 
