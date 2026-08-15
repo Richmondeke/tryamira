@@ -603,73 +603,74 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* Amirafans Graphic with Multilingual 'Hey Amira' Floating Background Layer */}
-          <div style={{ position: 'relative', width: '100%', margin: '0 auto', textAlign: 'center', minHeight: '520px' }}>
-            {/* Keyframe animation for smooth multilingual floating text */}
+          {/* Amirafans Graphic with Multilingual 'Hey Amira' Confined to Middle Center in Black */}
+          <div style={{ position: 'relative', width: '100%', margin: '0 auto', textAlign: 'center' }}>
+            {/* Keyframe animation for smooth black text fade in the middle */}
             <style>{`
-              @keyframes floatFadeAmira {
-                0% { opacity: 0; transform: translateY(12px) scale(0.92); }
-                35% { opacity: 0.28; transform: translateY(0px) scale(1); }
-                65% { opacity: 0.28; transform: translateY(-10px) scale(1); }
-                100% { opacity: 0; transform: translateY(-22px) scale(0.92); }
+              @keyframes floatFadeAmiraCenter {
+                0% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+                25% { opacity: 0.95; transform: translate(-50%, -50%) scale(1); }
+                75% { opacity: 0.95; transform: translate(-50%, -50%) scale(1.02); }
+                100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
               }
             `}</style>
 
-            {/* Ambient Multilingual "Hey Amira" Floating Background Nodes */}
+            {/* Middle Center Floating Black Text Pill */}
             {[
-              { text: 'Hey Amira', lang: 'English', top: '4%', left: '2%', delay: '0s', duration: '7s' },
-              { text: 'Hola Amira', lang: 'Spanish', top: '8%', right: '3%', delay: '1.2s', duration: '8s' },
-              { text: 'Bonjour Amira', lang: 'French', top: '36%', left: '1%', delay: '2.5s', duration: '7.5s' },
-              { text: 'Hallo Amira', lang: 'German', top: '40%', right: '2%', delay: '3.8s', duration: '8.5s' },
-              { text: 'Ciao Amira', lang: 'Italian', bottom: '18%', left: '4%', delay: '0.8s', duration: '7.2s' },
-              { text: 'Olá Amira', lang: 'Portuguese', bottom: '15%', right: '5%', delay: '2.1s', duration: '8.2s' },
-              { text: 'こんにちは Amira', lang: 'Japanese', top: '20%', left: '14%', delay: '4.2s', duration: '9s' },
-              { text: '你好 Amira', lang: 'Chinese', top: '24%', right: '15%', delay: '1.8s', duration: '7.8s' },
-              { text: 'مرحبا Amira', lang: 'Arabic', bottom: '34%', left: '3%', delay: '3.1s', duration: '8.8s' },
-              { text: 'नमस्ते Amira', lang: 'Hindi', bottom: '30%', right: '4%', delay: '4.8s', duration: '7.4s' },
-              { text: 'Jambo Amira', lang: 'Swahili', top: '56%', left: '10%', delay: '2.9s', duration: '8s' },
-              { text: 'Bawo Amira', lang: 'Yoruba', top: '60%', right: '11%', delay: '0.4s', duration: '7.6s' },
-              { text: 'Kedu Amira', lang: 'Igbo', top: '2%', left: '35%', delay: '3.5s', duration: '8.4s' },
-              { text: 'Sannu Amira', lang: 'Hausa', bottom: '4%', right: '32%', delay: '1.6s', duration: '7.9s' },
-              { text: 'Hallo Amira', lang: 'Dutch', top: '78%', left: '18%', delay: '5.1s', duration: '8.6s' },
-              { text: 'Xin chào Amira', lang: 'Vietnamese', top: '75%', right: '19%', delay: '2.3s', duration: '7.7s' }
+              { text: 'Hey Amira', lang: 'English', delay: '0s' },
+              { text: 'Hola Amira', lang: 'Spanish', delay: '3s' },
+              { text: 'Bonjour Amira', lang: 'French', delay: '6s' },
+              { text: 'Hallo Amira', lang: 'German', delay: '9s' },
+              { text: 'Ciao Amira', lang: 'Italian', delay: '12s' },
+              { text: 'Olá Amira', lang: 'Portuguese', delay: '15s' },
+              { text: 'こんにちは Amira', lang: 'Japanese', delay: '18s' },
+              { text: '你好 Amira', lang: 'Chinese', delay: '21s' },
+              { text: 'مرحبا Amira', lang: 'Arabic', delay: '24s' },
+              { text: 'नमस्ते Amira', lang: 'Hindi', delay: '27s' },
+              { text: 'Jambo Amira', lang: 'Swahili', delay: '30s' },
+              { text: 'Bawo Amira', lang: 'Yoruba', delay: '33s' },
+              { text: 'Kedu Amira', lang: 'Igbo', delay: '36s' },
+              { text: 'Sannu Amira', lang: 'Hausa', delay: '39s' }
             ].map((g, idx) => (
               <div
-                key={`greeting-${idx}`}
+                key={`greeting-center-${idx}`}
                 style={{
                   position: 'absolute',
-                  top: g.top,
-                  left: g.left,
-                  right: g.right,
-                  bottom: g.bottom,
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
                   pointerEvents: 'none',
                   userSelect: 'none',
-                  zIndex: 1,
-                  animation: `floatFadeAmira ${g.duration} ease-in-out infinite`,
+                  zIndex: 3,
+                  animation: `floatFadeAmiraCenter 42s ease-in-out infinite`,
                   animationDelay: g.delay,
                   display: 'flex',
                   flexDirection: 'column',
-                  alignItems: g.right ? 'flex-end' : 'flex-start',
-                  whiteSpace: 'nowrap'
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  whiteSpace: 'nowrap',
+                  backgroundColor: 'rgba(255, 255, 255, 0.94)',
+                  padding: '0.65rem 1.6rem',
+                  borderRadius: '99px',
+                  border: '1.5px solid rgba(0, 0, 0, 0.12)',
+                  boxShadow: '0 12px 32px rgba(0, 0, 0, 0.12)'
                 }}
               >
                 <span style={{
-                  fontSize: 'clamp(14px, 1.8vw, 22px)',
-                  fontWeight: 800,
-                  color: idx % 2 === 0 ? '#1b5a92' : '#10b981',
-                  letterSpacing: '-0.02em',
-                  filter: 'drop-shadow(0 2px 8px rgba(27, 90, 146, 0.12))'
+                  fontSize: 'clamp(16px, 2.2vw, 24px)',
+                  fontWeight: 850,
+                  color: '#09090b',
+                  letterSpacing: '-0.03em'
                 }}>
                   {g.text}
                 </span>
                 <span style={{
-                  fontSize: '10.5px',
+                  fontSize: '11px',
                   fontWeight: 700,
                   textTransform: 'uppercase',
-                  letterSpacing: '0.08em',
-                  color: '#64748b',
-                  marginTop: '2px',
-                  opacity: 0.85
+                  letterSpacing: '0.1em',
+                  color: '#475569',
+                  marginTop: '2px'
                 }}>
                   {g.lang}
                 </span>
