@@ -603,15 +603,89 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* Amirafans Graphic — No background image or container wrapper */}
-          <div style={{ width: '100%', margin: '0 auto', textAlign: 'center' }}>
-            <ScrollReveal direction="up" distance={80} duration={0.9}>
-              <img 
-                src="/amira-fans.png" 
-                alt="Meet your customers wherever they are - Amira Fans Omnichannel Support" 
-                style={{ width: '100%', maxWidth: '1020px', height: 'auto', display: 'block', margin: '0 auto', borderRadius: '16px' }} 
-              />
-            </ScrollReveal>
+          {/* Amirafans Graphic with Multilingual 'Hey Amira' Floating Background Layer */}
+          <div style={{ position: 'relative', width: '100%', margin: '0 auto', textAlign: 'center', minHeight: '520px' }}>
+            {/* Keyframe animation for smooth multilingual floating text */}
+            <style>{`
+              @keyframes floatFadeAmira {
+                0% { opacity: 0; transform: translateY(12px) scale(0.92); }
+                35% { opacity: 0.28; transform: translateY(0px) scale(1); }
+                65% { opacity: 0.28; transform: translateY(-10px) scale(1); }
+                100% { opacity: 0; transform: translateY(-22px) scale(0.92); }
+              }
+            `}</style>
+
+            {/* Ambient Multilingual "Hey Amira" Floating Background Nodes */}
+            {[
+              { text: 'Hey Amira', lang: 'English', top: '4%', left: '2%', delay: '0s', duration: '7s' },
+              { text: 'Hola Amira', lang: 'Spanish', top: '8%', right: '3%', delay: '1.2s', duration: '8s' },
+              { text: 'Bonjour Amira', lang: 'French', top: '36%', left: '1%', delay: '2.5s', duration: '7.5s' },
+              { text: 'Hallo Amira', lang: 'German', top: '40%', right: '2%', delay: '3.8s', duration: '8.5s' },
+              { text: 'Ciao Amira', lang: 'Italian', bottom: '18%', left: '4%', delay: '0.8s', duration: '7.2s' },
+              { text: 'Olá Amira', lang: 'Portuguese', bottom: '15%', right: '5%', delay: '2.1s', duration: '8.2s' },
+              { text: 'こんにちは Amira', lang: 'Japanese', top: '20%', left: '14%', delay: '4.2s', duration: '9s' },
+              { text: '你好 Amira', lang: 'Chinese', top: '24%', right: '15%', delay: '1.8s', duration: '7.8s' },
+              { text: 'مرحبا Amira', lang: 'Arabic', bottom: '34%', left: '3%', delay: '3.1s', duration: '8.8s' },
+              { text: 'नमस्ते Amira', lang: 'Hindi', bottom: '30%', right: '4%', delay: '4.8s', duration: '7.4s' },
+              { text: 'Jambo Amira', lang: 'Swahili', top: '56%', left: '10%', delay: '2.9s', duration: '8s' },
+              { text: 'Bawo Amira', lang: 'Yoruba', top: '60%', right: '11%', delay: '0.4s', duration: '7.6s' },
+              { text: 'Kedu Amira', lang: 'Igbo', top: '2%', left: '35%', delay: '3.5s', duration: '8.4s' },
+              { text: 'Sannu Amira', lang: 'Hausa', bottom: '4%', right: '32%', delay: '1.6s', duration: '7.9s' },
+              { text: 'Hallo Amira', lang: 'Dutch', top: '78%', left: '18%', delay: '5.1s', duration: '8.6s' },
+              { text: 'Xin chào Amira', lang: 'Vietnamese', top: '75%', right: '19%', delay: '2.3s', duration: '7.7s' }
+            ].map((g, idx) => (
+              <div
+                key={`greeting-${idx}`}
+                style={{
+                  position: 'absolute',
+                  top: g.top,
+                  left: g.left,
+                  right: g.right,
+                  bottom: g.bottom,
+                  pointerEvents: 'none',
+                  userSelect: 'none',
+                  zIndex: 1,
+                  animation: `floatFadeAmira ${g.duration} ease-in-out infinite`,
+                  animationDelay: g.delay,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: g.right ? 'flex-end' : 'flex-start',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                <span style={{
+                  fontSize: 'clamp(14px, 1.8vw, 22px)',
+                  fontWeight: 800,
+                  color: idx % 2 === 0 ? '#1b5a92' : '#10b981',
+                  letterSpacing: '-0.02em',
+                  filter: 'drop-shadow(0 2px 8px rgba(27, 90, 146, 0.12))'
+                }}>
+                  {g.text}
+                </span>
+                <span style={{
+                  fontSize: '10.5px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
+                  color: '#64748b',
+                  marginTop: '2px',
+                  opacity: 0.85
+                }}>
+                  {g.lang}
+                </span>
+              </div>
+            ))}
+
+            {/* Main 4 Customer Cards Graphic */}
+            <div style={{ position: 'relative', zIndex: 2 }}>
+              <ScrollReveal direction="up" distance={80} duration={0.9}>
+                <img 
+                  src="/amira-fans.png" 
+                  alt="Meet your customers wherever they are - Amira Fans Omnichannel Support" 
+                  style={{ width: '100%', maxWidth: '1020px', height: 'auto', display: 'block', margin: '0 auto', borderRadius: '16px' }} 
+                />
+              </ScrollReveal>
+            </div>
           </div>
         </div>
       </section>
