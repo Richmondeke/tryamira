@@ -431,11 +431,31 @@ export default function LandingPage() {
             maxWidth: '1280px',
             margin: '0 auto',
             overflow: 'hidden',
+            position: 'relative',
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
             gap: '2rem',
             alignItems: 'flex-end'
           }}>
+            {/* Tilted Cutoff Amira Head Watermark in Top Right Corner */}
+            <div style={{
+              position: 'absolute',
+              top: '-40px',
+              right: '-40px',
+              width: '280px',
+              height: '280px',
+              pointerEvents: 'none',
+              zIndex: 1,
+              opacity: 0.35,
+              transform: 'rotate(15deg) scale(1.15)',
+              transformOrigin: 'top right'
+            }}>
+              <img 
+                src="/amira-head-bg.png" 
+                alt="Amira Head Watermark" 
+                style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'contain' }}
+              />
+            </div>
             
             {/* Left Column: Title, Subtitle & 6 Cards Grid */}
             <div style={{ paddingBottom: '3rem', paddingRight: '1rem' }}>
@@ -1241,16 +1261,16 @@ export default function LandingPage() {
             No complicated setup. No massive support team required.
           </p>
 
-          {/* Autopilot Image Showcase at the bottom of the section */}
+          {/* Autopilot Image Showcase at the bottom of the section (1.3x scaled) */}
           <div style={{ width: '100%', margin: '0 auto', textAlign: 'center', lineHeight: 0 }}>
             <ScrollReveal direction="up" distance={80} duration={0.9}>
               <img 
                 src="/amira-auto-2.png" 
                 alt="Put your customer support on autopilot - Amira AI" 
                 style={{ 
-                  width: '90%', 
-                  maxWidth: '520px', 
-                  maxHeight: '360px',
+                  width: '95%', 
+                  maxWidth: '676px', 
+                  maxHeight: '468px',
                   height: 'auto', 
                   display: 'block', 
                   margin: '0 auto',
