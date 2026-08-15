@@ -1,25 +1,15 @@
 'use client';
 
 import Link from 'next/link';
+import SiteNavbar from '@/components/layout/SiteNavbar';
+import SiteFooter from '@/components/layout/SiteFooter';
 
 export default function SecurityPage() {
   return (
     <div style={{ fontFamily: "'Satoshi', sans-serif", backgroundColor: '#ffffff', color: '#0d0f1a', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <header style={{ borderBottom: '1px solid rgba(0,0,0,0.08)', backgroundColor: '#ffffff', position: 'sticky', top: 0, zIndex: 50 }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Link href="/">
-            <img src="/amira-logo-footer.svg" alt="Amira AI" style={{ height: '28px', width: 'auto' }} />
-          </Link>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-            <Link href="/" style={{ fontSize: '14px', fontWeight: 600, color: '#475569', textDecoration: 'none' }}>Home</Link>
-            <Link href="/dashboard/v3" style={{ padding: '0.55rem 1.2rem', borderRadius: '8px', backgroundColor: '#10b981', color: '#ffffff', fontSize: '13.5px', fontWeight: 600, textDecoration: 'none' }}>
-              Launch Dashboard →
-            </Link>
-          </div>
-        </div>
-      </header>
+      <SiteNavbar />
 
-      <section style={{ backgroundColor: '#1b5a92', color: '#ffffff', padding: '5rem 1.5rem', textAlign: 'center' }}>
+      <section style={{ backgroundColor: '#1b5a92', color: '#ffffff', padding: '7.5rem 1.5rem 5rem 1.5rem', textAlign: 'center' }}>
         <div style={{ maxWidth: '840px', margin: '0 auto' }}>
           <span style={{ fontSize: '12px', fontWeight: 800, padding: '4px 12px', borderRadius: '99px', backgroundColor: 'rgba(255,255,255,0.15)', color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             Enterprise Security & Compliance
@@ -64,9 +54,7 @@ export default function SecurityPage() {
         </div>
       </section>
 
-      <footer style={{ borderTop: '1px solid rgba(0,0,0,0.08)', padding: '2rem 1.5rem', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
-        © 2026 Amira Technologies Inc. All rights reserved. • <Link href="/privacy" style={{ color: '#1b5a92', textDecoration: 'none' }}>Privacy Policy</Link> • <Link href="/terms" style={{ color: '#1b5a92', textDecoration: 'none' }}>Terms of Service</Link>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

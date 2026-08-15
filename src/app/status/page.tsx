@@ -1,26 +1,15 @@
 'use client';
 
-import Link from 'next/link';
+import SiteNavbar from '@/components/layout/SiteNavbar';
+import SiteFooter from '@/components/layout/SiteFooter';
 
 export default function StatusPage() {
   return (
     <div style={{ fontFamily: "'Satoshi', sans-serif", backgroundColor: '#ffffff', color: '#0d0f1a', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <header style={{ borderBottom: '1px solid rgba(0,0,0,0.08)', backgroundColor: '#ffffff', position: 'sticky', top: 0, zIndex: 50 }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Link href="/">
-            <img src="/amira-logo-footer.svg" alt="Amira AI" style={{ height: '28px', width: 'auto' }} />
-          </Link>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-            <Link href="/" style={{ fontSize: '14px', fontWeight: 600, color: '#475569', textDecoration: 'none' }}>Home</Link>
-            <Link href="/dashboard/v3" style={{ padding: '0.55rem 1.2rem', borderRadius: '8px', backgroundColor: '#10b981', color: '#ffffff', fontSize: '13.5px', fontWeight: 600, textDecoration: 'none' }}>
-              Launch Dashboard →
-            </Link>
-          </div>
-        </div>
-      </header>
+      <SiteNavbar />
 
       {/* Banner */}
-      <section style={{ backgroundColor: '#10b98115', borderBottom: '1px solid #10b98130', padding: '2.5rem 1.5rem', textAlign: 'center' }}>
+      <section style={{ backgroundColor: '#10b98115', borderBottom: '1px solid #10b98130', padding: '6.5rem 1.5rem 2.5rem 1.5rem', textAlign: 'center' }}>
         <div style={{ maxWidth: '720px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
           <div style={{ width: '12px', height: '12px', borderRadius: '99px', backgroundColor: '#10b981', boxShadow: '0 0 12px #10b981' }} />
           <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#047857', margin: 0 }}>All Amira Systems Operational</h1>
@@ -66,9 +55,7 @@ export default function StatusPage() {
         </div>
       </section>
 
-      <footer style={{ borderTop: '1px solid rgba(0,0,0,0.08)', padding: '2rem 1.5rem', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
-        © 2026 Amira Technologies Inc. All rights reserved. • <Link href="/docs" style={{ color: '#1b5a92', textDecoration: 'none' }}>Developer Docs</Link> • <Link href="/security" style={{ color: '#1b5a92', textDecoration: 'none' }}>Security</Link>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

@@ -1,33 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
+import SiteNavbar from '@/components/layout/SiteNavbar';
+import SiteFooter from '@/components/layout/SiteFooter';
 
 export default function DocsPage() {
   const [activeTab, setActiveTab] = useState('getting-started');
 
   return (
     <div style={{ fontFamily: "'Satoshi', sans-serif", backgroundColor: '#ffffff', color: '#0d0f1a', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <header style={{ borderBottom: '1px solid rgba(0,0,0,0.08)', backgroundColor: '#ffffff', position: 'sticky', top: 0, zIndex: 50 }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <Link href="/">
-              <img src="/amira-logo-footer.svg" alt="Amira AI" style={{ height: '28px', width: 'auto' }} />
-            </Link>
-            <span style={{ fontSize: '11px', fontWeight: 800, padding: '3px 8px', borderRadius: '6px', backgroundColor: '#10b98115', color: '#047857', border: '1px solid #10b98130' }}>
-              DEVELOPER DOCS v2.4
-            </span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-            <Link href="/" style={{ fontSize: '14px', fontWeight: 600, color: '#475569', textDecoration: 'none' }}>Home</Link>
-            <Link href="/dashboard/v3" style={{ padding: '0.55rem 1.2rem', borderRadius: '8px', backgroundColor: '#10b981', color: '#ffffff', fontSize: '13.5px', fontWeight: 600, textDecoration: 'none' }}>
-              Dashboard →
-            </Link>
-          </div>
-        </div>
-      </header>
+      <SiteNavbar />
 
-      <div style={{ maxWidth: '1280px', margin: '0 auto', width: '100%', flex: 1, display: 'grid', gridTemplateColumns: '240px 1fr', gap: '2rem', padding: '2rem 1.5rem', boxSizing: 'border-box' }}>
+      <div style={{ maxWidth: '1280px', margin: '5.5rem auto 0 auto', width: '100%', flex: 1, display: 'grid', gridTemplateColumns: '240px 1fr', gap: '2rem', padding: '2rem 1.5rem', boxSizing: 'border-box' }}>
         {/* Docs Sidebar Navigation */}
         <aside style={{ borderRight: '1px solid rgba(0,0,0,0.08)', paddingRight: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <div>
@@ -179,9 +163,7 @@ Response 200 OK:
         </main>
       </div>
 
-      <footer style={{ borderTop: '1px solid rgba(0,0,0,0.08)', padding: '2rem 1.5rem', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
-        © 2026 Amira Technologies Inc. All rights reserved. • <Link href="/community" style={{ color: '#1b5a92', textDecoration: 'none' }}>Community</Link> • <Link href="/status" style={{ color: '#1b5a92', textDecoration: 'none' }}>System Status</Link>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
