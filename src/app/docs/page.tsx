@@ -135,7 +135,7 @@ Response 200 OK:
 
           {activeTab === 'webchat-sdk' && (
             <div>
-              <h1 style={{ fontSize: '28px', fontWeight 800, color: '#1b5a92', margin: '0 0 0.5rem 0' }}>Webchat Embed Script SDK</h1>
+              <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#1b5a92', margin: '0 0 0.5rem 0' }}>Webchat Embed Script SDK</h1>
               <p style={{ fontSize: '15px', color: '#475569', lineHeight: 1.6 }}>
                 Embed the Amira AI webchat widget on any site with 1 line of HTML script code. Connects instantly to your omnichannel inbox.
               </p>
@@ -154,7 +154,7 @@ Response 200 OK:
 
           {activeTab === 'tool-actions' && (
             <div>
-              <h1 style={{ fontSize: '28px', fontWeight 800, color: '#1b5a92', margin: '0 0 0.5rem 0' }}>Autonomous Tool Execution API</h1>
+              <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#1b5a92', margin: '0 0 0.5rem 0' }}>Autonomous Tool Execution API</h1>
               <p style={{ fontSize: '15px', color: '#475569', lineHeight: 1.6 }}>
                 Configure tool functions so Amira AI agents can create Linear tickets, push leads to HubSpot CRM, post Slack channel alerts, and schedule Google Calendar events autonomously.
               </p>
@@ -170,7 +170,7 @@ Response 200 OK:
 
           {activeTab === 'vapi-webhooks' && (
             <div>
-              <h1 style={{ fontSize: '28px', fontWeight 800, color: '#1b5a92', margin: '0 0 0.5rem 0' }}>Webhooks Payload Reference</h1>
+              <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#1b5a92', margin: '0 0 0.5rem 0' }}>Webhooks Payload Reference</h1>
               <p style={{ fontSize: '15px', color: '#475569', lineHeight: 1.6 }}>
                 Receive real-time webhooks at <code>/api/vapi/webhook</code> whenever calls start, complete, or trigger tool execution callbacks.
               </p>
