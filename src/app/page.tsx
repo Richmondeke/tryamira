@@ -1379,16 +1379,6 @@ export default function LandingPage() {
                   </div>
                 ))}
               </div>
-
-              <div style={{
-                padding: '1.5rem 2.25rem', backgroundColor: '#ffffff', borderRadius: '16px',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.08)', display: 'inline-flex', alignItems: 'center', gap: '0.85rem'
-              }}>
-                <GlowIcon name="shield-outline" size={24} color="#1b5a92" />
-                <p style={{ fontSize: '19px', fontWeight: 800, color: '#1b5a92', margin: 0 }}>
-                  Your customers. <span style={{ color: '#10b981' }}>Your data.</span> Your AI workforce.
-                </p>
-              </div>
             </div>
 
             {/* Amiratrust Showcase Image (Flush to left, right & bottom edges) */}
