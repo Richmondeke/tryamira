@@ -70,6 +70,25 @@ function AmiraIcon({ size = 22 }: { size?: number }) {
   );
 }
 
+const AMIRA_VERTICAL_TICKER_GREETINGS = [
+  { text: 'Hey Amira', lang: 'English' },
+  { text: 'Hola Amira', lang: 'Spanish' },
+  { text: 'Bonjour Amira', lang: 'French' },
+  { text: 'Hallo Amira', lang: 'German' },
+  { text: 'Ciao Amira', lang: 'Italian' },
+  { text: 'Olá Amira', lang: 'Portuguese' },
+  { text: 'こんにちは Amira', lang: 'Japanese' },
+  { text: '你好 Amira', lang: 'Chinese' },
+  { text: 'مرحبا Amira', lang: 'Arabic' },
+  { text: 'नमस्ते Amira', lang: 'Hindi' },
+  { text: 'Jambo Amira', lang: 'Swahili' },
+  { text: 'Bawo Amira', lang: 'Yoruba' },
+  { text: 'Kedu Amira', lang: 'Igbo' },
+  { text: 'Sannu Amira', lang: 'Hausa' },
+  { text: 'Xin chào Amira', lang: 'Vietnamese' },
+  { text: 'Hallo Amira', lang: 'Dutch' }
+];
+
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -77,6 +96,14 @@ export default function LandingPage() {
   const [isFading, setIsFading] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   const [orbitZoomScale, setOrbitZoomScale] = useState(1);
+  const [multilingualTickerIdx, setMultilingualTickerIdx] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setMultilingualTickerIdx(prev => (prev + 1) % AMIRA_VERTICAL_TICKER_GREETINGS.length);
+    }, 2200);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 30);
@@ -603,79 +630,66 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* Amirafans Graphic with Multilingual 'Hey Amira' Confined to Middle Center in Black */}
+          {/* Amirafans Graphic with Vertical Ticker Confined to Center Gap (Fade Mask Top/Bottom, Solid Black Text, NO Pill) */}
           <div style={{ position: 'relative', width: '100%', margin: '0 auto', textAlign: 'center' }}>
-            {/* Keyframe animation for smooth black text fade in the middle */}
+            {/* Keyframe for vertical slide & fade in/out */}
             <style>{`
-              @keyframes floatFadeAmiraCenter {
-                0% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
-                25% { opacity: 0.95; transform: translate(-50%, -50%) scale(1); }
-                75% { opacity: 0.95; transform: translate(-50%, -50%) scale(1.02); }
-                100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+              @keyframes verticalTickerSlideUp {
+                0% { opacity: 0; transform: translateY(28px); }
+                18% { opacity: 1; transform: translateY(0px); }
+                82% { opacity: 1; transform: translateY(0px); }
+                100% { opacity: 0; transform: translateY(-28px); }
               }
             `}</style>
 
-            {/* Middle Center Floating Black Text Pill */}
-            {[
-              { text: 'Hey Amira', lang: 'English', delay: '0s' },
-              { text: 'Hola Amira', lang: 'Spanish', delay: '3s' },
-              { text: 'Bonjour Amira', lang: 'French', delay: '6s' },
-              { text: 'Hallo Amira', lang: 'German', delay: '9s' },
-              { text: 'Ciao Amira', lang: 'Italian', delay: '12s' },
-              { text: 'Olá Amira', lang: 'Portuguese', delay: '15s' },
-              { text: 'こんにちは Amira', lang: 'Japanese', delay: '18s' },
-              { text: '你好 Amira', lang: 'Chinese', delay: '21s' },
-              { text: 'مرحبا Amira', lang: 'Arabic', delay: '24s' },
-              { text: 'नमस्ते Amira', lang: 'Hindi', delay: '27s' },
-              { text: 'Jambo Amira', lang: 'Swahili', delay: '30s' },
-              { text: 'Bawo Amira', lang: 'Yoruba', delay: '33s' },
-              { text: 'Kedu Amira', lang: 'Igbo', delay: '36s' },
-              { text: 'Sannu Amira', lang: 'Hausa', delay: '39s' }
-            ].map((g, idx) => (
+            {/* Vertical Ticker Container — Mask Faded at Top & Bottom */}
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '320px',
+              height: '84px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 3,
+              overflow: 'hidden',
+              WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, #000 25%, #000 75%, transparent 100%)',
+              maskImage: 'linear-gradient(to bottom, transparent 0%, #000 25%, #000 75%, transparent 100%)',
+              pointerEvents: 'none'
+            }}>
               <div
-                key={`greeting-center-${idx}`}
+                key={`v-ticker-${multilingualTickerIdx}`}
                 style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  pointerEvents: 'none',
-                  userSelect: 'none',
-                  zIndex: 3,
-                  animation: `floatFadeAmiraCenter 42s ease-in-out infinite`,
-                  animationDelay: g.delay,
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  whiteSpace: 'nowrap',
-                  backgroundColor: 'rgba(255, 255, 255, 0.94)',
-                  padding: '0.65rem 1.6rem',
-                  borderRadius: '99px',
-                  border: '1.5px solid rgba(0, 0, 0, 0.12)',
-                  boxShadow: '0 12px 32px rgba(0, 0, 0, 0.12)'
+                  animation: 'verticalTickerSlideUp 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards'
                 }}
               >
                 <span style={{
-                  fontSize: 'clamp(16px, 2.2vw, 24px)',
+                  fontSize: 'clamp(20px, 2.4vw, 28px)',
                   fontWeight: 850,
-                  color: '#09090b',
-                  letterSpacing: '-0.03em'
+                  color: '#000000',
+                  letterSpacing: '-0.03em',
+                  lineHeight: 1.1
                 }}>
-                  {g.text}
+                  {AMIRA_VERTICAL_TICKER_GREETINGS[multilingualTickerIdx].text}
                 </span>
                 <span style={{
-                  fontSize: '11px',
-                  fontWeight: 700,
+                  fontSize: '11.5px',
+                  fontWeight: 750,
                   textTransform: 'uppercase',
-                  letterSpacing: '0.1em',
+                  letterSpacing: '0.12em',
                   color: '#475569',
-                  marginTop: '2px'
+                  marginTop: '4px'
                 }}>
-                  {g.lang}
+                  {AMIRA_VERTICAL_TICKER_GREETINGS[multilingualTickerIdx].lang}
                 </span>
               </div>
-            ))}
+            </div>
 
             {/* Main 4 Customer Cards Graphic */}
             <div style={{ position: 'relative', zIndex: 2 }}>
