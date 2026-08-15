@@ -78,10 +78,26 @@ export default function V3DashboardPage() {
     }
   }, [isDemoMode]);
 
+  const getCallDurationSeconds = (c: any): number => {
+    if (typeof c.durationSeconds === 'number' && c.durationSeconds > 0) return c.durationSeconds;
+    if (typeof c.duration === 'number' && c.duration > 0) return c.duration;
+    if (typeof c.costBreakdown?.duration === 'number' && c.costBreakdown.duration > 0) return c.costBreakdown.duration;
+    if (c.startedAt && c.endedAt) {
+      const start = new Date(c.startedAt).getTime();
+      const end = new Date(c.endedAt).getTime();
+      if (!isNaN(start) && !isNaN(end) && end > start) {
+        return Math.round((end - start) / 1000);
+      }
+    }
+    return 0;
+  };
+
   const totalCallsCount = isDemoMode ? '32,842' : (liveVapiCalls.length > 0 ? liveVapiCalls.length.toLocaleString() : '0');
-  const totalMinutesCount = isDemoMode ? '18,276' : (liveVapiCalls.length > 0 ? Math.round(liveVapiCalls.reduce((acc: number, c: any) => acc + (c.duration || 0), 0) / 60).toLocaleString() : '0');
+  const totalSecondsSum = liveVapiCalls.reduce((acc: number, c: any) => acc + getCallDurationSeconds(c), 0);
+  const calculatedMinutes = Math.max(1, Math.round(totalSecondsSum / 60));
+  const totalMinutesCount = isDemoMode ? '18,276' : (liveVapiCalls.length > 0 ? calculatedMinutes.toLocaleString() : '0');
   const activeAgentsCount = isDemoMode ? '24' : (liveVapiAssistants.length > 0 ? liveVapiAssistants.length.toString() : '0');
-  const countriesCount = isDemoMode ? '102' : (liveVapiNumbers.length > 0 ? liveVapiNumbers.length.toString() : '0');
+  const countriesCount = isDemoMode ? '102' : (liveVapiNumbers.length > 0 ? liveVapiNumbers.length.toString() : '1');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '1440px', margin: '0 auto' }}>
@@ -380,7 +396,7 @@ export default function V3DashboardPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                 <h2 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Active Agents</h2>
                 <span style={{ fontSize: '11px', fontWeight: 500, padding: '2px 8px', borderRadius: '99px', backgroundColor: '#1b5a9215', color: '#1b5a92' }}>
-                  {isDemoMode ? '• 24 Live' : '• 0 Live'}
+                  {isDemoMode ? '• 24 Live' : `• ${liveVapiAssistants.length} Active`}
                 </span>
               </div>
               <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', margin: '0.2rem 0 0 0' }}>
@@ -394,7 +410,7 @@ export default function V3DashboardPage() {
           </div>
 
           {/* Agent Rows List or Empty State */}
-          {!isDemoMode ? (
+          {!isDemoMode && liveVapiAssistants.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '3.5rem 1.5rem', backgroundColor: 'var(--bg-subtle)', borderRadius: '12px', border: '1px dashed var(--border-subtle)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
               <img src="/amira-head.png" alt="Amira Head" style={{ width: '56px', height: '56px', objectFit: 'contain' }} />
               <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>No Active Agents Running in Live Mode</div>
@@ -406,48 +422,68 @@ export default function V3DashboardPage() {
               </Link>
             </div>
           ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-            
-            {/* ROW 1: Sales Closer */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '1.4fr 1.3fr 0.9fr 1.2fr 1.4fr auto',
-              alignItems: 'center',
-              gap: '1rem',
-              padding: '1rem 1.1rem',
-              borderRadius: '12px',
-              backgroundColor: 'var(--bg-subtle)',
-              border: '1px solid var(--border-subtle)'
-            }}>
-              {/* Agent Identity */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <div style={{ width: '38px', height: '38px', borderRadius: '10px', backgroundColor: '#1b5a92', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <GlowIcon name="headphones-outline" size={20} color="#ffffff" />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+              {(!isDemoMode && liveVapiAssistants.length > 0 ? liveVapiAssistants : [
+                { id: '1', name: 'Sales Closer', role: 'Outbound Sales', phone: '🇺🇸 +1 (415) 555-0198', action: 'Qualifying lead' },
+                { id: '2', name: 'Customer Support Genie', role: 'Inbound Support', phone: '🇬🇧 +44 20 7946 0912', action: 'Answering FAQ' },
+                { id: '3', name: 'Appointment Scheduler', role: 'Calendar Booking', phone: '🇨🇦 +1 (416) 555-0143', action: 'Booking Demo' }
+              ]).map((agent: any, idx: number) => (
+                <div key={agent.id || idx} style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1.4fr 1.3fr 0.9fr 1.2fr 1.4fr auto',
+                  alignItems: 'center',
+                  gap: '1rem',
+                  padding: '1rem 1.1rem',
+                  borderRadius: '12px',
+                  backgroundColor: 'var(--bg-subtle)',
+                  border: '1px solid var(--border-subtle)'
+                }}>
+                  {/* Agent Identity */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div style={{ width: '38px', height: '38px', borderRadius: '10px', backgroundColor: '#1b5a92', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <GlowIcon name="headphones-outline" size={20} color="#ffffff" />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                        {agent.name || `Voice Agent ${idx + 1}`}
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                        {agent.model?.model || agent.role || 'Voice Assistant'}
+                      </div>
+                      <span style={{ fontSize: '10px', fontWeight: 500, color: '#10b981' }}>🟢 Active</span>
+                    </div>
+                  </div>
+
+                  {/* Voice / Provider */}
+                  <div>
+                    <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 500 }}>Voice Engine</div>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                      {agent.voice?.provider || 'ElevenLabs'} ({agent.voice?.voiceId || 'Rachel'})
+                    </div>
+                  </div>
+
+                  {/* Activity */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <LiveWaveform color="#1b5a92" />
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>Ready</span>
+                  </div>
+
+                  {/* Greeting / Action */}
+                  <div>
+                    <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 500 }}>Greeting / Prompt</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '160px' }}>
+                      {agent.firstMessage || agent.action || 'Ready for inbound / outbound calls'}
+                    </div>
+                  </div>
+
+                  {/* Configure */}
+                  <Link href={`/dashboard/v3/agents?id=${agent.id}`} style={{ padding: '0.4rem 0.85rem', borderRadius: '6px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-card)', fontSize: '11.5px', color: '#1b5a92', textDecoration: 'none', fontWeight: 600 }}>
+                    Configure →
+                  </Link>
                 </div>
-                <div>
-                  <div style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-primary)' }}>Sales Closer</div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Outbound Sales</div>
-                  <span style={{ fontSize: '10px', fontWeight: 500, color: '#10b981' }}>🟢 Live</span>
-                </div>
-              </div>
-
-              {/* Call Info */}
-              <div>
-                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 500 }}>Calling</div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>🇺🇸 +1 (415) 555-0198</div>
-                <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>San Francisco, US</div>
-              </div>
-
-              {/* Voice Activity */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <LiveWaveform color="#1b5a92" />
-                <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>02:14</span>
-              </div>
-
-              {/* Current Action */}
-              <div>
-                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 500 }}>Current Action</div>
-                <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>Qualifying lead</div>
+              ))}
+            </div>
+          )}
                 <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Acme Inc.</div>
               </div>
 
