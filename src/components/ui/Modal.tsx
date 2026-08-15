@@ -1,6 +1,7 @@
 'use client';
 
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { hapticMedium } from '../../utils/haptics';
 
 interface ModalProps {
@@ -11,6 +12,12 @@ interface ModalProps {
 }
 
 export default function Modal({ isOpen, onClose, title, children }: ModalProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Prevent scrolling when modal is open
   useEffect(() => {
     if (isOpen) {
@@ -24,9 +31,9 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
+  return createPortal(
     <div 
       onClick={onClose}
       style={{
@@ -39,7 +46,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        zIndex: 9999,
+        zIndex: 99999,
         padding: '1.5rem',
         overflowY: 'auto',
         animation: 'fadeIn 0.2s ease'
@@ -95,6 +102,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

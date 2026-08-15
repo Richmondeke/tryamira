@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useDemoMode } from '@/contexts/DemoModeContext';
 import { getWorkspaceWorkflows, saveWorkflowRecipe, toggleWorkflowStatus, deleteWorkflowRecipe, WorkflowRecipe } from '@/app/actions/workflows';
 import { getAgents } from '@/app/actions/agent';
@@ -12,6 +13,11 @@ export default function V3WorkflowsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [showModal, setShowModal] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Form State for 3-Step Builder
   const [step, setStep] = useState<number>(1);
@@ -230,8 +236,8 @@ export default function V3WorkflowsPage() {
       )}
 
       {/* ── 3-STEP TRIGGER-ACTION WORKFLOW BUILDER MODAL ───────────────────────── */}
-      {showModal && (
-        <div onClick={() => setShowModal(false)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '1.5rem', overflowY: 'auto' }}>
+      {mounted && showModal && createPortal(
+        <div onClick={() => setShowModal(false)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999, padding: '1.5rem', overflowY: 'auto' }}>
           <div onClick={e => e.stopPropagation()} style={{ backgroundColor: '#ffffff', borderRadius: '20px', width: '100%', maxWidth: '620px', maxHeight: '90vh', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.35)', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
             
             {/* Modal Header */}
@@ -436,7 +442,8 @@ export default function V3WorkflowsPage() {
 
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>
