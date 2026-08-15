@@ -616,6 +616,149 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── GLOBAL LANGUAGES & TELEPHONY TICKERS SECTION ────────────────────────── */}
+      <section className={styles.section} id="global-reach" style={{ background: '#ffffff', padding: '4.5rem 0 3.5rem 0', overflow: 'hidden' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
+          <div className={styles.sectionHeader} style={{ marginBottom: '2.5rem', padding: '0 1.5rem' }}>
+            <span className={styles.eyebrow} style={{ color: '#10b981', fontWeight: 800 }}>GLOBAL VOICE & MULTILINGUAL COVERAGE</span>
+            <h2 className={styles.sectionTitle} style={{ color: '#0f172a', marginTop: '0.5rem' }}>
+              Amira speaks multiple languages and can call multiple countries.
+            </h2>
+            <p className={styles.sectionSub} style={{ color: '#475569', margin: '0.75rem auto 0 auto', maxWidth: '720px' }}>
+              Break down communication barriers. Deploy intelligent AI agents that speak your customers' native language and dial local phone lines worldwide.
+            </p>
+          </div>
+
+          {/* Container 1: Languages Ticker (Scrolling Left) */}
+          <div style={{ marginBottom: '1.25rem' }}>
+            <div className={styles.tickerRow}>
+              <div className={styles.tickerTrackLeft}>
+                {[
+                  { name: 'English (US & UK)', flag: '🇺🇸', code: 'EN' },
+                  { name: 'Spanish (Castilian & MX)', flag: '🇪🇸', code: 'ES' },
+                  { name: 'French (Parisian & CA)', flag: '🇫🇷', code: 'FR' },
+                  { name: 'German (Standard)', flag: '🇩🇪', code: 'DE' },
+                  { name: 'Italian', flag: '🇮🇹', code: 'IT' },
+                  { name: 'Portuguese (BR & EU)', flag: '🇧🇷', code: 'PT' },
+                  { name: 'Dutch', flag: '🇳🇱', code: 'NL' },
+                  { name: 'Hindi & Regional', flag: '🇮🇳', code: 'HI' },
+                  { name: 'Japanese', flag: '🇯🇵', code: 'JA' },
+                  { name: 'Mandarin Chinese', flag: '🇨🇳', code: 'ZH' },
+                  { name: 'Korean', flag: '🇰🇷', code: 'KO' },
+                  { name: 'Turkish', flag: '🇹🇷', code: 'TR' },
+                  { name: 'Swedish', flag: '🇸🇪', code: 'SV' },
+                  { name: 'Polish', flag: '🇵🇱', code: 'PL' },
+                  { name: 'Russian', flag: '🇷🇺', code: 'RU' },
+                  { name: 'Yoruba', flag: '🇳🇬', code: 'YO' },
+                  { name: 'Igbo', flag: '🇳🇬', code: 'IG' },
+                  { name: 'Hausa', flag: '🇳🇬', code: 'HA' },
+                  { name: 'Swahili', flag: '🇰🇪', code: 'SW' },
+                  { name: 'Arabic (MSA & Gulf)', flag: '🇦🇪', code: 'AR' },
+                  { name: 'Vietnamese', flag: '🇻🇳', code: 'VI' },
+                  { name: 'Indonesian', flag: '🇮🇩', code: 'ID' },
+                  { name: 'Thai', flag: '🇹🇭', code: 'TH' },
+                  // Repeat for seamless loop
+                  { name: 'English (US & UK)', flag: '🇺🇸', code: 'EN' },
+                  { name: 'Spanish (Castilian & MX)', flag: '🇪🇸', code: 'ES' },
+                  { name: 'French (Parisian & CA)', flag: '🇫🇷', code: 'FR' },
+                  { name: 'German (Standard)', flag: '🇩🇪', code: 'DE' },
+                  { name: 'Italian', flag: '🇮🇹', code: 'IT' },
+                  { name: 'Portuguese (BR & EU)', flag: '🇧🇷', code: 'PT' },
+                  { name: 'Dutch', flag: '🇳🇱', code: 'NL' },
+                  { name: 'Hindi & Regional', flag: '🇮🇳', code: 'HI' },
+                  { name: 'Japanese', flag: '🇯🇵', code: 'JA' },
+                  { name: 'Mandarin Chinese', flag: '🇨🇳', code: 'ZH' },
+                  { name: 'Korean', flag: '🇰🇷', code: 'KO' },
+                  { name: 'Turkish', flag: '🇹🇷', code: 'TR' },
+                  { name: 'Swedish', flag: '🇸🇪', code: 'SV' },
+                  { name: 'Polish', flag: '🇵🇱', code: 'PL' },
+                  { name: 'Russian', flag: '🇷🇺', code: 'RU' },
+                  { name: 'Yoruba', flag: '🇳🇬', code: 'YO' },
+                  { name: 'Igbo', flag: '🇳🇬', code: 'IG' },
+                  { name: 'Hausa', flag: '🇳🇬', code: 'HA' },
+                  { name: 'Swahili', flag: '🇰🇪', code: 'SW' },
+                  { name: 'Arabic (MSA & Gulf)', flag: '🇦🇪', code: 'AR' },
+                  { name: 'Vietnamese', flag: '🇻🇳', code: 'VI' },
+                  { name: 'Indonesian', flag: '🇮🇩', code: 'ID' },
+                  { name: 'Thai', flag: '🇹🇭', code: 'TH' }
+                ].map((lang, idx) => (
+                  <div key={`${lang.name}-${idx}`} className={styles.tickerPill}>
+                    <span style={{ fontSize: '16px' }}>{lang.flag}</span>
+                    <span style={{ fontSize: '14.5px', fontWeight: 750, color: '#1b5a92' }}>{lang.name}</span>
+                    <span style={{ fontSize: '11px', fontWeight: 700, padding: '2px 7px', borderRadius: '6px', backgroundColor: '#f1f5f9', color: '#475569' }}>{lang.code}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Container 2: Countries Ticker (Scrolling Right — Opposite Direction) */}
+          <div>
+            <div className={styles.tickerRow}>
+              <div className={styles.tickerTrackRight}>
+                {[
+                  { name: 'United States', flag: '🇺🇸', dial: '+1' },
+                  { name: 'United Kingdom', flag: '🇬🇧', dial: '+44' },
+                  { name: 'Canada', flag: '🇨🇦', dial: '+1' },
+                  { name: 'Germany', flag: '🇩🇪', dial: '+49' },
+                  { name: 'France', flag: '🇫🇷', dial: '+33' },
+                  { name: 'Japan', flag: '🇯🇵', dial: '+81' },
+                  { name: 'Australia', flag: '🇦🇺', dial: '+61' },
+                  { name: 'Nigeria', flag: '🇳🇬', dial: '+234' },
+                  { name: 'Brazil', flag: '🇧🇷', dial: '+55' },
+                  { name: 'India', flag: '🇮🇳', dial: '+91' },
+                  { name: 'United Arab Emirates', flag: '🇦🇪', dial: '+971' },
+                  { name: 'Kenya', flag: '🇰🇪', dial: '+254' },
+                  { name: 'South Africa', flag: '🇿🇦', dial: '+27' },
+                  { name: 'Mexico', flag: '🇲🇽', dial: '+52' },
+                  { name: 'Spain', flag: '🇪🇸', dial: '+34' },
+                  { name: 'Italy', flag: '🇮🇹', dial: '+39' },
+                  { name: 'Singapore', flag: '🇸🇬', dial: '+65' },
+                  { name: 'Netherlands', flag: '🇳🇱', dial: '+31' },
+                  { name: 'South Korea', flag: '🇰🇷', dial: '+82' },
+                  { name: 'Sweden', flag: '🇸🇪', dial: '+46' },
+                  { name: 'Switzerland', flag: '🇨🇭', dial: '+41' },
+                  { name: 'Ireland', flag: '🇮🇪', dial: '+353' },
+                  { name: 'Saudi Arabia', flag: '🇸🇦', dial: '+966' },
+                  // Repeat for seamless loop
+                  { name: 'United States', flag: '🇺🇸', dial: '+1' },
+                  { name: 'United Kingdom', flag: '🇬🇧', dial: '+44' },
+                  { name: 'Canada', flag: '🇨🇦', dial: '+1' },
+                  { name: 'Germany', flag: '🇩🇪', dial: '+49' },
+                  { name: 'France', flag: '🇫🇷', dial: '+33' },
+                  { name: 'Japan', flag: '🇯🇵', dial: '+81' },
+                  { name: 'Australia', flag: '🇦🇺', dial: '+61' },
+                  { name: 'Nigeria', flag: '🇳🇬', dial: '+234' },
+                  { name: 'Brazil', flag: '🇧🇷', dial: '+55' },
+                  { name: 'India', flag: '🇮🇳', dial: '+91' },
+                  { name: 'United Arab Emirates', flag: '🇦🇪', dial: '+971' },
+                  { name: 'Kenya', flag: '🇰🇪', dial: '+254' },
+                  { name: 'South Africa', flag: '🇿🇦', dial: '+27' },
+                  { name: 'Mexico', flag: '🇲🇽', dial: '+52' },
+                  { name: 'Spain', flag: '🇪🇸', dial: '+34' },
+                  { name: 'Italy', flag: '🇮🇹', dial: '+39' },
+                  { name: 'Singapore', flag: '🇸🇬', dial: '+65' },
+                  { name: 'Netherlands', flag: '🇳🇱', dial: '+31' },
+                  { name: 'South Korea', flag: '🇰🇷', dial: '+82' },
+                  { name: 'Sweden', flag: '🇸🇪', dial: '+46' },
+                  { name: 'Switzerland', flag: '🇨🇭', dial: '+41' },
+                  { name: 'Ireland', flag: '🇮🇪', dial: '+353' },
+                  { name: 'Saudi Arabia', flag: '🇸🇦', dial: '+966' }
+                ].map((country, idx) => (
+                  <div key={`${country.name}-${idx}`} className={styles.tickerPill} style={{ backgroundColor: '#f8fafc', borderColor: '#e2e8f0' }}>
+                    <div style={{ width: '24px', height: '24px', borderRadius: '50%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', backgroundColor: '#ffffff', boxShadow: '0 2px 6px rgba(0,0,0,0.08)' }}>
+                      {country.flag}
+                    </div>
+                    <span style={{ fontSize: '14.5px', fontWeight: 750, color: '#0f172a' }}>{country.name}</span>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#10b981' }}>{country.dial}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── SECTION 5 — INTEGRATIONS ──────────────────────────────────────────── */}
       <section className={styles.section} id="integrations" style={{ background: "#ffffff", color: "var(--text-primary)", padding: "5rem 1.5rem" }}>
         <div className={styles.inner} style={{ maxWidth: '960px' }}>

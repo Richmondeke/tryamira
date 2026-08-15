@@ -1676,6 +1676,68 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes scrollLeft {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes scrollRight {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.tickerRow {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  padding: 0.5rem 0;
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+.tickerTrackLeft {
+  display: flex;
+  width: max-content;
+  gap: 1rem;
+  animation: scrollLeft 38s linear infinite;
+}
+
+.tickerTrackRight {
+  display: flex;
+  width: max-content;
+  gap: 1rem;
+  animation: scrollRight 38s linear infinite;
+}
+
+.tickerTrackLeft:hover,
+.tickerTrackRight:hover {
+  animation-play-state: paused;
+}
+
+.tickerPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: 9999px;
+  background-color: #ffffff;
+  border: 1.5px solid rgba(27, 90, 146, 0.15);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #1b5a92;
+  white-space: nowrap;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.tickerPill:hover {
+  transform: translateY(-3px) scale(1.04);
+  border-color: #10b981;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25);
+  color: #047857;
+}
+
 /* ─── RESPONSIVE ─────────────────────────────────────────────────── */
 @media (max-width: 1100px) {
   .wfGrid { grid-template-columns: repeat(3, 1fr); }
