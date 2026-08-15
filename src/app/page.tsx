@@ -1248,8 +1248,9 @@ export default function LandingPage() {
                 src="/amira-auto-2.png" 
                 alt="Put your customer support on autopilot - Amira AI" 
                 style={{ 
-                  width: '100%', 
-                  maxWidth: '920px', 
+                  width: '90%', 
+                  maxWidth: '520px', 
+                  maxHeight: '360px',
                   height: 'auto', 
                   display: 'block', 
                   margin: '0 auto',
