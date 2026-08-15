@@ -68,7 +68,7 @@ export default function AboutPage() {
             </div>
             <div>
               <div style={{ fontSize: '24px', fontWeight: 800, color: '#10b981' }}>340ms</div>
-              <div style={{ fontSize: '13px', color: '#64748b', fontWeight 600 }}>Avg Voice Latency</div>
+              <div style={{ fontSize: '13px', color: '#64748b', fontWeight: 600 }}>Avg Voice Latency</div>
             </div>
           </div>
         </div>
