@@ -8,6 +8,8 @@ interface ScrollRevealProps {
   direction?: "up" | "down" | "left" | "right" | "none";
   distance?: number;
   duration?: number;
+  reverse?: boolean;
+  threshold?: number;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -16,13 +18,14 @@ export default function ScrollReveal({
   children,
   delay = 0,
   direction = "up",
-  distance = 30,
-  duration = 0.7,
+  distance = 45,
+  duration = 0.8,
+  reverse = true,
+  threshold = 0.08,
   className = "",
   style = {},
 }: ScrollRevealProps) {
-  // Always default to visible so images never disappear or get hidden
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -34,11 +37,14 @@ export default function ScrollReveal({
         ([entry]) => {
           if (entry.isIntersecting) {
             setIsVisible(true);
+          } else if (reverse) {
+            // Reverse animation when element leaves the viewport
+            setIsVisible(false);
           }
         },
         {
-          threshold: 0.01,
-          rootMargin: "150px 0px 150px 0px",
+          threshold,
+          rootMargin: "0px 0px -30px 0px",
         }
       );
 
@@ -47,8 +53,10 @@ export default function ScrollReveal({
       return () => {
         if (el) observer.unobserve(el);
       };
+    } else {
+      setIsVisible(true);
     }
-  }, []);
+  }, [reverse, threshold]);
 
   const getTransform = () => {
     if (isVisible) return "translate3d(0, 0, 0)";
@@ -71,7 +79,7 @@ export default function ScrollReveal({
       ref={ref}
       className={className}
       style={{
-        opacity: isVisible ? 1 : 0.9,
+        opacity: isVisible ? 1 : 0,
         transform: getTransform(),
         transition: `opacity ${duration}s cubic-bezier(0.16, 1, 0.3, 1) ${delay / 1000}s, transform ${duration}s cubic-bezier(0.16, 1, 0.3, 1) ${delay / 1000}s`,
         willChange: "opacity, transform",
