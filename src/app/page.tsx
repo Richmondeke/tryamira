@@ -1546,14 +1546,43 @@ export default function LandingPage() {
             <p className={styles.footerDesc}>Amira AI — Your AI Customer Support Workforce. 24/7 support across calls, chats, emails, and tickets.</p>
           </div>
           {[
-            { heading: "Product", links: ["Capabilities", "Multi-Channel", "Integrations", "Use Cases", "Benefits"] },
-            { heading: "Company", links: ["About", "Security", "Contact", "Privacy"] },
-            { heading: "Support", links: ["Documentation", "Community", "Status"] },
+            { 
+              heading: "Product", 
+              items: [
+                { label: "Capabilities", href: "/#capabilities" },
+                { label: "Multi-Channel", href: "/#multichannel" },
+                { label: "Integrations", href: "/dashboard/v3/integrations" },
+                { label: "Use Cases", href: "/#usecases" },
+                { label: "Benefits", href: "/#benefits" }
+              ] 
+            },
+            { 
+              heading: "Company", 
+              items: [
+                { label: "About Us", href: "/about" },
+                { label: "Security & Compliance", href: "/security" },
+                { label: "Contact Sales & Support", href: "/contact" },
+                { label: "Privacy Policy", href: "/privacy" },
+                { label: "Terms of Service", href: "/terms" }
+              ] 
+            },
+            { 
+              heading: "Support", 
+              items: [
+                { label: "Developer Docs", href: "/docs" },
+                { label: "Builder Community", href: "/community" },
+                { label: "System Status", href: "/status" }
+              ] 
+            },
           ].map(col => (
             <div key={col.heading} className={styles.footerCol}>
               <h4 className={styles.footerColHead}>{col.heading}</h4>
               <ul className={styles.footerColLinks}>
-                {col.links.map(l => <li key={l}><a href="#" className={styles.footerLink}>{l}</a></li>)}
+                {col.items.map(item => (
+                  <li key={item.label}>
+                    <a href={item.href} className={styles.footerLink}>{item.label}</a>
+                  </li>
+                ))}
               </ul>
             </div>
           ))}
@@ -1561,9 +1590,9 @@ export default function LandingPage() {
         <div className={styles.footerBottom}>
           <span className={styles.footerCopy}>© 2026 Amira Technologies Inc. All rights reserved.</span>
           <div className={styles.footerSocials}>
-            <a href="#" className={styles.footerLink}>Twitter</a>
-            <a href="#" className={styles.footerLink}>LinkedIn</a>
-            <a href="#" className={styles.footerLink}>GitHub</a>
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className={styles.footerLink}>Twitter</a>
+            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className={styles.footerLink}>LinkedIn</a>
+            <a href="https://github.com/Richmondeke/tryamira" target="_blank" rel="noopener noreferrer" className={styles.footerLink}>GitHub</a>
           </div>
         </div>
       </footer>
