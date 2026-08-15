@@ -24,6 +24,7 @@ interface CallRecord {
   sentiment: string;
   sentimentScore: string;
   outcome: string;
+  recordingUrl?: string;
   summary: string[];
   toolActions: string[];
   transcript: Array<{
@@ -236,6 +237,7 @@ export default function V3CallsPage() {
               sentiment: item.analysis?.sentiment || 'Positive',
               sentimentScore: '94%',
               outcome: item.analysis?.summary || item.endedReason || 'Call Processed',
+              recordingUrl: recUrl,
               summary: Array.isArray(item.analysis?.structuredData?.takeaways)
                 ? item.analysis.structuredData.takeaways
                 : [item.analysis?.summary || 'Call processed successfully by Amira Voice Engine.'],
@@ -276,15 +278,35 @@ export default function V3CallsPage() {
     (t.speaker || '').toLowerCase().includes(transcriptSearch.toLowerCase())
   );
 
+  const activeAudioRef = React.useRef<HTMLAudioElement | null>(null);
+
   const handlePlayAudio = () => {
     if (isPlayingAudio) {
+      if (activeAudioRef.current) {
+        activeAudioRef.current.pause();
+        activeAudioRef.current = null;
+      }
       if (typeof window !== 'undefined' && window.speechSynthesis) {
         window.speechSynthesis.cancel();
       }
       setIsPlayingAudio(false);
     } else {
       setIsPlayingAudio(true);
-      if (typeof window !== 'undefined' && window.speechSynthesis) {
+      if (selectedCall?.recordingUrl) {
+        const audio = new Audio(selectedCall.recordingUrl);
+        const rateVal = parseFloat(audioPlaybackSpeed.replace('x', ''));
+        audio.playbackRate = isNaN(rateVal) ? 1.0 : rateVal;
+        activeAudioRef.current = audio;
+        audio.play().catch(err => console.error('Audio playback error:', err));
+        audio.onended = () => {
+          setIsPlayingAudio(false);
+          activeAudioRef.current = null;
+        };
+        audio.onerror = () => {
+          setIsPlayingAudio(false);
+          activeAudioRef.current = null;
+        };
+      } else if (typeof window !== 'undefined' && window.speechSynthesis) {
         window.speechSynthesis.cancel();
         const textToSpeak = selectedCall?.transcript.map(t => `${t.speaker}: ${t.text}`).join('. ') || 'Voice call playback started.';
         const utterance = new SpeechSynthesisUtterance(textToSpeak);
