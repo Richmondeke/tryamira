@@ -231,20 +231,20 @@ export default function V3WorkflowsPage() {
 
       {/* ── 3-STEP TRIGGER-ACTION WORKFLOW BUILDER MODAL ───────────────────────── */}
       {showModal && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
-          <div style={{ backgroundColor: '#ffffff', borderRadius: '20px', width: '100%', maxWidth: '640px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <div onClick={() => setShowModal(false)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '1.5rem', overflowY: 'auto' }}>
+          <div onClick={e => e.stopPropagation()} style={{ backgroundColor: '#ffffff', borderRadius: '20px', width: '100%', maxWidth: '620px', maxHeight: '90vh', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.35)', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
             
             {/* Modal Header */}
-            <div style={{ padding: '1.25rem 1.5rem', backgroundColor: '#1b5a92', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ padding: '1.25rem 1.5rem', backgroundColor: '#1b5a92', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, borderRadius: '20px 20px 0 0' }}>
               <div>
                 <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0 }}>Create Autonomous Workflow Recipe</h2>
                 <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)', margin: '0.2rem 0 0 0' }}>Step {step} of 3 — {step === 1 ? 'Trigger Event' : step === 2 ? 'Agent & Rules' : 'Automated Action'}</p>
               </div>
-              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '20px', cursor: 'pointer' }}>✕</button>
+              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '22px', cursor: 'pointer', padding: '0.25rem 0.5rem', lineHeight: 1 }}>✕</button>
             </div>
 
             {/* Step Indicators */}
-            <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', backgroundColor: '#f8fafc' }}>
+            <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', backgroundColor: '#f8fafc', flexShrink: 0 }}>
               {[
                 { s: 1, label: '1. Select Trigger' },
                 { s: 2, label: '2. Rules & Agent' },
@@ -265,7 +265,7 @@ export default function V3WorkflowsPage() {
             </div>
 
             {/* Modal Form Body */}
-            <form onSubmit={handleSaveRecipe} style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <form onSubmit={handleSaveRecipe} style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', overflowY: 'auto' }}>
               
               {/* STEP 1: TRIGGER EVENT */}
               {step === 1 && (
