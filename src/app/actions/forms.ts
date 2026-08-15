@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/utils/supabase/server';
+import { executeWorkflowTrigger } from './workflows';
 
 // Default schema configs for new forms
 const DEFAULT_CONFIG = {
@@ -482,6 +483,18 @@ export async function submitFormAnswer(formId: string, answers: any) {
         } catch (callErr) {
           console.error('❌ [AMIRA ENGINE] Auto-call error:', callErr);
         }
+      }
+
+      // 5b. Evaluate dynamic user-configured workflow recipes
+      try {
+        await executeWorkflowTrigger('form_submission', {
+          phone,
+          email,
+          customerName: leadName,
+          metadata: { form_id: formId, form_name: form.name }
+        });
+      } catch (wfErr) {
+        console.error('❌ [AMIRA ENGINE] Workflow engine trigger error:', wfErr);
       }
 
       // 6. Fire real-time notification events (leadName/phone/email already declared above)
