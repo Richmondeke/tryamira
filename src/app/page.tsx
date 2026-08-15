@@ -1261,16 +1261,15 @@ export default function LandingPage() {
             No complicated setup. No massive support team required.
           </p>
 
-          {/* Autopilot Image Showcase at the bottom of the section (1.3x scaled) */}
+          {/* Amira Section Last Image Showcase */}
           <div style={{ width: '100%', margin: '0 auto', textAlign: 'center', lineHeight: 0 }}>
             <ScrollReveal direction="up" distance={80} duration={0.9}>
               <img 
-                src="/amira-auto-2.png" 
+                src="/amira-section-last.png" 
                 alt="Put your customer support on autopilot - Amira AI" 
                 style={{ 
                   width: '95%', 
-                  maxWidth: '676px', 
-                  maxHeight: '468px',
+                  maxWidth: '720px', 
                   height: 'auto', 
                   display: 'block', 
                   margin: '0 auto',
