@@ -278,7 +278,23 @@ export default function V3CallsPage() {
     (t.speaker || '').toLowerCase().includes(transcriptSearch.toLowerCase())
   );
 
+  const [playbackSeconds, setPlaybackSeconds] = React.useState(0);
   const activeAudioRef = React.useRef<HTMLAudioElement | null>(null);
+
+  // Animate playback progress timer when audio is playing
+  React.useEffect(() => {
+    let timer: any = null;
+    if (isPlayingAudio) {
+      timer = setInterval(() => {
+        setPlaybackSeconds(prev => prev + 1);
+      }, 1000);
+    } else {
+      setPlaybackSeconds(0);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [isPlayingAudio]);
 
   const handlePlayAudio = () => {
     if (isPlayingAudio) {
@@ -290,31 +306,69 @@ export default function V3CallsPage() {
         window.speechSynthesis.cancel();
       }
       setIsPlayingAudio(false);
+      setPlaybackSeconds(0);
     } else {
       setIsPlayingAudio(true);
-      if (selectedCall?.recordingUrl) {
+      setPlaybackSeconds(0);
+
+      const speakFallback = () => {
+        if (typeof window !== 'undefined' && window.speechSynthesis) {
+          window.speechSynthesis.cancel();
+          const dialogueText = (selectedCall?.transcript || [])
+            .filter(t => t.text && !t.text.startsWith('No transcript available'))
+            .map(t => `${t.speaker}: ${t.text}`)
+            .join('. ');
+
+          const textToSpeak = dialogueText.length > 5 ? dialogueText : `Call audio recording stream for ${selectedCall?.customerName || 'Customer'}.`;
+          const utterance = new SpeechSynthesisUtterance(textToSpeak);
+          const rateVal = parseFloat(audioPlaybackSpeed.replace('x', ''));
+          utterance.rate = isNaN(rateVal) ? 1.0 : rateVal;
+          utterance.onend = () => setIsPlayingAudio(false);
+          utterance.onerror = () => setIsPlayingAudio(false);
+          window.speechSynthesis.speak(utterance);
+        } else {
+          // Web Audio API tone synthesizer fallback
+          try {
+            const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(440, ctx.currentTime);
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 3);
+            setTimeout(() => setIsPlayingAudio(false), 3000);
+          } catch (e) {
+            setIsPlayingAudio(false);
+          }
+        }
+      };
+
+      const validUrl = selectedCall?.recordingUrl && 
+                       !selectedCall.recordingUrl.includes('storage.vapi.ai') && 
+                       selectedCall.recordingUrl.startsWith('http');
+
+      if (validUrl) {
         const audio = new Audio(selectedCall.recordingUrl);
         const rateVal = parseFloat(audioPlaybackSpeed.replace('x', ''));
         audio.playbackRate = isNaN(rateVal) ? 1.0 : rateVal;
         activeAudioRef.current = audio;
-        audio.play().catch(err => console.error('Audio playback error:', err));
+        audio.play().catch(() => {
+          activeAudioRef.current = null;
+          speakFallback();
+        });
         audio.onended = () => {
           setIsPlayingAudio(false);
           activeAudioRef.current = null;
         };
         audio.onerror = () => {
-          setIsPlayingAudio(false);
           activeAudioRef.current = null;
+          speakFallback();
         };
-      } else if (typeof window !== 'undefined' && window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-        const textToSpeak = selectedCall?.transcript.map(t => `${t.speaker}: ${t.text}`).join('. ') || 'Voice call playback started.';
-        const utterance = new SpeechSynthesisUtterance(textToSpeak);
-        const rateVal = parseFloat(audioPlaybackSpeed.replace('x', ''));
-        utterance.rate = isNaN(rateVal) ? 1.0 : rateVal;
-        utterance.onend = () => setIsPlayingAudio(false);
-        utterance.onerror = () => setIsPlayingAudio(false);
-        window.speechSynthesis.speak(utterance);
+      } else {
+        speakFallback();
       }
     }
   };
@@ -625,26 +679,26 @@ export default function V3CallsPage() {
 
             {/* Animated Waveform Visualizer Scrubber */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.25rem' }}>
-              <span style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                {isPlayingAudio ? '00:14' : '00:00'}
+              <span style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
+                {`00:${String(Math.min(playbackSeconds, 59)).padStart(2, '0')}`}
               </span>
 
               <div style={{ flex: 1, height: '28px', display: 'flex', alignItems: 'center', gap: '3px', cursor: 'pointer' }}>
                 {Array.from({ length: 48 }).map((_, i) => {
-                  const isActive = isPlayingAudio && i < 14;
-                  const heightPct = Math.max(20, Math.min(100, Math.sin(i * 0.4) * 45 + 55));
+                  const barProgress = Math.min(48, Math.floor((playbackSeconds % 20) * 2.4));
+                  const isActive = isPlayingAudio && i <= barProgress;
+                  const heightPct = Math.max(20, Math.min(100, Math.sin(i * 0.4 + (isPlayingAudio ? playbackSeconds * 0.5 : 0)) * 45 + 55));
                   return (
                     <div
                       key={i}
                       style={{
                         flex: 1,
                         height: `${heightPct}%`,
-                        backgroundColor: isActive ? '#1b5a92' : 'var(--border-subtle)',
+                        backgroundColor: isActive ? '#10b981' : (isPlayingAudio ? '#1b5a9280' : 'var(--border-subtle)'),
                         borderRadius: '99px',
                         transition: 'all 0.15s ease'
                       }}
                     />
-                  );
                 })}
               </div>
 
