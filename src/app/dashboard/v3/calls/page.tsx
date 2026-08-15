@@ -699,6 +699,7 @@ export default function V3CallsPage() {
                         transition: 'all 0.15s ease'
                       }}
                     />
+                  );
                 })}
               </div>
 
