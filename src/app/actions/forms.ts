@@ -452,7 +452,36 @@ export async function submitFormAnswer(formId: string, answers: any) {
       // 5. Trigger outbound AI voice call if agentTriggerId is configured
       const agentId = form.config?.agentTriggerId;
       if (agentId && phone) {
-        console.log(`🤖 [AMIRA ENGINE] Triggering automated voice outbound campaign for agent ${agentId} contacting ${phone}...`);
+        console.log(`🤖 [AMIRA ENGINE] Triggering automated voice outbound call for agent ${agentId} → ${phone}`);
+        try {
+          const vapiKey = process.env.VAPI_PRIVATE_API_KEY;
+          const phoneNumberId = process.env.NEXT_PUBLIC_VAPI_PHONE_NUMBER_ID || '';
+          if (vapiKey && phoneNumberId) {
+            const callResp = await fetch('https://api.vapi.ai/call', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${vapiKey}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                phoneNumberId,
+                customer: { number: phone, name: leadName },
+                assistantId: agentId,
+                metadata: { workspace_id: form.workspace_id, form_id: formId, source: 'form_auto_trigger' },
+              }),
+            });
+            if (callResp.ok) {
+              const callData = await callResp.json();
+              console.log(`✅ [AMIRA ENGINE] Outbound call dispatched: ${callData.id}`);
+            } else {
+              console.error(`❌ [AMIRA ENGINE] Call dispatch failed: ${await callResp.text()}`);
+            }
+          } else {
+            console.warn('⚠️ [AMIRA ENGINE] VAPI_PRIVATE_API_KEY or VAPI_PHONE_NUMBER_ID not configured, skipping auto-call');
+          }
+        } catch (callErr) {
+          console.error('❌ [AMIRA ENGINE] Auto-call error:', callErr);
+        }
       }
 
       // 6. Fire real-time notification events (leadName/phone/email already declared above)

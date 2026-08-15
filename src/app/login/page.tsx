@@ -51,9 +51,7 @@ export default function LoginPage() {
     setToast({ message: 'Signing in with Google...', type: 'success' });
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const isRealSupabase = supabaseUrl && 
-                           !supabaseUrl.includes('gijtnmzylulvcjsaohag') && 
-                           !supabaseUrl.includes('dummy');
+    const isRealSupabase = !!supabaseUrl;
 
     if (isRealSupabase) {
       try {

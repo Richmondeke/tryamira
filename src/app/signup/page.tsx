@@ -46,9 +46,7 @@ export default function SignupPage() {
     setToast({ message: 'Creating account with Google...', type: 'success' });
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const isRealSupabase = supabaseUrl && 
-                           !supabaseUrl.includes('gijtnmzylulvcjsaohag') && 
-                           !supabaseUrl.includes('dummy');
+    const isRealSupabase = !!supabaseUrl;
 
     if (isRealSupabase) {
       try {
