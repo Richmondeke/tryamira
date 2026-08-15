@@ -48,14 +48,14 @@ export default function V3AnalyticsPage() {
       change: '~184 human hours saved',
       isPositive: true,
       icon: 'credit-card-outline',
-      accent: '#8b5cf6'
+      accent: '#10b981'
     }
   ];
 
   const topics = [
-    { name: 'Order & Shipping Status', count: '842 inquiries', percentage: 34, color: '#10b981' },
-    { name: 'Product & Pricing Inquiry', count: '512 inquiries', percentage: 21, color: '#3b82f6' },
-    { name: 'Account & Password Reset', count: '390 inquiries', percentage: 16, color: '#8b5cf6' },
+    { name: 'Product Demo & Pricing', count: '1,420 inquiries', percentage: 42, color: '#1b5a92' },
+    { name: 'Technical Support & Setup', count: '890 inquiries', percentage: 28, color: '#10b981' },
+    { name: 'Account & Password Reset', count: '390 inquiries', percentage: 16, color: '#0284c7' },
     { name: 'Technical Troubleshooting', count: '298 inquiries', percentage: 12, color: '#f59e0b' },
     { name: 'Billing & Refund Requests', count: '247 inquiries', percentage: 10, color: '#ec4899' },
     { name: 'Other Custom Workflows', count: '200 inquiries', percentage: 7, color: '#64748b' }

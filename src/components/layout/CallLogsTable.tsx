@@ -411,8 +411,8 @@ export default function CallLogsTable({ initialCalls }: { initialCalls: CallReco
                     fontSize: '10px', 
                     padding: '2px 6px', 
                     borderRadius: '4px', 
-                    backgroundColor: selectedCall.telemetry?.direction === 'outbound' ? '#e0f2fe' : '#f3e8ff',
-                    color: selectedCall.telemetry?.direction === 'outbound' ? '#0369a1' : '#6b21a8',
+                    backgroundColor: selectedCall.telemetry?.direction === 'outbound' ? '#e0f2fe' : '#ecfdf5',
+                    color: selectedCall.telemetry?.direction === 'outbound' ? '#0369a1' : '#047857',
                     textTransform: 'uppercase',
                     fontWeight: 700,
                     letterSpacing: '0.4px'

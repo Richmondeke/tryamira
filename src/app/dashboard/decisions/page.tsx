@@ -221,7 +221,7 @@ export default function DecisionsPage() {
                     </button>
                   </div>
                   {askResponses[dec.id] && (
-                    <div style={{ marginTop: '0.75rem', fontSize: '13px', color: '#4c1d95', lineHeight: 1.5, fontWeight: 500 }}>
+                    <div style={{ marginTop: '0.75rem', fontSize: '13px', color: '#1b5a92', lineHeight: 1.5, fontWeight: 500 }}>
                       {askResponses[dec.id]}
                     </div>
                   )}
