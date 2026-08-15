@@ -1407,20 +1407,21 @@ export default function LandingPage() {
           </p>
 
           {/* Autopilot Showcase Image — Placed between Title/Description and CTA Buttons */}
-          <div style={{ width: '100%', margin: '2rem auto 2.5rem auto', textAlign: 'center', lineHeight: 0 }}>
-            <ScrollReveal direction="up" distance={80} duration={0.9}>
+          <div style={{ width: '100%', margin: '1.75rem auto 2rem auto', textAlign: 'center', lineHeight: 0 }}>
+            <ScrollReveal direction="up" distance={40} duration={0.8}>
               <img 
                 src="/amira-auto-2.png" 
                 alt="Put your customer support on autopilot - Amira AI" 
                 style={{ 
                   width: '100%', 
-                  maxWidth: '820px', 
+                  maxWidth: '420px', 
+                  maxHeight: '480px',
                   height: 'auto', 
                   display: 'block', 
                   margin: '0 auto',
                   borderRadius: '16px',
                   boxShadow: '0 16px 40px rgba(0, 0, 0, 0.25)',
-                  objectFit: 'contain'
+                  objectFit: 'cover'
                 }} 
               />
             </ScrollReveal>
