@@ -1,974 +1,1276 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Script from "next/script";
+import React, { useState, useEffect, useRef } from "react";
 import styles from "./page.module.css";
-import { useLocalPricing } from "@/hooks/useLocalPricing";
-import { AmiraLogo } from "@/components/ui/AmiraLogo";
-import { 
-  Droplet, 
-  Wind, 
-  Zap, 
-  Truck, 
-  Key, 
-  Calendar, 
-  CreditCard, 
-  PhoneCall, 
-  Check, 
-  X 
-} from "lucide-react";
+import GlowIcon from "@/components/GlowIcon";
+import ScrollReveal from "@/components/ScrollReveal";
 
-function LocalPrice({ basePriceUsd }: { basePriceUsd: number }) {
-  const { price, isLoading } = useLocalPricing(basePriceUsd);
-  if (isLoading) return <>{`$${basePriceUsd}`}</>;
-  return <>{price}</>;
+function ArrowRight({ size = 18, color }: { size?: number; color?: string }) {
+  return <GlowIcon name="arrow-right-outline" size={size} color={color} />;
+}
+function Check({ size = 16, color }: { size?: number; color?: string }) {
+  return <GlowIcon name="checkmark-outline" size={size} color={color} />;
+}
+function ChevronRight({ size = 16, color }: { size?: number; color?: string }) {
+  return <GlowIcon name="chevron-right-outline" size={size} color={color} />;
+}
+function X({ size = 20, color }: { size?: number; color?: string }) {
+  return <GlowIcon name="xmark-outline" size={size} color={color} />;
+}
+function Star({ size = 16, color }: { size?: number; color?: string }) {
+  return <GlowIcon name="star-outline" size={size} color={color} />;
+}
+function Shield({ size = 22, color }: { size?: number; color?: string }) {
+  return <GlowIcon name="shield-outline" size={size} color={color} />;
+}
+function Clock({ size = 22, color }: { size?: number; color?: string }) {
+  return <GlowIcon name="clock-outline" size={size} color={color} />;
+}
+function Phone({ size = 22, color }: { size?: number; color?: string }) {
+  return <GlowIcon name="phone-outline" size={size} color={color} />;
+}
+function MessageSquare({ size = 22, color }: { size?: number; color?: string }) {
+  return <GlowIcon name="message-square-outline" size={size} color={color} />;
+}
+function Mail({ size = 22, color }: { size?: number; color?: string }) {
+  return <GlowIcon name="mail-outline" size={size} color={color} />;
+}
+function FileText({ size = 22, color }: { size?: number; color?: string }) {
+  return <GlowIcon name="doc-outline" size={size} color={color} />;
+}
+function BarChart3({ size = 22, color }: { size?: number; color?: string }) {
+  return <GlowIcon name="chartbar-outline" size={size} color={color} />;
+}
+function Ticket({ size = 22, color }: { size?: number; color?: string }) {
+  return <GlowIcon name="tag-outline" size={size} color={color} />;
+}
+function Globe({ size = 22, color }: { size?: number; color?: string }) {
+  return <GlowIcon name="compass-outline" size={size} color={color} />;
+}
+function Layers({ size = 22, color }: { size?: number; color?: string }) {
+  return <GlowIcon name="layers-outline" size={size} color={color} />;
+}
+function Users({ size = 22, color }: { size?: number; color?: string }) {
+  return <GlowIcon name="users-outline" size={size} color={color} />;
+}
+function Zap({ size = 22, color }: { size?: number; color?: string }) {
+  return <GlowIcon name="zap-outline" size={size} color={color} />;
+}
+function Play({ size = 22, color }: { size?: number; color?: string }) {
+  return <GlowIcon name="media-play-outline" size={size} color={color} />;
 }
 
-function MeshWaveCanvas() {
-  const canvasRef = React.useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let animationFrameId: number;
-    let width = canvas.width = canvas.offsetWidth;
-    let height = canvas.height = canvas.offsetHeight;
-
-    const handleResize = () => {
-      if (!canvas) return;
-      width = canvas.width = canvas.offsetWidth;
-      height = canvas.height = canvas.offsetHeight;
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    // Grid parameters
-    const cols = 40;
-    const rows = 15;
-    const spacingX = width / (cols - 1);
-    const spacingY = height / (rows - 1);
-
-    let time = 0;
-
-    const draw = () => {
-      ctx.clearRect(0, 0, width, height);
-
-      // Draw a mesh of points
-      const points: { x: number; y: number }[][] = [];
-
-      for (let r = 0; r < rows; r++) {
-        points[r] = [];
-        for (let c = 0; c < cols; c++) {
-          const baseX = c * spacingX;
-          const baseY = r * spacingY;
-
-          const nx = (baseX / width) * 2 - 1;
-          const ny = (baseY / height); // 0 (back) to 1 (front)
-
-          const wave1 = Math.sin(nx * 4 + time + ny * 3) * 20;
-          const wave2 = Math.cos(ny * 5 - time * 1.5 + nx * 2) * 12;
-          const heightOffset = (wave1 + wave2) * ny; // fade out wave amplitude at the back
-
-          const perspectiveY = baseY + heightOffset;
-
-          points[r][c] = { x: baseX, y: perspectiveY };
-        }
-      }
-
-      // Draw lines
-      ctx.strokeStyle = "rgba(16, 185, 129, 0.15)";
-      ctx.lineWidth = 1;
-
-      // Horizontal lines
-      for (let r = 0; r < rows; r++) {
-        ctx.beginPath();
-        for (let c = 0; c < cols; c++) {
-          const p = points[r][c];
-          if (c === 0) {
-            ctx.moveTo(p.x, p.y);
-          } else {
-            ctx.lineTo(p.x, p.y);
-          }
-        }
-        const alpha = 0.05 + 0.18 * (r / (rows - 1));
-        ctx.strokeStyle = `rgba(16, 185, 129, ${alpha})`;
-        ctx.stroke();
-      }
-
-      // Vertical lines
-      for (let c = 0; c < cols; c++) {
-        ctx.beginPath();
-        for (let r = 0; r < rows; r++) {
-          const p = points[r][c];
-          if (r === 0) {
-            ctx.moveTo(p.x, p.y);
-          } else {
-            ctx.lineTo(p.x, p.y);
-          }
-        }
-        const alpha = 0.05 + 0.12 * (c / (cols - 1));
-        ctx.strokeStyle = `rgba(16, 185, 129, ${alpha})`;
-        ctx.stroke();
-      }
-
-      // Intersection glow dots
-      for (let r = 0; r < rows; r += 2) {
-        for (let c = 0; c < cols; c += 3) {
-          const p = points[r][c];
-          const alpha = 0.1 + 0.3 * (r / (rows - 1)) * Math.sin(time + c);
-          ctx.fillStyle = `rgba(16, 185, 129, ${alpha})`;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-
-      time += 0.015;
-      animationFrameId = requestAnimationFrame(draw);
-    };
-
-    draw();
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, []);
-
+// ─── AMIRA SPARKLE ICON ──────────────────────────────────────────────────────
+function AmiraIcon({ size = 22 }: { size?: number }) {
   return (
-    <div className={styles.meshCanvasContainer}>
-      <canvas ref={canvasRef} className={styles.meshCanvas} />
-    </div>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M12 2L13.8 9.2L21 11L13.8 12.8L12 20L10.2 12.8L3 11L10.2 9.2L12 2Z" fill="#10b981" />
+      <circle cx="12" cy="11" r="1.5" fill="white" opacity="0.6" />
+    </svg>
   );
 }
 
 export default function LandingPage() {
-  const [activePlan, setActivePlan] = useState<"monthly" | "annually">("monthly");
-  const [currentLang, setCurrentLang] = useState('en');
-  const [showLangMenu, setShowLangMenu] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  // Call simulation states
-  const [demoScenario, setDemoScenario] = useState<"hvac" | "plumbing">("hvac");
-  const [isPlayingCall, setIsPlayingCall] = useState(false);
-  const [playbackTime, setPlaybackTime] = useState(0);
-  const [transcriptIndex, setTranscriptIndex] = useState(-1);
-  const [vapiCallActive, setVapiCallActive] = useState(false);
-  const [vapiLoading, setVapiLoading] = useState(false);
-
-  const languagesList = [
-    { code: 'en', label: 'English', flag: '🇺🇸' },
-    { code: 'es', label: 'Español', flag: '🇪🇸' },
-    { code: 'fr', label: 'Français', flag: '🇫🇷' },
-    { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
-    { code: 'yo', label: 'Yoruba', flag: '🇳🇬' },
-    { code: 'ig', label: 'Igbo', flag: '🇳🇬' },
-    { code: 'ha', label: 'Hausa', flag: '🇳🇬' },
-    { code: 'zh-CN', label: '中文', flag: '🇨🇳' },
-    { code: 'ja', label: '日本語', flag: '🇯🇵' },
-  ];
-
-  const hvacDialogue = [
-    { time: 2, sender: "user", text: "Hi, my AC has stopped working completely and it's 95 degrees outside. Can you get a technician out here today?" },
-    { time: 8, sender: "ai", text: "Oh, that sounds incredibly uncomfortable! I can absolutely help schedule a technician for you. Let me check our team's schedule for today." },
-    { time: 14, sender: "system", text: "[System Check] Querying Housecall Pro calendar for next available HVAC tech..." },
-    { time: 18, sender: "ai", text: "I have an emergency slot available with our tech, Marcus, between 2 PM and 4 PM today. Would that time slot work for you?" },
-    { time: 25, sender: "user", text: "Yes, that's perfect. Please book it." },
-    { time: 28, sender: "ai", text: "Great! I have locked in that time. Since this is an emergency dispatch, there is a fifty dollar dispatch fee to secure the booking. I am sending a secure payment link to your mobile number now." },
-    { time: 36, sender: "system", text: "[System Check] Generating Stripe payment link & SMS dispatch notification to Marcus..." },
-    { time: 40, sender: "ai", text: "I've just sent that over. Marcus is fully briefed and is heading your way. Is there anything else you need help with?" },
-    { time: 46, sender: "user", text: "No, that's it. Thanks a lot!" },
-    { time: 49, sender: "ai", text: "You're welcome! Stay cool, and Marcus will see you shortly." }
-  ];
-
-  const plumbingDialogue = [
-    { time: 2, sender: "user", text: "Hey, my kitchen sink is backing up and flooding the floor. I need someone immediately." },
-    { time: 8, sender: "ai", text: "I understand this is an emergency. Let's get someone out to help. I am looking up our emergency plumber schedule right now." },
-    { time: 14, sender: "system", text: "[System Check] Checking plumbing dispatch routes & calendar availability..." },
-    { time: 18, sender: "ai", text: "Our emergency plumber, David, is nearby and can be at your location in forty-five minutes. Would you like me to dispatch him?" },
-    { time: 25, sender: "user", text: "Yes, please send him right away!" },
-    { time: 28, sender: "ai", text: "Done! I've dispatched David and sent the job details to his phone. I'm also emailing you a booking confirmation right now." },
-    { time: 35, sender: "system", text: "[System Check] Creating ticket in Jobber & triggering Gmail confirmation message..." },
-    { time: 39, sender: "ai", text: "All set. David will call you when he's five minutes away. Please keep the main water valve shut if possible." },
-    { time: 46, sender: "user", text: "Alright, will do. Thank you." },
-    { time: 49, sender: "ai", text: "You're very welcome. Help is on the way!" }
-  ];
-
-  const dialogue = demoScenario === "hvac" ? hvacDialogue : plumbingDialogue;
-  const maxCallTime = dialogue[dialogue.length - 1].time + 3;
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [isFading, setIsFading] = useState(false);
+  const [activeStep, setActiveStep] = useState(0);
+  const [orbitZoomScale, setOrbitZoomScale] = useState(1);
 
   useEffect(() => {
-    const getCookie = (name: string) => {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop()?.split(';').shift();
-      return null;
-    };
-    const trans = getCookie('googtrans');
-    if (trans) {
-      const code = trans.split('/').pop();
-      if (code) setCurrentLang(code);
-    }
+    const handleScroll = () => setScrolled(window.scrollY > 30);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const changeLanguage = (langCode: string) => {
-    if (langCode === 'en') {
-      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" + window.location.hostname;
-    } else {
-      document.cookie = `googtrans=/en/${langCode}; path=/;`;
-      document.cookie = `googtrans=/en/${langCode}; path=/; domain=` + window.location.hostname;
-    }
-    window.location.reload();
+  const handleOrbitMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    const maxDist = Math.sqrt(centerX * centerX + centerY * centerY);
+    const dist = Math.sqrt(Math.pow(mouseX - centerX, 2) + Math.pow(mouseY - centerY, 2));
+    const normDist = Math.min(dist / maxDist, 1);
+
+    // At center (normDist = 0), maximum zoom out scale (0.84)
+    // As mouse moves towards edges (normDist = 1), scale smoothly expands back to normal 1.0
+    const targetScale = 1.0 - (1.0 - normDist) * 0.16;
+    setOrbitZoomScale(targetScale);
   };
 
-  // Playback timer loop for custom audio simulation
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isPlayingCall) {
-      interval = setInterval(() => {
-        setPlaybackTime((prev) => {
-          if (prev >= maxCallTime) {
-            setIsPlayingCall(false);
-            return 0;
-          }
-          const nextTime = prev + 1;
-          // Find matching dialogue index
-          const nextIndex = dialogue.findIndex((d) => d.time > nextTime);
-          const currentIndex = nextIndex === -1 ? dialogue.length - 1 : nextIndex - 1;
-          setTranscriptIndex(currentIndex);
-          return nextTime;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isPlayingCall, dialogue, maxCallTime]);
-
-  const handleTogglePlay = () => {
-    if (isPlayingCall) {
-      setIsPlayingCall(false);
-    } else {
-      setIsPlayingCall(true);
-    }
+  const handleOrbitMouseLeave = () => {
+    setOrbitZoomScale(1.0);
   };
 
-  const handleResetCall = () => {
-    setIsPlayingCall(false);
-    setPlaybackTime(0);
-    setTranscriptIndex(-1);
-  };
-
-  const handleSelectScenario = (scenario: "hvac" | "plumbing") => {
-    setIsPlayingCall(false);
-    setDemoScenario(scenario);
-    setPlaybackTime(0);
-    setTranscriptIndex(-1);
-  };
-
-  const handleTalkToAmira = () => {
-    const publicKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || '';
-    const assistantId = process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID || '';
-
-    if (!publicKey || !assistantId) {
-      // Scroll to custom simulator if Vapi is not active
-      document.getElementById('interactive-demo')?.scrollIntoView({ behavior: 'smooth' });
-      return;
-    }
-
-    if (vapiCallActive) {
-      const vapi = (window as any).vapi;
-      if (vapi) vapi.stop();
-      setVapiCallActive(false);
-      return;
-    }
-
-    setVapiLoading(true);
-    const vapi = (window as any).vapi;
-    if (!vapi) {
-      alert('Please wait a moment and try again.');
-      setVapiLoading(false);
-      return;
-    }
-
-    vapi.start(assistantId);
-    vapi.on('call-start', () => { setVapiCallActive(true); setVapiLoading(false); });
-    vapi.on('call-end', () => { setVapiCallActive(false); setVapiLoading(false); });
-    vapi.on('error', () => { setVapiCallActive(false); setVapiLoading(false); });
+  const handleTabChange = (index: number) => {
+    if (index === carouselIndex) return;
+    setIsFading(true);
+    setTimeout(() => {
+      setCarouselIndex(index);
+      setIsFading(false);
+    }, 160);
   };
 
   return (
-    <div className={styles.container}>
-      {/* BACKGROUND GRAPHICS */}
-      <div className={styles.gridBg} />
-      <div className={styles.glowTop} />
+    <div className={styles.page}>
 
-      {/* NAV BAR */}
-      <nav className={styles.nav}>
-        <div className={styles.navContainer}>
-          <a href="#" className={styles.navLogo}>
-            <AmiraLogo size={32} className={styles.navLogoImg} />
+      {/* ── NAV ─────────────────────────────────────────────────────────────── */}
+      <nav className={`${styles.nav} ${scrolled ? styles.navScrolled : ""}`}>
+        <div className={styles.navInner}>
+          <a href="/" className={styles.navLogo}>
+            <img src="/amira-logo-dark.svg" alt="Amira AI" style={{ height: '26px', width: 'auto' }} />
           </a>
-          
+
           <ul className={styles.navLinks}>
-            <li className={styles.navLinkWrapper}>
-              <span className={styles.navLink}>Solutions ▼</span>
-              <div className={styles.megaMenu}>
-                <div className={styles.megaMenuColumn}>
-                  <div className={styles.megaMenuTitle}>Services</div>
-                  
-                  <a href="/login?redirect=/dashboard/ai-agent" className={styles.megaMenuItem}>
-                    <Droplet className={styles.megaMenuIcon} />
-                    <div className={styles.megaMenuText}>
-                      <div className={styles.megaMenuItemName}>Emergency Plumbing</div>
-                      <div className={styles.megaMenuItemDesc}>Qualify and dispatch plumbers for urgent leaks.</div>
-                    </div>
-                  </a>
-                  
-                  <a href="/login?redirect=/dashboard/ai-agent" className={styles.megaMenuItem}>
-                    <Wind className={styles.megaMenuIcon} />
-                    <div className={styles.megaMenuText}>
-                      <div className={styles.megaMenuItemName}>HVAC Repair</div>
-                      <div className={styles.megaMenuItemDesc}>Schedule techs, triage heat and AC calls 24/7.</div>
-                    </div>
-                  </a>
-                  
-                  <a href="/login?redirect=/dashboard/ai-agent" className={styles.megaMenuItem}>
-                    <Zap className={styles.megaMenuIcon} />
-                    <div className={styles.megaMenuText}>
-                      <div className={styles.megaMenuItemName}>Electrical</div>
-                      <div className={styles.megaMenuItemDesc}>Route calls, book inspections, alert electricians.</div>
-                    </div>
-                  </a>
-
-                  <a href="/login?redirect=/dashboard/ai-agent" className={styles.megaMenuItem}>
-                    <Truck className={styles.megaMenuIcon} />
-                    <div className={styles.megaMenuText}>
-                      <div className={styles.megaMenuItemName}>Towing</div>
-                      <div className={styles.megaMenuItemDesc}>Coordinate dispatch and road support.</div>
-                    </div>
-                  </a>
-
-                  <a href="/login?redirect=/dashboard/ai-agent" className={styles.megaMenuItem}>
-                    <Key className={styles.megaMenuIcon} />
-                    <div className={styles.megaMenuText}>
-                      <div className={styles.megaMenuItemName}>Locksmith</div>
-                      <div className={styles.megaMenuItemDesc}>Handle lockouts and schedule security installs.</div>
-                    </div>
-                  </a>
-                </div>
-
-                <div className={styles.megaMenuColumn}>
-                  <div className={styles.megaMenuTitle}>Workflows</div>
-
-                  <a href="/login?redirect=/dashboard/ai-agent" className={styles.megaMenuItem}>
-                    <Calendar className={styles.megaMenuIcon} />
-                    <div className={styles.megaMenuText}>
-                      <div className={styles.megaMenuItemName}>Google Calendar</div>
-                      <div className={styles.megaMenuItemDesc}>Sync bookings and check technician availability.</div>
-                    </div>
-                  </a>
-
-                  <a href="/login?redirect=/dashboard/ai-agent" className={styles.megaMenuItem}>
-                    <CreditCard className={styles.megaMenuIcon} />
-                    <div className={styles.megaMenuText}>
-                      <div className={styles.megaMenuItemName}>Stripe Payments</div>
-                      <div className={styles.megaMenuItemDesc}>Collect deposit or dispatch fee during the call.</div>
-                    </div>
-                  </a>
-
-                  <a href="/login?redirect=/dashboard/ai-agent" className={styles.megaMenuItem}>
-                    <PhoneCall className={styles.megaMenuIcon} />
-                    <div className={styles.megaMenuText}>
-                      <div className={styles.megaMenuItemName}>Twilio SMS</div>
-                      <div className={styles.megaMenuItemDesc}>Instantly notify technicians with dispatch details.</div>
-                    </div>
-                  </a>
-                </div>
-              </div>
-            </li>
-            <li className={styles.navLinkWrapper}><a href="#workflow" className={styles.navLink}>How It Works</a></li>
-            <li className={styles.navLinkWrapper}><a href="#pricing" className={styles.navLink}>Pricing</a></li>
+            {[
+              { label: "Product", href: "#product" },
+              { label: "Capabilities", href: "#capabilities" },
+              { label: "Multi-Channel", href: "#multichannel" },
+              { label: "Integrations", href: "#integrations" },
+              { label: "Use Cases", href: "#usecases" },
+              { label: "Benefits", href: "#benefits" },
+            ].map(l => (
+              <li key={l.label}>
+                <a href={l.href} className={styles.navLink}>{l.label}</a>
+              </li>
+            ))}
           </ul>
 
           <div className={styles.navActions}>
-            <a href="/dashboard" className={styles.navSignIn}>Login</a>
-            <a href="/dashboard" className={styles.navCta}>Start Free</a>
+            <a href="/login" className={styles.navLogin}>Log in</a>
+            <a href="/dashboard/v3/outreach" className={styles.navCta} style={{ backgroundColor: '#10b981' }}>
+              Get Started
+            </a>
           </div>
 
-          <button 
-            className={styles.mobileMenuToggle} 
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle Menu"
-          >
-            ☰
+          <button className={styles.mobileToggle} onClick={() => setMobileOpen(!mobileOpen)}>
+            <span /><span /><span />
           </button>
         </div>
 
-        {/* MOBILE MENU DROPDOWN */}
-        {mobileMenuOpen && (
+        {mobileOpen && (
           <div className={styles.mobileMenu}>
-            <div className={styles.mobileSubMenuTitle}>Services</div>
-            <a href="/login?redirect=/dashboard/ai-agent" onClick={() => setMobileMenuOpen(false)}>Emergency Plumbing</a>
-            <a href="/login?redirect=/dashboard/ai-agent" onClick={() => setMobileMenuOpen(false)}>HVAC Repair</a>
-            <a href="/login?redirect=/dashboard/ai-agent" onClick={() => setMobileMenuOpen(false)}>Electrical</a>
-            <a href="/login?redirect=/dashboard/ai-agent" onClick={() => setMobileMenuOpen(false)}>Towing</a>
-            <a href="/login?redirect=/dashboard/ai-agent" onClick={() => setMobileMenuOpen(false)}>Locksmith</a>
-            
-            <div className={styles.mobileSubMenuTitle}>Workflows</div>
-            <a href="/login?redirect=/dashboard/ai-agent" onClick={() => setMobileMenuOpen(false)}>Google Calendar</a>
-            <a href="/login?redirect=/dashboard/ai-agent" onClick={() => setMobileMenuOpen(false)}>Stripe Payments</a>
-            <a href="/login?redirect=/dashboard/ai-agent" onClick={() => setMobileMenuOpen(false)}>Twilio SMS</a>
-            
-            <hr />
-            <a href="#workflow" onClick={() => setMobileMenuOpen(false)}>How It Works</a>
-            <a href="#pricing" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
-            <hr />
-            <a href="/dashboard">Login</a>
-            <a href="/dashboard" className={styles.mobileMenuCta}>Start Free</a>
+            {["Product","Capabilities","Multi-Channel","Integrations","Use Cases","Benefits"].map(l => (
+              <a key={l} href={`#${l.toLowerCase()}`} className={styles.mobileMenuLink} onClick={() => setMobileOpen(false)}>{l}</a>
+            ))}
+            <hr className={styles.mobileDivider} />
+            <a href="/login" className={styles.mobileMenuLink}>Log in</a>
+            <a href="/dashboard/v3/outreach" className={styles.mobileMenuCta} style={{ backgroundColor: '#10b981' }}>Get Started</a>
           </div>
         )}
       </nav>
 
-      {/* HERO SECTION */}
-      <header className={styles.hero}>
-        <div className={styles.heroContainer}>
-          <div className={styles.heroBadge}>
-            <span className={styles.heroBadgeHighlight}>AI Operations Dispatcher</span>
-            <span className={styles.heroBadgeText}>Book Jobs & Dispatch Techs 24/7</span>
-          </div>
-
-          <h1 className={styles.heroTitle}>
-            Stop Missing Inbound Leads and Dispatch Calls
-          </h1>
-
-          <p className={styles.heroSubtitle}>
-            Amira is the 24/7 AI dispatcher for trade and field service businesses. She answers calls, qualifies emergencies, schedules jobs on your calendar, and processes dispatch fees—instantly.
-          </p>
-
-          <Script
-            src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/dist/vapi.umd.js"
-            strategy="afterInteractive"
-            onLoad={() => {
-              const publicKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY;
-              if (publicKey && (window as any).Vapi) {
-                (window as any).vapi = new (window as any).Vapi(publicKey);
-              }
-            }}
-          />
-
-          <div className={styles.heroCtas}>
-            <button 
-              onClick={handleTalkToAmira} 
-              disabled={vapiLoading}
-              className={styles.heroCtaPrimary}
-            >
-              {vapiLoading ? 'Connecting...' : vapiCallActive ? '⏹ End Live Call' : 'Book a Demo'}
-            </button>
-            <a href="#interactive-demo" className={styles.heroCtaSecondary}>
-              Listen to a Live Call
-            </a>
-          </div>
-
-          <div className={styles.heroTrust}>
-            Built for Plumbing, HVAC, Electrical, and Field Service businesses looking to save missed revenue.
-          </div>
-
-          {/* VISUAL WORKFLOW CONTAINER */}
-          <div className={styles.workflowContainer} id="workflow">
-            <div className={styles.workflowHeader}>
-              <div className={styles.headerDots}>
-                <span className={styles.dot} />
-                <span className={styles.dot} />
-                <span className={styles.dot} />
-              </div>
-              <div className={styles.headerTitle}>AI Dispatch &amp; Scheduling Flow</div>
-              <div className={styles.headerStatus}>
-                <span className={styles.pulseIndicator} />
-                Active Workflow
-              </div>
-            </div>
-
-            <div className={styles.workflowSteps}>
-              <div className={styles.workflowStep}>
-                <div className={styles.stepNum}>1</div>
-                <div className={styles.stepTitle}>Customer Calls</div>
-                <p className={styles.stepText}>Customer rings your line with an emergency plumbing issue or service request.</p>
-              </div>
-
-              <div className={styles.workflowArrow}>➔</div>
-
-              <div className={styles.workflowStep}>
-                <div className={styles.stepNum}>2</div>
-                <div className={styles.stepTitle}>Amira Answers</div>
-                <p className={styles.stepText}>Answers instantly, greeting them warmly as your trade dispatcher.</p>
-              </div>
-
-              <div className={styles.workflowArrow}>➔</div>
-
-              <div className={styles.workflowStep}>
-                <div className={styles.stepNum}>3</div>
-                <div className={styles.stepTitle}>Checks Schedule</div>
-                <p className={styles.stepText}>Queries Google Calendar or Jobber in real-time to find open technician slots.</p>
-              </div>
-
-              <div className={styles.workflowArrow}>➔</div>
-
-              <div className={styles.workflowStep}>
-                <div className={styles.stepNum}>4</div>
-                <div className={styles.stepTitle}>Books &amp; Charges</div>
-                <p className={styles.stepText}>Secures the booking, collects dispatch deposit via Stripe, and logs ticket details.</p>
-              </div>
-
-              <div className={styles.workflowArrow}>➔</div>
-
-              <div className={styles.workflowStep}>
-                <div className={styles.stepNum}>5</div>
-                <div className={styles.stepTitle}>Alerts Technician</div>
-                <p className={styles.stepText}>Instantly sends the job notes, address, and client details to the technician via Twilio.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <MeshWaveCanvas />
-      </header>
-
-      {/* PROBLEM SECTION */}
-      <section className={styles.problemSection} id="problem">
-        <div className={styles.sectionHeaderCentered}>
-          <span className={styles.sectionTag}>The Pain Point</span>
-          <h2 className={styles.sectionTitle}>Missed Calls Mean Lost Revenue for Your Trade Business</h2>
-          <p className={styles.sectionSubtitle}>
-            When you are out on a job, crawling under crawlspaces, or closed after hours, missing a call means the customer simply calls your competitor.
-          </p>
+      {/* ── HERO ─────────────────────────────────────────────────────────────── */}
+      <section className={styles.hero} id="product">
+        <div className={styles.heroBg} aria-hidden="true">
+          <div className={styles.heroBgGlow1} />
+          <div className={styles.heroBgGlow2} />
+          <div className={styles.heroBgGrid} />
         </div>
 
-        <div className={styles.problemGrid}>
-          <div className={styles.problemCard}>
-            <div className={styles.problemCardHeader}>
-              <span className={styles.industryTag}>Plumbing &amp; Drainage Services</span>
+        <div className={styles.heroInner}>
+          {/* left */}
+          <div className={styles.heroLeft}>
+            <div style={{ marginBottom: '1.25rem' }}>
+              <img src="/amira-head.png" alt="Amira Head Mascot" style={{ height: '40px', width: 'auto', objectFit: 'contain' }} />
             </div>
-            <ul className={styles.problemList}>
-              <li>
-                <X className={styles.bulletXIcon} />
-                <div>
-                  <strong>"I have a major leak in my kitchen."</strong>
-                  <p>Triaging emergency flooding and immediately dispatching an on-call tech.</p>
-                </div>
-              </li>
-              <li>
-                <X className={styles.bulletXIcon} />
-                <div>
-                  <strong>"When can someone come clear my drain?"</strong>
-                  <p>Checking live tech schedules and booking scheduling slots.</p>
-                </div>
-              </li>
-              <li>
-                <X className={styles.bulletXIcon} />
-                <div>
-                  <strong>"What is your emergency dispatch call-out fee?"</strong>
-                  <p>Informing customers and pre-authorizing booking deposits.</p>
-                </div>
-              </li>
-            </ul>
+
+            <h1 className={styles.heroH1}>
+              Your Customer Support,<br />
+              <span className={styles.heroAccent} style={{ color: '#10b981' }}>On Autopilot.</span>
+            </h1>
+
+            <p className={styles.heroSub}>
+              Meet the AI customer support workforce that talks to your customers, resolves issues, answers questions, and works across every channel — 24/7.
+            </p>
+
+            <div className={styles.heroCtas}>
+              <a href="/dashboard/v3/outreach" className={styles.btnPrimary} style={{ backgroundColor: '#10b981', color: '#ffffff' }}>
+                Get Started
+                <ArrowRight size={16} />
+              </a>
+              <a href="#capabilities" className={styles.btnSecondary} style={{ backgroundColor: 'rgba(255,255,255,0.12)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.25)' }}>
+                Watch Demo
+              </a>
+            </div>
+
+            <p style={{ fontSize: '12.5px', color: '#10b981', fontWeight: 600, margin: '-0.25rem 0 0 0' }}>
+              Deploy your first AI support agent in minutes.
+            </p>
+
+            <div className={styles.heroTrust}>
+              <span className={styles.heroTrustLabel}>Works with 1000+ integrations & tools</span>
+              <div className={styles.heroTrustLogos}>
+                {[
+                  { name: 'Notion', icon: '/images/apps/notion.svg' },
+                  { name: 'Slack', icon: '/images/apps/slack.svg' },
+                  { name: 'Gmail', icon: '/images/apps/gmail.svg' },
+                  { name: 'HubSpot', icon: '/images/apps/hubspot.svg' },
+                  { name: 'Salesforce', icon: '/images/apps/salesforce.svg' },
+                  { name: 'Linear', icon: '/images/apps/linear.svg' }
+                ].map((app) => (
+                  <div
+                    key={app.name}
+                    title={app.name}
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '8px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.06)'
+                    }}
+                  >
+                    <img src={app.icon} alt={app.name} style={{ width: '18px', height: '18px', objectFit: 'contain' }} />
+                  </div>
+                ))}
+                <span className={styles.heroTrustMore}>+ 1000 more</span>
+              </div>
+            </div>
           </div>
 
-          <div className={styles.problemCard}>
-            <div className={styles.problemCardHeader}>
-              <span className={styles.industryTag}>HVAC &amp; Electrical Services</span>
-            </div>
-            <ul className={styles.problemList}>
-              <li>
-                <X className={styles.bulletXIcon} />
-                <div>
-                  <strong>"My heater stopped working and it is freezing outside."</strong>
-                  <p>Identifying emergency criteria and selecting local technicians.</p>
-                </div>
-              </li>
-              <li>
-                <X className={styles.bulletXIcon} />
-                <div>
-                  <strong>"I need an estimate on a new AC installation."</strong>
-                  <p>Booking consultations and matching leads to sales techs.</p>
-                </div>
-              </li>
-              <li>
-                <X className={styles.bulletXIcon} />
-                <div>
-                  <strong>"Are you available for a safety inspection tomorrow?"</strong>
-                  <p>Cross-referencing open electrician slots and confirming slots.</p>
-                </div>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div className={styles.metricsGrid}>
-          <div className={styles.metricCard}>
-            <div className={styles.metricValue}>35%+</div>
-            <div className={styles.metricTitle}>Calls Missed After Hours</div>
-            <p className={styles.metricDesc}>Over a third of trade business opportunities are lost to voicemail or missed calls.</p>
-          </div>
-          <div className={styles.metricCard}>
-            <div className={styles.metricValue}>$150+</div>
-            <div className={styles.metricTitle}>Average Lost Job Value</div>
-            <p className={styles.metricDesc}>Every missed booking is money directly pocketed by a competing contractor.</p>
-          </div>
-          <div className={styles.metricCard}>
-            <div className={styles.metricValue}>82%</div>
-            <div className={styles.metricTitle}>Immediate Booking Rate</div>
-            <p className={styles.metricDesc}>Customers book immediately when answered by a live, friendly agent.</p>
+          {/* right — hero section image showcase */}
+          <div className={styles.heroRight}>
+            <ScrollReveal direction="up" distance={70} duration={0.9}>
+              <img
+                src="/amira-hero-section.png"
+                alt="Amira AI Customer Support Workforce"
+                style={{
+                  width: '100%',
+                  height: 'auto',
+                  maxHeight: '560px',
+                  objectFit: 'contain',
+                  display: 'block'
+                }}
+              />
+            </ScrollReveal>
           </div>
         </div>
       </section>
 
-      {/* SOLUTION / SYSTEM INTEGRATIONS */}
-      <section className={styles.integrationsSection} id="integrations">
-        <div className={styles.sectionHeaderCentered}>
-          <span className={styles.sectionTag}>Operations Automation</span>
-          <h2 className={styles.sectionTitle}>Amira Resolves Issues. She Doesn't Just Answer Them.</h2>
-          <p className={styles.sectionSubtitle}>
-            Instead of giving generic answers, Amira integrates with your database, billing APIs, and CRM platforms to look up info and trigger actions.
-          </p>
-        </div>
+      {/* ── TRUST / VALUE STRIP ────────────────────────────────────────────────── */}
+      <section className={styles.section} style={{ background: '#ffffff', paddingTop: '4.5rem', paddingBottom: '3.5rem', overflow: 'hidden' }}>
+        <div className={styles.inner} style={{ maxWidth: '1180px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+            <span className={styles.eyebrow} style={{ color: '#10b981', fontWeight: 800 }}>ONE AI WORKFORCE. EVERY CUSTOMER CONVERSATION.</span>
+            <p style={{ fontSize: '16px', color: '#475569', maxWidth: '750px', margin: '0.75rem auto 0 auto', lineHeight: 1.6 }}>
+              Amira AI gives your business intelligent AI agents that handle calls, chats, emails, WhatsApp, documents, and support tickets without the wait times and overhead of traditional support.
+            </p>
+          </div>
 
-        <div className={styles.trusted}>
-          <div className={styles.trustedContainer}>
-            <p className={styles.trustedLabel}>Integrates with your stack to check systems and update logs</p>
-            <div style={{ overflow: 'hidden', position: 'relative', width: '100%', maskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)' }}>
-              <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center', animation: 'amiraTicker 30s linear infinite', width: 'max-content' }}>
-                {['Zendesk', 'Salesforce', 'HubSpot', 'Stripe', 'Twilio', 'Telnyx', 'Slack', 'Gmail', 'Monday.com', 'Zoho CRM', 'Intercom', 'Freshdesk', 'Zendesk', 'Salesforce', 'HubSpot', 'Stripe', 'Twilio', 'Telnyx', 'Slack', 'Gmail', 'Monday.com', 'Zoho CRM', 'Intercom', 'Freshdesk'].map((tool, i) => (
-                  <span key={i} className={styles.tickerItem}>{tool}</span>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem', marginBottom: '3rem' }}>
+            {[
+              { icon: <Clock size={22} color="#10b981" />, title: "24/7 Availability", desc: "Never leave a customer waiting." },
+              { icon: <MessageSquare size={22} color="#1b5a92" />, title: "Voice & Chat", desc: "Talk to customers naturally across channels." },
+              { icon: <Globe size={22} color="#10b981" />, title: "100+ Languages", desc: "Support customers wherever they are." },
+              { icon: <Layers size={22} color="#1b5a92" />, title: "Your Tools, Connected", desc: "Work with the systems your team already uses." }
+            ].map(item => (
+              <div key={item.title} className={styles.hoverCard} style={{
+                backgroundColor: '#ffffff', borderRadius: '14px', padding: '1.5rem',
+                border: '1px solid var(--border-subtle)', boxShadow: '0 4px 16px rgba(0,0,0,0.04)',
+                display: 'flex', flexDirection: 'column', gap: '0.75rem'
+              }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {item.icon}
+                </div>
+                <div>
+                  <h4 style={{ fontSize: '16px', fontWeight: 750, color: '#1b5a92', margin: 0 }}>{item.title}</h4>
+                  <p style={{ fontSize: '13.5px', color: '#475569', margin: '0.35rem 0 0 0', lineHeight: 1.5 }}>{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Amira Laptop Image — Full View with zero cut-off */}
+          <div style={{ width: '100%', margin: '0 auto', textAlign: 'center', lineHeight: 0 }}>
+            <ScrollReveal direction="up" distance={80} duration={0.9}>
+              <img 
+                src="/amira-laptop.png" 
+                alt="Amira AI Laptop Interface - One AI Workforce" 
+                style={{ 
+                  width: '100%', 
+                  maxWidth: '1040px', 
+                  height: 'auto', 
+                  display: 'block', 
+                  margin: '0 auto',
+                  objectFit: 'contain'
+                }} 
+              />
+            </ScrollReveal>
+          </div>
+        </div>
+      </section>
+
+      {/* ── SECTION 1 — THE PROBLEM / SUPPORT CHALLENGE ──────────────────────── */}
+      <section className={styles.section} id="challenge" style={{ background: '#ffffff' }}>
+        <div className={styles.inner}>
+
+          {/* Single Merged Container Card with amira-background.png */}
+          <div style={{
+            background: '#1b5a92 url(/amira-background.png) center/cover no-repeat',
+            borderRadius: '24px',
+            paddingTop: '3.5rem',
+            boxShadow: '0 20px 60px rgba(27, 90, 146, 0.3)',
+            textAlign: 'center',
+            maxWidth: '960px',
+            margin: '0 auto',
+            overflow: 'hidden',
+            color: '#ffffff'
+          }}>
+            <div style={{ padding: '0 2.5rem' }}>
+              <span className={styles.eyebrow} style={{ color: '#10b981', fontWeight: 800 }}>THE SUPPORT CHALLENGE</span>
+              <h2 className={styles.sectionTitle} style={{ fontSize: 'clamp(2rem, 4vw, 2.75rem)', color: '#ffffff', marginTop: '0.5rem' }}>
+                Your customers shouldn't have to wait for help.
+              </h2>
+              <p style={{ fontSize: '18px', fontWeight: 600, color: '#10b981', marginTop: '1rem' }}>
+                Long queues. Repetitive questions. Missed calls. Overloaded support teams.
+              </p>
+              <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.85)', lineHeight: 1.7, marginTop: '1rem', maxWidth: '720px', margin: '1rem auto 0 auto' }}>
+                As your business grows, customer support becomes harder to scale — and hiring more people isn't always the answer.
+              </p>
+              <div style={{ marginTop: '1.5rem', marginBottom: '2.5rem' }}>
+                <span style={{ fontSize: '20px', fontWeight: 800, color: '#10b981', backgroundColor: 'rgba(255,255,255,0.95)', padding: '0.55rem 1.75rem', borderRadius: '99px', boxShadow: '0 4px 16px rgba(0,0,0,0.15)', display: 'inline-block' }}>
+                  Amira is.
+                </span>
+              </div>
+            </div>
+
+            {/* Amira Sad Image flush to bottom edges in full view */}
+            <div style={{ width: '100%', margin: 0, padding: 0, lineHeight: 0 }}>
+              <ScrollReveal direction="up" distance={60} duration={0.9}>
+                <img 
+                  src="/amirasad.png" 
+                  alt="Overloaded Customer Support Queue - Amira Support Challenge" 
+                  style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'contain' }} 
+                />
+              </ScrollReveal>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ── SECTION 2 — THE SOLUTION (MEET AMIRA) ────────────────────────────── */}
+      <section className={styles.section} id="solution" style={{ background: '#ffffff' }}>
+        <div className={styles.inner}>
+
+          {/* Single Merged Container with amira-background.png Background */}
+          <div style={{
+            background: '#1b5a92 url(/amira-background.png) center/cover no-repeat',
+            borderRadius: '24px',
+            paddingTop: '3.5rem',
+            boxShadow: '0 20px 60px rgba(27, 90, 146, 0.3)',
+            textAlign: 'center',
+            maxWidth: '960px',
+            margin: '0 auto',
+            overflow: 'hidden'
+          }}>
+            <div style={{ padding: '0 2.5rem' }}>
+              <span className={styles.eyebrow} style={{ color: '#10b981', fontWeight: 800 }}>THE AMIRA SOLUTION</span>
+              <h2 className={styles.sectionTitle} style={{ color: '#ffffff', marginTop: '0.5rem' }}>Meet your AI Customer Support Agent.</h2>
+              <p className={styles.sectionSub} style={{ color: 'rgba(255, 255, 255, 0.85)', margin: '0.75rem auto 2rem auto', maxWidth: '720px' }}>
+                Amira gives you an AI-powered support agent that can understand your customers, respond naturally, take action, and resolve issues around the clock.
+              </p>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem', marginTop: '1.5rem', marginBottom: '2rem' }}>
+                <div style={{ padding: '1.25rem', backgroundColor: '#ffffff', borderRadius: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                  <div style={{ width: '38px', height: '38px', borderRadius: '10px', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <GlowIcon name="message-square-outline" size={20} color="#1b5a92" />
+                  </div>
+                  <p style={{ fontSize: '15px', fontWeight: 750, color: '#1b5a92', margin: 0, textAlign: 'left' }}>Let AI handle the conversations.</p>
+                </div>
+                <div style={{ padding: '1.25rem', backgroundColor: '#ffffff', borderRadius: '14px', boxShadow: '0 4px 16px rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                  <div style={{ width: '38px', height: '38px', borderRadius: '10px', backgroundColor: '#10b98115', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <GlowIcon name="users-outline" size={20} color="#10b981" />
+                  </div>
+                  <p style={{ fontSize: '15px', fontWeight: 750, color: '#047857', margin: 0, textAlign: 'left' }}>Let your team handle what matters.</p>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '2.5rem' }}>
+                <a href="/dashboard/v3/outreach" className={styles.btnPrimary} style={{ backgroundColor: '#10b981', color: '#ffffff', padding: '0.9rem 2rem', fontSize: '16px' }}>
+                  Create Your AI Agent
+                  <ArrowRight size={18} />
+                </a>
+              </div>
+            </div>
+
+            {/* Amira 24:7 Image flush to left, right & bottom edges */}
+            <div style={{ width: '100%', margin: 0, padding: 0, lineHeight: 0 }}>
+              <ScrollReveal direction="up" distance={90} duration={1.0}>
+                <img 
+                  src="/amira-247.png" 
+                  alt="Meet your AI Customer Support Agent - Amira 24/7 Solution" 
+                  style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'contain' }} 
+                />
+              </ScrollReveal>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── SECTION 3 — WHAT AMIRA CAN DO (CORE CAPABILITIES) ──────────────── */}
+      <section className={styles.section} id="capabilities" style={{ backgroundColor: '#ffffff', overflow: 'hidden' }}>
+        <div className={styles.inner}>
+          
+          {/* Single Merged Container with #1b5a92 Background (No Right or Bottom Padding for Image) */}
+          <div style={{
+            background: '#1b5a92 url(/amira-background.png) center/cover no-repeat',
+            borderRadius: '24px',
+            paddingTop: '3rem',
+            paddingLeft: '2.5rem',
+            paddingRight: 0,
+            paddingBottom: 0,
+            boxShadow: '0 20px 60px rgba(27, 90, 146, 0.3)',
+            maxWidth: '1280px',
+            margin: '0 auto',
+            overflow: 'hidden',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+            gap: '2rem',
+            alignItems: 'flex-end'
+          }}>
+            
+            {/* Left Column: Title, Subtitle & 6 Cards Grid */}
+            <div style={{ paddingBottom: '3rem', paddingRight: '1rem' }}>
+              <div style={{ marginBottom: '2rem' }}>
+                <span className={styles.eyebrow} style={{ color: '#10b981', fontWeight: 800 }}>CORE CAPABILITIES</span>
+                <h2 className={styles.sectionTitle} style={{ textAlign: 'left', marginTop: '0.5rem', color: '#ffffff' }}>One AI agent. A whole lot of support.</h2>
+                <p className={styles.sectionSub} style={{ textAlign: 'left', margin: '0.5rem 0 0 0', color: 'rgba(255, 255, 255, 0.85)' }}>Everything your business needs to deliver 24/7 intelligent customer care.</p>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
+                {[
+                  {
+                    icon: "phone-outline",
+                    title: "Answer Every Call",
+                    subtitle: "Never miss another customer call.",
+                    desc: "Amira handles incoming calls, answers questions, collects info, and initiates outbound calls.",
+                    tag: "Inbound + Outbound"
+                  },
+                  {
+                    icon: "message-square-outline",
+                    title: "Chat With Customers Instantly",
+                    subtitle: "Give customers instant answers.",
+                    desc: "Engage customers through website, app, and social channels instantly.",
+                    tag: "Live AI Chat"
+                  },
+                  {
+                    icon: "mail-outline",
+                    title: "Handle Customer Emails",
+                    subtitle: "Stop letting inbox overflow.",
+                    desc: "Reads, understands, and responds to customer emails automatically.",
+                    tag: "AI Email Support"
+                  },
+                  {
+                    icon: "doc-outline",
+                    title: "Process Documents",
+                    subtitle: "Automate document workflows.",
+                    desc: "Processes customer documents for onboarding, verification, and support.",
+                    tag: "Document Processing"
+                  },
+                  {
+                    icon: "chartbar-outline",
+                    title: "Capture Customer Information",
+                    subtitle: "Turn conversations into data.",
+                    desc: "Collects key customer info automatically to help your team deliver better service.",
+                    tag: "Data Capture"
+                  },
+                  {
+                    icon: "tag-outline",
+                    title: "Track Support Tickets",
+                    subtitle: "Centralized visibility.",
+                    desc: "Track conversations and support tickets from one place with complete clarity.",
+                    tag: "Centralized Support"
+                  }
+                ].map(card => (
+                  <div key={card.title} className={styles.hoverCard} style={{
+                    backgroundColor: '#ffffff', borderRadius: '16px', padding: '1.35rem',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
+                    display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '0.75rem'
+                  }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: '#f1f5f9', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <GlowIcon name={card.icon} size={22} color="#1b5a92" />
+                        </div>
+                        <span style={{ fontSize: '11px', fontWeight: 700, padding: '3px 10px', borderRadius: '99px', backgroundColor: '#10b98115', color: '#047857', border: '1px solid #10b98130' }}>
+                          {card.tag}
+                        </span>
+                      </div>
+                      <h3 style={{ fontSize: '16.5px', fontWeight: 800, color: '#1b5a92', margin: 0 }}>{card.title}</h3>
+                      <p style={{ fontSize: '13px', fontWeight: 650, color: '#10b981', margin: '0.25rem 0 0.35rem 0' }}>{card.subtitle}</p>
+                      <p style={{ fontSize: '13.5px', color: '#475569', lineHeight: 1.5, margin: 0 }}>{card.desc}</p>
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
-            <style>{`@keyframes amiraTicker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }`}</style>
+
+            {/* Right Column: Image Container (Flush against right edge 0 paddingRight and bottom edge 0 paddingBottom) */}
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end', height: '100%', margin: 0, padding: 0, lineHeight: 0 }}>
+              <ScrollReveal direction="up" distance={90} duration={1.0}>
+                <img
+                  src="/amiratea.png"
+                  alt="Amira AI Core Capabilities - Amiratea"
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    maxHeight: '620px',
+                    objectFit: 'contain',
+                    display: 'block',
+                    margin: 0,
+                    padding: 0
+                  }}
+                />
+              </ScrollReveal>
+            </div>
+
           </div>
         </div>
       </section>
 
-      {/* INTERACTIVE CALL PLAYER / SCENARIO SANDBOX */}
-      <section className={styles.demoPlayground} id="interactive-demo">
-        <div className={styles.sectionHeaderCentered}>
-          <span className={styles.sectionTag}>Live Interaction</span>
-          <h2 className={styles.sectionTitle}>Listen to Amira Resolve a Call</h2>
-          <p className={styles.sectionSubtitle}>
-            Choose a scenario below to hear how Amira interfaces with backend systems to solve real inquiries.
-          </p>
-        </div>
-
-        <div className={styles.playerWrapper}>
-          <div className={styles.scenarioSelector}>
-            <button 
-              className={`${styles.scenarioTab} ${demoScenario === "hvac" ? styles.scenarioTabActive : ""}`}
-              onClick={() => handleSelectScenario("hvac")}
-            >
-              🔥 HVAC Emergency Dispatch
-            </button>
-            <button 
-              className={`${styles.scenarioTab} ${demoScenario === "plumbing" ? styles.scenarioTabActive : ""}`}
-              onClick={() => handleSelectScenario("plumbing")}
-            >
-              🚰 Plumbing Scheduling
-            </button>
+      {/* ── SECTION 4 — MULTI-CHANNEL ─────────────────────────────────────────── */}
+      <section className={styles.section} id="multichannel" style={{ background: '#ffffff', padding: '5rem 0 3rem 0' }}>
+        <div className={styles.inner} style={{ maxWidth: '1080px', textAlign: 'center' }}>
+          <div className={styles.sectionHeader} style={{ marginBottom: '2rem' }}>
+            <span className={styles.eyebrow} style={{ color: '#10b981', fontWeight: 800 }}>MULTI-CHANNEL COVERAGE</span>
+            <h2 className={styles.sectionTitle} style={{ color: '#0f172a', marginTop: '0.5rem' }}>
+              Meet your customers wherever they are.
+            </h2>
+            <p className={styles.sectionSub} style={{ color: '#475569', margin: '0.75rem auto 2rem auto', maxWidth: '720px' }}>
+              Your customers don't communicate in just one place. Neither should your support team.
+            </p>
           </div>
 
-          <div className={styles.audioPlayer}>
-            <div className={styles.playerControls}>
-              <button className={styles.playBtn} onClick={handleTogglePlay}>
-                {isPlayingCall ? "⏸ Pause Call" : "▶ Play Call"}
-              </button>
-              <button className={styles.resetBtn} onClick={handleResetCall}>
-                ↺ Reset
-              </button>
-              <div className={styles.timeDisplay}>
-                0:{playbackTime.toString().padStart(2, "0")} / 0:{maxCallTime.toString().padStart(2, "0")}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, minmax(140px, 210px))',
+            gap: '1.15rem',
+            justifyContent: 'center',
+            maxWidth: '720px',
+            margin: '0 auto 2.5rem auto'
+          }}>
+            {[
+              { label: "Phone", icon: "phone-outline" },
+              { label: "Website", icon: "desktop-outline" },
+              { label: "WhatsApp", icon: "message-circle-outline" },
+              { label: "Email", icon: "mail-outline" },
+              { label: "App", icon: "layers-outline" },
+              { label: "Social", icon: "users-outline" }
+            ].map(ch => (
+              <div key={ch.label} className={styles.hoverCard} style={{
+                padding: '0.85rem 1.5rem', borderRadius: '12px', backgroundColor: '#ffffff',
+                border: '1.5px solid #1b5a9230', boxShadow: '0 4px 16px rgba(0,0,0,0.04)',
+                fontSize: '15.5px', fontWeight: 750, color: '#1b5a92', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.65rem',
+                cursor: 'pointer'
+              }}>
+                <GlowIcon name={ch.icon} size={18} color="#10b981" />
+                <span>{ch.label}</span>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <p style={{ fontSize: '22px', fontWeight: 800, color: '#0f172a', margin: 0 }}>
+              One AI workforce. <span style={{ color: '#10b981' }}>One customer experience.</span>
+            </p>
+          </div>
+
+          {/* Amirafans Graphic — No background image or container wrapper */}
+          <div style={{ width: '100%', margin: '0 auto', textAlign: 'center' }}>
+            <ScrollReveal direction="up" distance={80} duration={0.9}>
+              <img 
+                src="/amira-fans.png" 
+                alt="Meet your customers wherever they are - Amira Fans Omnichannel Support" 
+                style={{ width: '100%', maxWidth: '1020px', height: 'auto', display: 'block', margin: '0 auto', borderRadius: '16px' }} 
+              />
+            </ScrollReveal>
+          </div>
+        </div>
+      </section>
+
+      {/* ── SECTION 5 — INTEGRATIONS ──────────────────────────────────────────── */}
+      <section className={styles.section} id="integrations" style={{ background: "#ffffff", color: "var(--text-primary)", padding: "5rem 1.5rem" }}>
+        <div className={styles.inner} style={{ maxWidth: '960px' }}>
+          
+          {/* Single Merged Container with #1b5a92 Background */}
+          <div style={{
+            background: '#1b5a92 url(/amira-background.png) center/cover no-repeat',
+            borderRadius: '24px',
+            padding: '3.5rem 2.5rem',
+            boxShadow: '0 20px 60px rgba(27, 90, 146, 0.3)',
+            maxWidth: '960px',
+            margin: '0 auto',
+            textAlign: 'center',
+            color: '#ffffff'
+          }}>
+            <div className={styles.sectionHeader} style={{ marginBottom: '2.5rem' }}>
+              <span className={styles.eyebrow} style={{ color: "#10b981", fontWeight: 800 }}>1000+ INTEGRATIONS</span>
+              <h2 className={styles.sectionTitle} style={{ color: "#ffffff", marginTop: '0.5rem' }}>
+                Your AI agent should work with your business — not around it.
+              </h2>
+              <p className={styles.sectionSub} style={{ color: "rgba(255, 255, 255, 0.85)", margin: '0.75rem auto 0 auto', maxWidth: '720px' }}>
+                Connect Amira to the tools your team already uses. Your AI agent can access the information and systems it needs to provide faster, more accurate support.
+              </p>
+            </div>
+
+            {/* Interactive Step Cards with Child Hover Animations */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '2.5rem' }}>
+              {[
+                { step: "0", num: "STEP 01", title: "Connect your tools.", desc: "Link CRM, Helpdesk, Slack & Email" },
+                { step: "1", num: "STEP 02", title: "Give your AI context.", desc: "Upload docs, APIs & custom rules" },
+                { step: "2", num: "STEP 03", title: "Let it take action.", desc: "Auto-resolve tickets 24/7" }
+              ].map((st, i) => (
+                <div
+                  key={st.num}
+                  onClick={() => setActiveStep(i)}
+                  className={styles.stepCard}
+                  style={{
+                    backgroundColor: activeStep === i ? 'rgba(16, 185, 129, 0.18)' : 'rgba(255, 255, 255, 0.08)',
+                    borderRadius: '16px',
+                    padding: '1.35rem 1.15rem',
+                    border: activeStep === i ? '2px solid #10b981' : '1px solid rgba(255, 255, 255, 0.18)',
+                    boxShadow: activeStep === i ? '0 10px 30px rgba(16, 185, 129, 0.35)' : '0 4px 16px rgba(0, 0, 0, 0.1)',
+                    textAlign: 'center'
+                  }}
+                >
+                  <span style={{ fontSize: '11.5px', fontWeight: 850, color: activeStep === i ? '#10b981' : '#a7f3d0', display: 'block', marginBottom: '0.35rem', letterSpacing: '0.05em' }}>{st.num}</span>
+                  <p style={{ fontSize: '16px', fontWeight: 800, color: '#ffffff', margin: '0 0 0.25rem 0' }}>{st.title}</p>
+                  <span style={{ fontSize: '12.5px', color: 'rgba(255,255,255,0.75)', display: 'block' }}>{st.desc}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Amira Integrations Banner Showcase with Mouse Distance-Based Zoom Out Effect */}
+            <div
+              onMouseMove={handleOrbitMouseMove}
+              onMouseLeave={handleOrbitMouseLeave}
+              className={styles.orbitContainer}
+              style={{
+                width: '100%',
+                borderRadius: '20px',
+                overflow: 'hidden',
+                border: '1.5px solid rgba(16, 185, 129, 0.35)',
+                backgroundColor: '#0a0c16',
+                padding: '1.75rem',
+                marginBottom: '2.5rem',
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)',
+                cursor: 'crosshair'
+              }}
+            >
+              <ScrollReveal direction="up" distance={70} duration={0.9}>
+                <img 
+                  src="/amira-integrations-banner.png" 
+                  alt="Amira 1000+ Integrations Ecosystem" 
+                  style={{ 
+                    width: '100%', 
+                    maxHeight: '480px', 
+                    objectFit: 'contain', 
+                    borderRadius: '14px',
+                    display: 'block',
+                    transform: `scale(${orbitZoomScale})`,
+                    transition: 'transform 0.15s cubic-bezier(0.16, 1, 0.3, 1)'
+                  }} 
+                />
+              </ScrollReveal>
+            </div>
+
+            <div style={{ textAlign: 'center' }}>
+              <a href="/dashboard/v3/integrations" className={`${styles.btnPrimary} ${styles.hoverButton}`} style={{
+                backgroundColor: '#10b981', color: '#ffffff', padding: '0.9rem 2rem', fontSize: '15px', fontWeight: 800,
+                boxShadow: '0 6px 20px rgba(16, 185, 129, 0.4)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.6rem'
+              }}>
+                <span>Explore 1,000+ Integrations</span>
+                <ArrowRight size={18} />
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ── SECTION 6 — HUMAN-LIKE CONVERSATIONS ───────────────────────────── */}
+      <section className={styles.section} style={{ background: '#ffffff' }}>
+        <div className={styles.inner} style={{ maxWidth: '960px', textAlign: 'center' }}>
+
+          {/* Single Merged Container with #1b5a92 Background (No Left/Right/Bottom Padding for Image) */}
+          <div style={{
+            background: '#1b5a92 url(/amira-background.png) center/cover no-repeat',
+            borderRadius: '24px',
+            paddingTop: '3.5rem',
+            boxShadow: '0 20px 60px rgba(27, 90, 146, 0.3)',
+            maxWidth: '960px',
+            margin: '0 auto',
+            overflow: 'hidden'
+          }}>
+            <div style={{ padding: '0 2.5rem', marginBottom: '2.5rem' }}>
+              <span className={styles.eyebrow} style={{ color: '#10b981', fontWeight: 800 }}>CONVERSATIONAL INTELLIGENCE</span>
+              <h2 className={styles.sectionTitle} style={{ color: '#ffffff', marginTop: '0.5rem' }}>
+                AI that actually feels conversational.
+              </h2>
+              <p className={styles.sectionSub} style={{ color: 'rgba(255, 255, 255, 0.85)', margin: '0.75rem auto 2.5rem auto', maxWidth: '720px' }}>
+                Customers shouldn't feel like they're talking to a machine. Amira is designed to understand conversations, respond naturally, and keep interactions moving toward a resolution.
+              </p>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+              {[
+                { icon: "phone-outline", title: "Listen" },
+                { icon: "compass-outline", title: "Understand" },
+                { icon: "message-circle-outline", title: "Respond" },
+                { icon: "checkmark-circle-outline", title: "Resolve" }
+              ].map((item, idx) => (
+                <div key={item.title} className={styles.hoverCard} style={{
+                  backgroundColor: '#ffffff', borderRadius: '14px', padding: '1.25rem',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.06)', textAlign: 'center',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem'
+                }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: '#10b98115', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <GlowIcon name={item.icon} size={20} color="#10b981" />
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '11px', fontWeight: 800, color: '#1b5a92', display: 'block', marginBottom: '0.15rem' }}>PHASE 0{idx + 1}</span>
+                    <p style={{ fontSize: '17px', fontWeight: 800, color: '#0f172a', margin: 0 }}>{item.title}</p>
+                  </div>
+                </div>
+              ))}
               </div>
             </div>
 
-            {/* Moving wave animation when playing */}
-            <div className={styles.waveVisualizer}>
-              <div className={`${styles.waveBar} ${isPlayingCall ? styles.waveBarPlay : ""}`} style={{ animationDelay: "0.1s" }} />
-              <div className={`${styles.waveBar} ${isPlayingCall ? styles.waveBarPlay : ""}`} style={{ animationDelay: "0.4s" }} />
-              <div className={`${styles.waveBar} ${isPlayingCall ? styles.waveBarPlay : ""}`} style={{ animationDelay: "0.2s" }} />
-              <div className={`${styles.waveBar} ${isPlayingCall ? styles.waveBarPlay : ""}`} style={{ animationDelay: "0.6s" }} />
-              <div className={`${styles.waveBar} ${isPlayingCall ? styles.waveBarPlay : ""}`} style={{ animationDelay: "0.3s" }} />
-              <div className={`${styles.waveBar} ${isPlayingCall ? styles.waveBarPlay : ""}`} style={{ animationDelay: "0.8s" }} />
-              <div className={`${styles.waveBar} ${isPlayingCall ? styles.waveBarPlay : ""}`} style={{ animationDelay: "0.5s" }} />
-            </div>
-
-            {/* Scrollable conversation transcript */}
-            <div className={styles.transcriptView}>
-              {transcriptIndex === -1 ? (
-                <div className={styles.transcriptPlaceholder}>
-                  Click Play Call to hear the simulated conversation.
-                </div>
-              ) : (
-                <div className={styles.transcriptBubbles}>
-                  {dialogue.slice(0, transcriptIndex + 1).map((item, idx) => (
-                    <div 
-                      key={idx} 
-                      className={`${styles.bubble} ${
-                        item.sender === "ai" ? styles.bubbleAi : item.sender === "system" ? styles.bubbleSys : styles.bubbleUser
-                      }`}
-                    >
-                      <div className={styles.bubbleSender}>
-                        {item.sender === "ai" ? "Amira (AI Agent)" : item.sender === "system" ? "Backend System" : "Customer"}
-                      </div>
-                      <div className={styles.bubbleText}>{item.text}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
+            {/* Aira Convo Showcase Image (Flush to left, right & bottom edges) */}
+            <div style={{ width: '100%', margin: 0, padding: 0, lineHeight: 0 }}>
+              <ScrollReveal direction="up" distance={90} duration={1.0}>
+                <img 
+                  src="/amira-convo.png" 
+                  alt="AI that actually feels conversational - Amira Convo" 
+                  style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'contain' }} 
+                />
+              </ScrollReveal>
             </div>
           </div>
         </div>
       </section>
 
-      {/* PRICING SECTION */}
-      <section className={styles.pricing} id="pricing">
-        <div className={styles.sectionHeaderCentered}>
-          <span className={styles.sectionTag}>Pricing Plans</span>
-          <h2 className={styles.sectionTitle}>Scale at Your Own Pace</h2>
-          <p className={styles.sectionSubtitle}>
-            Transparent, flexible billing based on call volume. Upgrade or cancel anytime.
-          </p>
-
-          <div className={styles.toggleContainer}>
-            <button 
-              className={`${styles.toggleBtn} ${activePlan === "monthly" ? styles.toggleActive : ""}`}
-              onClick={() => setActivePlan("monthly")}
-            >
-              Billed Monthly
-            </button>
-            <button 
-              className={`${styles.toggleBtn} ${activePlan === "annually" ? styles.toggleActive : ""}`}
-              onClick={() => setActivePlan("annually")}
-            >
-              Billed Annually <span className={styles.discountBadge}>Save 20%</span>
-            </button>
-          </div>
-        </div>
-
-        <div className={styles.pricingGrid}>
-          {/* STARTER */}
-          <div className={styles.pricingCard}>
-            <h4 className={styles.planName}>Starter</h4>
-            <p className={styles.planDesc}>Perfect for solo operators and small projects testing out AI voice support.</p>
-            <div className={styles.planPrice}>
-              <LocalPrice basePriceUsd={activePlan === "monthly" ? 49 : 39} /><span>/mo</span>
-            </div>
-            <p className={styles.planPeriod}>Billed {activePlan}</p>
-            
-            <ul className={styles.planFeatures}>
-              <li><Check className={styles.planFeatureIcon} /> 500 call minutes included</li>
-              <li><Check className={styles.planFeatureIcon} /> 1 custom AI phone line</li>
-              <li><Check className={styles.planFeatureIcon} /> Knowledge base training (up to 5MB)</li>
-              <li><Check className={styles.planFeatureIcon} /> Basic dashboard logs &amp; analytics</li>
-              <li><Check className={styles.planFeatureIcon} /> Webhooks &amp; email support</li>
-            </ul>
-
-            <a href="/dashboard" className={`${styles.btnPlan} ${styles.btnPlanOutline}`}>Start Free Trial</a>
+      {/* ── SECTION 7 — PRICING TABLE ───────────────────────────────────────── */}
+      <section className={styles.section} id="pricing" style={{ background: '#ffffff', padding: '5rem 1.5rem' }}>
+        <div className={styles.inner} style={{ maxWidth: '1200px' }}>
+          <div className={styles.sectionHeader} style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+            <span className={styles.eyebrow} style={{ color: '#10b981', fontWeight: 800 }}>PRICING PLANS</span>
+            <h2 className={styles.sectionTitle} style={{ fontSize: 'clamp(2rem, 3.5vw, 2.5rem)', color: '#0f172a', margin: '0.5rem 0' }}>Start small. Scale without limits.</h2>
+            <p className={styles.sectionSub} style={{ fontSize: '16px', color: '#64748b', maxWidth: '680px', margin: '0 auto' }}>
+              Simple, transparent pricing tailored for support teams of every size.
+            </p>
           </div>
 
-          {/* PROFESSIONAL */}
-          <div className={`${styles.pricingCard} ${styles.pricingCardPopular}`}>
-            <div className={styles.popularBadge}>Most Popular</div>
-            <h4 className={styles.planName}>Professional</h4>
-            <p className={styles.planDesc}>Ideal for growing teams automating medium to high voice support volume.</p>
-            <div className={styles.planPrice}>
-              <LocalPrice basePriceUsd={activePlan === "monthly" ? 199 : 159} /><span>/mo</span>
-            </div>
-            <p className={styles.planPeriod}>Billed {activePlan}</p>
-            
-            <ul className={styles.planFeatures}>
-              <li><Check className={styles.planFeatureIcon} /> 3,000 call minutes included</li>
-              <li><Check className={styles.planFeatureIcon} /> 5 custom AI phone lines</li>
-              <li><Check className={styles.planFeatureIcon} /> Unlimited document training space</li>
-              <li><Check className={styles.planFeatureIcon} /> Smart human handoff &amp; escalation</li>
-              <li><Check className={styles.planFeatureIcon} /> Advanced dashboard analytics &amp; CRM</li>
-              <li><Check className={styles.planFeatureIcon} /> Priority customer support</li>
-            </ul>
-
-            <a href="/dashboard" className={`${styles.btnPlan} ${styles.btnPlanFilled}`}>Go Professional</a>
-          </div>
-
-          {/* ENTERPRISE */}
-          <div className={styles.pricingCard}>
-            <h4 className={styles.planName}>Enterprise</h4>
-            <p className={styles.planDesc}>Built for high-scale call centers requiring advanced reliability and security.</p>
-            <div className={styles.planPrice}>
-              Custom
-            </div>
-            <p className={styles.planPeriod}>Tailored options available</p>
-            
-            <ul className={styles.planFeatures}>
-              <li><Check className={styles.planFeatureIcon} /> Unlimited custom call minutes</li>
-              <li><Check className={styles.planFeatureIcon} /> Dedicated infrastructure (SLA guaranteed)</li>
-              <li><Check className={styles.planFeatureIcon} /> Custom voice model fine-tuning</li>
-              <li><Check className={styles.planFeatureIcon} /> Advanced API gateways &amp; webhooks</li>
-              <li><Check className={styles.planFeatureIcon} /> HIPAA &amp; enterprise compliance</li>
-              <li><Check className={styles.planFeatureIcon} /> Dedicated account manager &amp; 24/7 support</li>
-            </ul>
-
-            <a href="/dashboard" className={`${styles.btnPlan} ${styles.btnPlanOutline}`}>Contact Sales</a>
-          </div>
-        </div>
-      </section>
-
-      {/* READY-DEPLOMED AGENT GALLERY */}
-      <section style={{ padding: '5rem 1.5rem', background: 'transparent' }}>
-        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <span className={styles.sectionTag}>Operations Templates</span>
-            <h2 className={styles.sectionTitle} style={{ marginTop: '0.75rem' }}>Deploy a Pre-Trained Operations Agent in Seconds</h2>
-            <p className={styles.sectionSubtitle}>Select a layout pre-configured with the database queries and escalation rules for your exact operations.</p>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: '1.25rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem', alignItems: 'stretch' }}>
             {[
-              { icon: '🚰', name: 'Emergency Plumbing Dispatcher', tag: 'Plumbing', desc: 'Qualifies emergency leaks, processes call-out fees via Stripe, and dispatches plumbers instantly.', stat: '80% dispatch deflection' },
-              { icon: '🔥', name: 'HVAC Repair Scheduler', tag: 'HVAC', desc: 'Checks active technician calendars, triages heating/AC outages, and logs calendar bookings.', stat: '90% scheduling accuracy' },
-              { icon: '⚡', name: 'Electrical Dispatcher', tag: 'Electrical', desc: 'Identifies emergency criteria, pre-authorizes dispatch deposits, and schedules electricians.', stat: '24/7 emergency coverage' },
-              { icon: '🚚', name: 'Tow Truck Coordinator', tag: 'Towing', desc: 'Collects vehicle details and breakdown coordinates, booking towing dispatches on active routes.', stat: 'Under 4 min dispatch time' },
-              { icon: '🔑', name: 'Emergency Locksmith Dispatcher', tag: 'Locksmith', desc: 'Qualifies residential/vehicle lockouts and schedules nearest technician with direct notification.', stat: '95% caller satisfaction' },
-              { icon: '🧹', name: 'Cleaning Services Intake', tag: 'Cleaning', desc: 'Handles regular and deep clean job bookings, collects addresses, and confirms appointments.', stat: '70% reduction in admin cost' },
-            ].map((agent, i) => (
-              <a
-                key={i}
-                href="/login?redirect=/dashboard/ai-agent"
-                style={{ display: 'block', textDecoration: 'none', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', padding: '1.5rem', cursor: 'pointer', transition: 'all 0.22s ease', position: 'relative', overflow: 'hidden' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(76,175,80,0.12)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(76,175,80,0.4)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.1)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}
-              >
-                <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>{agent.icon}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                  <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#ffffff' }}>{agent.name}</h4>
-                  <span style={{ fontSize: '10px', fontWeight: 600, padding: '2px 8px', borderRadius: '999px', background: 'rgba(76,175,80,0.25)', color: '#a5b4fc', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>{agent.tag}</span>
+              {
+                title: "For Small Businesses",
+                price: "$49",
+                period: "/month",
+                desc: "Give your customers enterprise-level support without building a massive support team.",
+                highlight: "More support. Less overhead.",
+                features: [
+                  "500 AI Voice & Chat Minutes/mo",
+                  "1 Active AI Voice Agent",
+                  "Webchat & Phone Channels",
+                  "Basic CRM & Email Sync",
+                  "Standard 24/7 Support"
+                ],
+                popular: false,
+                buttonText: "Start Free Trial",
+                buttonStyle: { backgroundColor: '#1b5a92', color: '#ffffff' },
+                href: "/dashboard/v3/billing"
+              },
+              {
+                title: "For Growing Teams",
+                price: "$149",
+                period: "/month",
+                desc: "Automate repetitive conversations while your human agents focus on complex customer needs.",
+                highlight: "AI handles the volume. Your team handles the important stuff.",
+                features: [
+                  "2,500 AI Voice & Chat Minutes/mo",
+                  "Up to 5 Active AI Voice Agents",
+                  "Voice, WhatsApp, Webchat & Email",
+                  "1,000+ Tool Integrations",
+                  "Realtime Transcripts & Analytics",
+                  "Priority Support"
+                ],
+                popular: true,
+                buttonText: "Get Started with Pro →",
+                buttonStyle: { backgroundColor: '#10b981', color: '#ffffff', boxShadow: '0 4px 14px rgba(16, 185, 129, 0.4)' },
+                href: "/dashboard/v3/billing"
+              },
+              {
+                title: "For Large Support Teams",
+                price: "Custom",
+                period: "",
+                desc: "Deploy AI agents across your customer support operation and handle more conversations without constantly increasing headcount.",
+                highlight: "Scale your support without scaling the workload.",
+                features: [
+                  "Unlimited AI Voice & Chat Volume",
+                  "Unlimited Custom AI Agents",
+                  "Custom Knowledge Base & Webhooks",
+                  "Dedicated Account Manager & SLA",
+                  "Custom CRM & Database Integration"
+                ],
+                popular: false,
+                buttonText: "Contact Sales",
+                buttonStyle: { backgroundColor: '#ffffff', color: '#1b5a92', border: '1.5px solid #1b5a92' },
+                href: "mailto:sales@heyamira.com?subject=Amira%20Enterprise%20Plan%20Inquiry"
+              }
+            ].map(tier => (
+              <div key={tier.title} className={styles.hoverCard} style={{
+                backgroundColor: '#ffffff',
+                borderRadius: '24px',
+                padding: '2.5rem 2rem',
+                border: tier.popular ? '2.5px solid #10b981' : '1px solid #e2e8f0',
+                boxShadow: tier.popular ? '0 12px 40px rgba(16, 185, 129, 0.15)' : '0 4px 20px rgba(0, 0, 0, 0.03)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                gap: '2rem',
+                position: 'relative'
+              }}>
+                {tier.popular && (
+                  <div style={{
+                    position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)',
+                    backgroundColor: '#10b981', color: '#ffffff', fontSize: '11px', fontWeight: 800,
+                    padding: '0.25rem 0.85rem', borderRadius: '99px', letterSpacing: '0.05em', textTransform: 'uppercase'
+                  }}>
+                    MOST POPULAR
+                  </div>
+                )}
+
+                <div>
+                  <h3 style={{ fontSize: '22px', fontWeight: 800, color: '#1b5a92', margin: 0, letterSpacing: '-0.01em' }}>
+                    {tier.title}
+                  </h3>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem', margin: '1rem 0 0.5rem 0' }}>
+                    <span style={{ fontSize: '38px', fontWeight: 850, color: '#0f172a' }}>{tier.price}</span>
+                    <span style={{ fontSize: '14px', color: '#64748b', fontWeight: 600 }}>{tier.period}</span>
+                  </div>
+                  <p style={{ fontSize: '14px', color: '#64748b', lineHeight: 1.5, margin: 0 }}>
+                    {tier.desc}
+                  </p>
+
+                  <div style={{
+                    margin: '1.25rem 0',
+                    padding: '0.85rem 1rem',
+                    backgroundColor: '#f0fdf4',
+                    borderRadius: '12px',
+                    border: '1px solid #bbf7d0'
+                  }}>
+                    <p style={{ fontSize: '13px', fontWeight: 750, color: '#047857', margin: 0, lineHeight: 1.4 }}>
+                      {tier.highlight}
+                    </p>
+                  </div>
+
+                  {/* Feature List */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginTop: '1.5rem', borderTop: '1px solid #f1f5f9', paddingTop: '1.25rem' }}>
+                    {tier.features.map(f => (
+                      <div key={f} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '13.5px', color: '#334155', fontWeight: 500 }}>
+                        <span style={{ color: '#10b981', fontWeight: 800 }}>✓</span>
+                        <span>{f}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <p style={{ margin: '0 0 1rem 0', fontSize: '13px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.6 }}>{agent.desc}</p>
-                <div style={{ fontSize: '12px', fontWeight: 600, color: '#6ee7b7' }}>📈 {agent.stat}</div>
-                <div style={{ position: 'absolute', top: '1rem', right: '1rem', fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: 500 }}>Deploy →</div>
-              </a>
+
+                <a href={tier.href} className={styles.btnPrimary} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  padding: '0.85rem 1.5rem', borderRadius: '12px', fontSize: '14.5px', fontWeight: 750,
+                  textDecoration: 'none', textAlign: 'center', ...tier.buttonStyle
+                }}>
+                  {tier.buttonText}
+                </a>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* GUARANTEE & CALLOUT */}
-      <section className={styles.testimonials}>
-        <p className={styles.guaranteeText}>
-          🔒 <strong>No Lock-in:</strong> Cancel anytime. If Amira doesn't capture missed dispatch leads and book more trade jobs in 30 days, we'll refund you in full.
-        </p>
+      {/* ── SECTION 8 — 4-SECOND AUTO-TOGGLING CAROUSEL CARD ────────────────── */}
+      <section className={styles.section} id="benefits" style={{ background: '#ffffff' }}>
+        <div className={styles.inner}>
+
+          {/* Single Merged Container with amira-background.png */}
+          <div style={{
+            background: '#1b5a92 url(/amira-background.png) center/cover no-repeat',
+            borderRadius: '24px',
+            paddingTop: '3.5rem',
+            boxShadow: '0 20px 60px rgba(27, 90, 146, 0.3)',
+            maxWidth: '960px',
+            margin: '0 auto',
+            overflow: 'hidden',
+            textAlign: 'center',
+            position: 'relative'
+          }}>
+
+            {/* Interactive Manual Toggle Tabs */}
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem', padding: '0 1.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'rgba(0, 0, 0, 0.25)', backdropFilter: 'blur(10px)', padding: '5px', borderRadius: '99px', border: '1px solid rgba(255, 255, 255, 0.15)' }}>
+                <button
+                  onClick={() => handleTabChange(0)}
+                  style={{
+                    padding: '0.6rem 1.4rem',
+                    borderRadius: '99px',
+                    border: 'none',
+                    backgroundColor: carouselIndex === 0 ? '#10b981' : 'transparent',
+                    color: '#ffffff',
+                    fontSize: '13.5px',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    transition: 'all 0.25s ease',
+                    boxShadow: carouselIndex === 0 ? '0 4px 16px rgba(16, 185, 129, 0.45)' : 'none'
+                  }}
+                >
+                  WITH AMIRA
+                </button>
+                <button
+                  onClick={() => handleTabChange(1)}
+                  style={{
+                    padding: '0.6rem 1.4rem',
+                    borderRadius: '99px',
+                    border: 'none',
+                    backgroundColor: carouselIndex === 1 ? '#ef4444' : 'transparent',
+                    color: '#ffffff',
+                    fontSize: '13.5px',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    transition: 'all 0.25s ease',
+                    boxShadow: carouselIndex === 1 ? '0 4px 16px rgba(239, 68, 68, 0.45)' : 'none'
+                  }}
+                >
+                  WITHOUT AMIRA
+                </button>
+              </div>
+            </div>
+
+            {/* Header Content */}
+            <div style={{
+              padding: '0 2.5rem',
+              marginBottom: '2.5rem',
+              opacity: isFading ? 0 : 1,
+              transform: isFading ? 'translateY(8px)' : 'translateY(0)',
+              transition: 'opacity 0.25s ease, transform 0.25s ease'
+            }}>
+              <span className={styles.eyebrow} style={{ color: carouselIndex === 0 ? '#10b981' : '#f59e0b', fontWeight: 800, transition: 'color 0.3s ease' }}>
+                {carouselIndex === 0 ? 'MEASURABLE RESULTS' : 'THE TRADITIONAL REALITY'}
+              </span>
+              <h2 className={styles.sectionTitle} style={{ color: '#ffffff', marginTop: '0.5rem', marginBottom: 0, fontSize: 'clamp(1.85rem, 3.5vw, 2.5rem)' }}>
+                {carouselIndex === 0 ? 'What happens when your support runs on Amira?' : 'What happens when you support WITHOUT Amira?'}
+              </h2>
+            </div>
+
+            {/* Centered Cards Grid */}
+            <div style={{
+              padding: '0 2.5rem',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+              justifyContent: 'center',
+              gap: '1.25rem',
+              marginBottom: '2.5rem',
+              opacity: isFading ? 0 : 1,
+              transform: isFading ? 'translateY(12px) scale(0.98)' : 'translateY(0) scale(1)',
+              transition: 'opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+            }}>
+              {(carouselIndex === 0 ? [
+                { icon: "clock-outline", stat: "Lower Wait Times", desc: "Customers get answers instantly instead of sitting in queues.", accent: "#10b981" },
+                { icon: "emoji-smile-outline", stat: "Higher Satisfaction", desc: "Give customers faster, more consistent support across channels.", accent: "#10b981" },
+                { icon: "sun-outline", stat: "24/7 Availability", desc: "Your support doesn't clock out. Instant resolution overnight.", accent: "#10b981" },
+                { icon: "rotate-cw-outline", stat: "Less Repetitive Work", desc: "Let AI handle the routine questions your team answers every day.", accent: "#10b981" },
+                { icon: "zap-outline", stat: "Boosted Productivity", desc: "Free your human agents to focus on high-value, complex problems.", accent: "#10b981" },
+                { icon: "layers-outline", stat: "Limitless Scalability", desc: "Handle more customers without adding support staff at the same rate.", accent: "#10b981" }
+              ] : [
+                { icon: "phone-missed-outline", stat: "Long Call Queues", desc: "Customers wait 45+ minutes on hold, leading to angry drop-offs.", accent: "#ef4444" },
+                { icon: "emoji-sad-outline", stat: "Customer Frustration", desc: "Inconsistent answers and repeated explanations across agents.", accent: "#ef4444" },
+                { icon: "moon-outline", stat: "Closed After Hours", desc: "Inquiries build up overnight and over weekends with zero response.", accent: "#ef4444" },
+                { icon: "refresh-cw-outline", stat: "Repetitive Fatigue", desc: "Human agents spend 80% of their day answering the same 5 questions.", accent: "#ef4444" },
+                { icon: "flame-outline", stat: "Burnout & Turnover", desc: "Overwhelmed support reps experience high stress and high turnover.", accent: "#ef4444" },
+                { icon: "chart-down-outline", stat: "Skyrocketing Costs", desc: "Scaling support requires hiring, training, and managing massive teams.", accent: "#ef4444" }
+              ]).map(b => (
+                <div key={b.stat} className={styles.hoverCard} style={{
+                  backgroundColor: '#ffffff',
+                  borderRadius: '16px',
+                  padding: '1.5rem',
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+                  textAlign: 'left',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.85rem'
+                }}>
+                  <div style={{
+                    width: '42px', height: '42px', borderRadius: '12px',
+                    backgroundColor: `${b.accent}15`, border: `1px solid ${b.accent}30`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}>
+                    <GlowIcon name={b.icon} size={22} color={b.accent} />
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: '17px', fontWeight: 800, color: '#1b5a92', margin: '0 0 0.35rem 0' }}>{b.stat}</h3>
+                    <p style={{ fontSize: '13.5px', color: '#475569', lineHeight: 1.55, margin: 0 }}>{b.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Alternating Showcase Image Container (Fixed height to prevent container jump) */}
+            <div style={{
+              width: '100%',
+              height: 'clamp(360px, 42vw, 490px)',
+              position: 'relative',
+              overflow: 'hidden',
+              margin: 0,
+              padding: 0,
+              opacity: isFading ? 0 : 1,
+              transform: isFading ? 'scale(0.98)' : 'scale(1)',
+              transition: 'opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+            }}>
+              <img 
+                src={carouselIndex === 0 ? "/amira-happy.png" : "/amira-confused.png"} 
+                alt={carouselIndex === 0 ? "What happens when your support runs on Amira - Amira Happy Customer" : "What happens when you support WITHOUT Amira - Amira Confused Customer"} 
+                style={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover', objectPosition: 'top center' }} 
+              />
+            </div>
+          </div>
+        </div>
       </section>
 
-      {/* FOOTER CTA BANNER */}
-      <section className={styles.footerCtaBanner}>
-        <div className={styles.footerCtaContainer}>
-          <div className={styles.footerCtaLeft}>
-            <h2 className={styles.footerCtaTitle}>Ready to stop missing high-value dispatch calls?</h2>
-            <p className={styles.footerCtaDesc}>
-              Join hundreds of field service managers using Amira to book emergency dispatches, automate schedulers, and capture every lead.
-            </p>
+      {/* ── SECTION 9 — HOW IT WORKS ──────────────────────────────────────────── */}
+      <section className={styles.section} style={{ background: '#ffffff' }}>
+        <div className={styles.inner}>
+          <div className={styles.sectionHeader}>
+            <span className={styles.eyebrow} style={{ color: '#0f172a', fontWeight: 800 }}>SETUP PROCESS</span>
+            <h2 className={styles.sectionTitle}>From setup to support in minutes.</h2>
           </div>
-          <div className={styles.footerCtaRight}>
-            <div className={styles.stripesBurst}>
-              <div className={styles.stripeBar} style={{ transform: 'rotate(12deg) translate(80px, -20px)', width: '130px', height: '24px', backgroundColor: 'rgba(76, 175, 80, 0.9)' }}></div>
-              <div className={styles.stripeBar} style={{ transform: 'rotate(38deg) translate(90px, 10px)', width: '150px', height: '28px', backgroundColor: 'rgba(0, 101, 255, 0.9)' }}></div>
-              <div className={styles.stripeBar} style={{ transform: 'rotate(72deg) translate(100px, 30px)', width: '115px', height: '22px', backgroundColor: 'rgba(76, 175, 80, 0.9)' }}></div>
-              <div className={styles.stripeBar} style={{ transform: 'rotate(108deg) translate(95px, 20px)', width: '140px', height: '26px', backgroundColor: 'rgba(0, 101, 255, 0.9)' }}></div>
-              <div className={styles.stripeBar} style={{ transform: 'rotate(148deg) translate(80px, 0px)', width: '120px', height: '24px', backgroundColor: 'rgba(76, 175, 80, 0.9)' }}></div>
-            </div>
-            
-            <a href="/dashboard" className={styles.beveledCtaBtn}>
-              Start Free — No Card Needed
+
+          <div className={styles.stepsRow}>
+            {[
+              { num: "01", title: "Create Your Agent", desc: "Tell Amira about your business, your customers, and how you want your AI agent to work." },
+              { num: "02", title: "Connect Your Tools", desc: "Connect the platforms and systems your AI agent needs to access." },
+              { num: "03", title: "Choose Your Channels", desc: "Deploy your agent across voice, chat, email, WhatsApp, and more." },
+              { num: "04", title: "Go Live", desc: "Your AI agent starts handling customer conversations around the clock." }
+            ].map((step, i) => (
+              <div key={step.num} className={styles.stepCard}>
+                {i < 3 && <div className={styles.stepConnector} />}
+                <div className={styles.stepNum}>{step.num}</div>
+                <div className={styles.stepTitle}>{step.title}</div>
+                <div className={styles.stepDesc}>{step.desc}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ textAlign: 'center', marginTop: '3rem' }}>
+            <a href="/dashboard/v3/outreach" className={styles.btnPrimary} style={{ backgroundColor: '#10b981', color: '#ffffff', padding: '0.85rem 1.75rem' }}>
+              Create Your AI Agent
+              <ArrowRight size={16} />
             </a>
           </div>
         </div>
       </section>
 
-      {/* FOOTER */}
+      {/* ── SECTION 10 — DIFFERENTIATOR ──────────────────────────────────────── */}
+      <section className={styles.section} style={{ background: '#ffffff' }}>
+        <div className={styles.inner} style={{ maxWidth: '960px', textAlign: 'center' }}>
+
+          {/* Single Merged Container with #1b5a92 Background (No Left/Right/Bottom Padding for Image) */}
+          <div style={{
+            background: '#1b5a92 url(/amira-background.png) center/cover no-repeat',
+            borderRadius: '24px',
+            paddingTop: '3.5rem',
+            boxShadow: '0 20px 60px rgba(27, 90, 146, 0.3)',
+            maxWidth: '960px',
+            margin: '0 auto',
+            overflow: 'hidden'
+          }}>
+            <div style={{ padding: '0 2.5rem', marginBottom: '2.5rem' }}>
+              <span className={styles.eyebrow} style={{ color: '#10b981', fontWeight: 800 }}>THE AMIRA DIFFERENCE</span>
+              <h2 className={styles.sectionTitle} style={{ color: '#ffffff', marginTop: '0.5rem' }}>
+                Stop hiring for every conversation.
+              </h2>
+              <p className={styles.sectionSub} style={{ color: 'rgba(255, 255, 255, 0.85)', margin: '0.75rem auto 2.5rem auto', maxWidth: '720px' }}>
+                Traditional support requires more people every time your customer base grows. Amira gives you an AI workforce that can scale with your business.
+              </p>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+              {[
+                { icon: "chart-up-outline", title: "More conversations." },
+                { icon: "clock-outline", title: "More availability." },
+                { icon: "shield-outline", title: "More consistency." },
+                { icon: "zap-outline", title: "Less repetitive work." }
+              ].map(item => (
+                <div key={item.title} className={styles.hoverCard} style={{
+                  padding: '1.25rem', backgroundColor: '#ffffff', borderRadius: '14px',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', gap: '0.75rem'
+                }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: '#10b98115', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <GlowIcon name={item.icon} size={20} color="#10b981" />
+                  </div>
+                  <span style={{ fontSize: '14.5px', fontWeight: 750, color: '#1b5a92', textAlign: 'left' }}>
+                    {item.title}
+                  </span>
+                </div>
+              ))}
+              </div>
+            </div>
+
+            {/* Amirascale Showcase Image (Flush to left, right & bottom edges) */}
+            <div style={{ width: '100%', margin: 0, padding: 0, lineHeight: 0 }}>
+              <ScrollReveal direction="up" distance={90} duration={1.0}>
+                <img 
+                  src="/amirascale.png" 
+                  alt="Stop hiring for every conversation - Amira Scale" 
+                  style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'contain' }} 
+                />
+              </ScrollReveal>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── SECTION 11 — USE CASES ────────────────────────────────────────────── */}
+      <section className={styles.section} id="usecases" style={{ background: '#ffffff' }}>
+        <div className={styles.inner}>
+          <div className={styles.sectionHeader}>
+            <span className={styles.eyebrow} style={{ color: '#0f172a', fontWeight: 800 }}>USE CASES</span>
+            <h2 className={styles.sectionTitle}>Built for the conversations your business has every day.</h2>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+            {[
+              { title: "Customer Support", desc: "Answer questions and resolve common customer issues instantly." },
+              { title: "Sales & Prospecting", desc: "Qualify leads, answer product questions, and follow up with prospects." },
+              { title: "Customer Onboarding", desc: "Collect information, process documents, and guide customers through setup." },
+              { title: "Technical Support", desc: "Help customers troubleshoot issues and provide first-line technical assistance." },
+              { title: "Appointment & Booking Support", desc: "Handle inquiries, confirmations, reminders, and scheduling conversations." },
+              { title: "Customer Feedback", desc: "Collect feedback and understand what your customers are saying." }
+            ].map(uc => (
+              <div key={uc.title} style={{
+                backgroundColor: '#ffffff', borderRadius: '16px', padding: '1.75rem',
+                border: '1px solid var(--border-subtle)', boxShadow: '0 2px 10px rgba(0,0,0,0.03)'
+              }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 750, color: '#1b5a92', margin: 0 }}>{uc.title}</h3>
+                <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.6, marginTop: '0.5rem' }}>{uc.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── SECTION 12 — SECURITY / TRUST ────────────────────────────────────── */}
+      <section className={styles.section} style={{ background: '#ffffff' }}>
+        <div className={styles.inner} style={{ maxWidth: '960px', textAlign: 'center' }}>
+
+          {/* Single Merged Container with #1b5a92 Background (No Left/Right/Bottom Padding for Image) */}
+          <div style={{
+            background: '#1b5a92 url(/amira-background.png) center/cover no-repeat',
+            borderRadius: '24px',
+            paddingTop: '3.5rem',
+            boxShadow: '0 20px 60px rgba(27, 90, 146, 0.3)',
+            maxWidth: '960px',
+            margin: '0 auto',
+            overflow: 'hidden'
+          }}>
+            <div style={{ padding: '0 2.5rem', marginBottom: '2.5rem' }}>
+              <span className={styles.eyebrow} style={{ color: '#10b981', fontWeight: 800 }}>SECURITY & COMPLIANCE</span>
+              <h2 className={styles.sectionTitle} style={{ color: '#ffffff', marginTop: '0.5rem' }}>
+                AI support you can trust.
+              </h2>
+              <p className={styles.sectionSub} style={{ color: 'rgba(255, 255, 255, 0.85)', margin: '0.75rem auto 2rem auto', maxWidth: '720px' }}>
+                Your customers are trusting you with their questions, information, and conversations. Amira is built to help businesses deliver reliable, consistent customer experiences while keeping your support operation organized and under control.
+              </p>
+
+              <div style={{
+                padding: '1.5rem 2.25rem', backgroundColor: '#ffffff', borderRadius: '16px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)', display: 'inline-flex', alignItems: 'center', gap: '0.85rem'
+              }}>
+                <GlowIcon name="shield-outline" size={24} color="#1b5a92" />
+                <p style={{ fontSize: '19px', fontWeight: 800, color: '#1b5a92', margin: 0 }}>
+                  Your customers. <span style={{ color: '#10b981' }}>Your data.</span> Your AI workforce.
+                </p>
+              </div>
+            </div>
+
+            {/* Amiratrust Showcase Image (Flush to left, right & bottom edges) */}
+            <div style={{ width: '100%', margin: 0, padding: 0, lineHeight: 0 }}>
+              <ScrollReveal direction="up" distance={90} duration={1.0}>
+                <img 
+                  src="/amira-trust.png" 
+                  alt="AI support you can trust - Amira Trust & Security" 
+                  style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'contain' }} 
+                />
+              </ScrollReveal>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FINAL CTA ────────────────────────────────────────────────────────── */}
+      <section className={styles.ctaSection} style={{ background: '#1b5a92 url(/amira-background.png) center/cover no-repeat', color: '#ffffff', padding: '6rem 1.5rem' }}>
+        <div className={styles.ctaInner} style={{ maxWidth: '800px', textAlign: 'center', margin: '0 auto' }}>
+          <span className={styles.eyebrow} style={{ color: '#10b981', fontWeight: 800 }}>YOUR CUSTOMERS ARE WAITING</span>
+          <h2 className={styles.ctaTitle} style={{ fontSize: 'clamp(2.25rem, 4.5vw, 3.25rem)', color: '#ffffff', marginTop: '0.5rem' }}>
+            Put your customer support on autopilot.
+          </h2>
+          <p className={styles.ctaSub} style={{ color: 'rgba(255,255,255,0.8)', fontSize: '17px', lineHeight: 1.6, margin: '1rem 0 2rem 0' }}>
+            Don't make them wait for an answer. Deploy an AI customer support agent that works <strong>24/7, across every channel, and at the speed your customers expect.</strong>
+          </p>
+
+          <p style={{ fontSize: '20px', fontWeight: 800, color: '#10b981', marginBottom: '2rem' }}>
+            Focus on what matters. Let AI handle the rest.
+          </p>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+            <a href="/dashboard/v3/outreach" className={styles.btnPrimary} style={{ backgroundColor: '#10b981', color: '#ffffff', padding: '0.95rem 2rem', fontSize: '16.5px' }}>
+              Get Started
+              <ArrowRight size={18} />
+            </a>
+            <a href="/login" className={styles.btnSecondary} style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.25)', padding: '0.95rem 2rem', fontSize: '16.5px' }}>
+              Talk to Us
+            </a>
+          </div>
+
+          <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', marginTop: '1.5rem' }}>
+            No complicated setup. No massive support team required.
+          </p>
+        </div>
+      </section>
+
+      {/* ── FOOTER ───────────────────────────────────────────────────────────── */}
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
           <div className={styles.footerBrand}>
-            <div className={styles.footerBrandName}>
-              <AmiraLogo size={32} className={styles.footerLogoImg} />
+            <div className={styles.footerLogoRow}>
+              <img src="/amira-logo-footer.svg" alt="Amira AI" style={{ height: '26px', width: 'auto' }} />
             </div>
-            <p className={styles.footerBrandDesc}>
-              The AI dispatching platform that schedules trade service calls, charges booking deposits, and dispatches technicians 24/7.
-            </p>
-            {/* Language Switcher */}
-            <div style={{ position: 'relative', display: 'inline-block', marginTop: '1.25rem' }}>
-              <button 
-                onClick={() => setShowLangMenu(!showLangMenu)}
-                className={styles.langBtn}
-              >
-                <span style={{ fontSize: '15px' }}>
-                  {languagesList.find(l => l.code === currentLang)?.flag || '🇺🇸'}
-                </span>
-                <span>
-                  {languagesList.find(l => l.code === currentLang)?.label || 'English'}
-                </span>
-                <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.6)' }}>▼</span>
-              </button>
-              
-              {showLangMenu && (
-                <div className={styles.langMenu}>
-                  {languagesList.map(lang => (
-                    <button
-                      key={lang.code}
-                      onClick={() => {
-                        changeLanguage(lang.code);
-                        setShowLangMenu(false);
-                      }}
-                      className={`${styles.langMenuItem} ${currentLang === lang.code ? styles.langMenuItemActive : ""}`}
-                    >
-                      <span style={{ fontSize: '14px' }}>{lang.flag}</span>
-                      <span>{lang.label}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
+            <p className={styles.footerDesc}>Amira AI — Your AI Customer Support Workforce. 24/7 support across calls, chats, emails, and tickets.</p>
+          </div>
+          {[
+            { heading: "Product", links: ["Capabilities", "Multi-Channel", "Integrations", "Use Cases", "Benefits"] },
+            { heading: "Company", links: ["About", "Security", "Contact", "Privacy"] },
+            { heading: "Support", links: ["Documentation", "Community", "Status"] },
+          ].map(col => (
+            <div key={col.heading} className={styles.footerCol}>
+              <h4 className={styles.footerColHead}>{col.heading}</h4>
+              <ul className={styles.footerColLinks}>
+                {col.links.map(l => <li key={l}><a href="#" className={styles.footerLink}>{l}</a></li>)}
+              </ul>
             </div>
-          </div>
-
-          <div className={styles.footerCol}>
-            <h4>Product</h4>
-            <ul>
-              <li><a href="#problem">Repetitive Calls</a></li>
-              <li><a href="#workflow">How It Works</a></li>
-              <li><a href="#pricing">Pricing</a></li>
-              <li><a href="#interactive-demo">Listen to Call</a></li>
-            </ul>
-          </div>
-
-          <div className={styles.footerCol}>
-            <h4>Company</h4>
-            <ul>
-              <li><a href="#">Careers</a></li>
-              <li><a href="#">Security</a></li>
-              <li><a href="#">Contact Support</a></li>
-            </ul>
-          </div>
-
-          <div className={styles.footerCol}>
-            <h4>Contact Us</h4>
-            <ul>
-              <li><a href="mailto:support@amirapro.com">Email: support@amirapro.com</a></li>
-              <li><a href="https://wa.me/2349032449461">WhatsApp: +234 903 244 9461</a></li>
-            </ul>
-          </div>
+          ))}
         </div>
-
         <div className={styles.footerBottom}>
-          <span className={styles.footerCopy}>&copy; 2026 Amira Technologies Inc. All rights reserved.</span>
+          <span className={styles.footerCopy}>© 2026 Amira Technologies Inc. All rights reserved.</span>
           <div className={styles.footerSocials}>
-            <a href="#">Twitter</a>
-            <a href="#">LinkedIn</a>
-            <a href="#">GitHub</a>
+            <a href="#" className={styles.footerLink}>Twitter</a>
+            <a href="#" className={styles.footerLink}>LinkedIn</a>
+            <a href="#" className={styles.footerLink}>GitHub</a>
           </div>
         </div>
       </footer>

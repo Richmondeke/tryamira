@@ -26,7 +26,7 @@ const templates = [
     id: 'hvac-scheduler',
     name: 'HVAC Repair Scheduler',
     category: 'HVAC',
-    categoryColor: '#8b5cf6',
+    categoryColor: '#10b981',
     desc: 'Qualifies heating/cooling failures, schedules technician slots, and logs furnace/AC details to your CRM.',
     capabilities: [
       'Qualify system details (furnace, AC)',

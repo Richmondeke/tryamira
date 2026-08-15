@@ -4,6 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import NotificationDrawer from '@/components/ui/NotificationDrawer';
+import { useDemoMode } from '@/contexts/DemoModeContext';
 import styles from './Topbar.module.css';
 
 interface UserInfo {
@@ -18,6 +19,7 @@ interface UserInfo {
 export function Topbar({ toggleMobileMenu }: { toggleMobileMenu?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { isDemoMode, toggleDemoMode } = useDemoMode();
   const [theme, setTheme] = useState('light');
   const [currentLang, setCurrentLang] = useState('en');
   const [showLangMenu, setShowLangMenu] = useState(false);
@@ -171,7 +173,7 @@ export function Topbar({ toggleMobileMenu }: { toggleMobileMenu?: () => void }) 
             }
           }
         `}} />
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <button className="mobile-menu-btn" onClick={toggleMobileMenu}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -179,7 +181,7 @@ export function Topbar({ toggleMobileMenu }: { toggleMobileMenu?: () => void }) 
               <line x1="3" y1="18" x2="21" y2="18"></line>
             </svg>
           </button>
-          <h1 className={styles.title}>{getPageTitle()}</h1>
+          <h1 className={styles.title}>{getPageTitle() === 'V3' ? 'Overview' : getPageTitle()}</h1>
         </div>
 
         <div className={styles.actions}>

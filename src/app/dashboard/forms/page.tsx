@@ -7,10 +7,42 @@ import Toast from '../../../components/ui/Toast';
 import { getForms, createForm, getFormSubmissions, publishForm } from '@/app/actions/forms';
 
 
+import { useDemoMode } from '@/contexts/DemoModeContext';
+
+const MOCK_DEMO_FORMS = [
+  { 
+    id: 'form-mock-1', 
+    name: 'Real Estate Inquiry & Auto-Dialer', 
+    views: 4521, 
+    submissions: 892, 
+    conversion_rate: 19.7, 
+    created_at: new Date(Date.now() - 86400000 * 30).toISOString(),
+    config: {
+      title: 'Real Estate Inquiry',
+      description: 'Find your dream house today. Fill out your requirements below.',
+      fields: { firstName: true, lastName: true, email: true, phone: true, company: false }
+    }
+  },
+  { 
+    id: 'form-mock-2', 
+    name: 'Instant AI Voice Call Request', 
+    views: 1204, 
+    submissions: 154, 
+    conversion_rate: 12.8, 
+    created_at: new Date(Date.now() - 86400000 * 10).toISOString(),
+    config: {
+      title: 'Instant Support Request',
+      description: 'Got questions? Submit them here and our AI agent will phone you back instantly.',
+      fields: { firstName: true, lastName: true, email: true, phone: true, company: true }
+    }
+  }
+];
+
 export default function Page() {
   const router = useRouter();
+  const { isDemoMode } = useDemoMode();
   
-  const [forms, setForms] = useState<any[]>([]);
+  const [dbForms, setDbForms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -34,19 +66,18 @@ export default function Page() {
       try {
         const res = await getForms();
         if (res.success && res.data) {
-          setForms(res.data);
-        } else {
-          setToast('Failed to fetch forms from database.');
+          setDbForms(res.data);
         }
       } catch (err) {
         console.error('loadForms client exception:', err);
-        setToast('Database exception occurred. Fallback in play.');
       } finally {
         setLoading(false);
       }
     }
     loadForms();
   }, []);
+
+  const forms = isDemoMode ? (dbForms.length > 0 ? dbForms : MOCK_DEMO_FORMS) : dbForms;
 
   const handleCreateForm = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -75,7 +106,7 @@ export default function Page() {
     try {
       const res = await publishForm(formId);
       if (res.success) {
-        setForms(prev => prev.map(f => f.id === formId ? { ...f, status: 'published', published_at: new Date().toISOString() } : f));
+        setDbForms((prev: any[]) => prev.map((f: any) => f.id === formId ? { ...f, status: 'published', published_at: new Date().toISOString() } : f));
         setToast('Form published! The public link is now live.');
       } else {
         setToast('Failed to publish form.');
@@ -131,7 +162,7 @@ export default function Page() {
             </select>
           </div>
           <button type="submit" style={{ marginTop: '0.5rem', padding: '0.75rem', backgroundColor: '#4caf50', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500, fontSize: '13px', transition: 'background 0.2s' }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4f46e5'}
+                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#10b981'}
                   onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4caf50'}>
             Create & Edit Fields
           </button>
@@ -294,7 +325,7 @@ export default function Page() {
                 <div style={{
                   padding: '1.25rem',
                   borderRadius: '8px',
-                  background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.05) 0%, rgba(79, 70, 229, 0.05) 100%)',
+                  background: 'var(--bg-subtle)',
                   border: '1px solid rgba(76, 175, 80, 0.15)',
                   display: 'flex',
                   flexDirection: 'column',
@@ -325,7 +356,7 @@ export default function Page() {
                       boxShadow: '0 2px 8px rgba(76, 175, 80, 0.2)',
                       transition: 'background 0.2s'
                     }}
-                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4f46e5'}
+                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#10b981'}
                     onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4caf50'}
                   >
                     View Call Transcript & Logs →
@@ -404,7 +435,7 @@ export default function Page() {
           <p style={{ color: '#64748b', fontSize: '14px', margin: 0, fontWeight: 400, fontFeatureSettings: '"ss01"' }}>Create high-converting forms for your AI to share.</p>
         </div>
         <button onClick={() => setShowModal(true)} style={{ backgroundColor: '#4caf50', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.6rem 1.25rem', fontSize: '13px', fontWeight: 500, cursor: 'pointer', transition: 'background 0.2s' }}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4f46e5'}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#10b981'}
                 onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4caf50'}>
           + Create Form
         </button>
@@ -426,7 +457,7 @@ export default function Page() {
               Create a custom form and share the link with your clients. Submitted responses will be automatically captured as leads in your CRM.
             </p>
             <button onClick={() => setShowModal(true)} style={{ backgroundColor: '#4caf50', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.6rem 1.25rem', fontSize: '13px', fontWeight: 500, cursor: 'pointer', transition: 'background 0.2s' }}
-                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4f46e5'}
+                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#10b981'}
                     onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4caf50'}>
               + Create Your First Form
             </button>

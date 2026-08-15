@@ -15,8 +15,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Amira — AI-Powered Multi-Channel Agent",
-  description: "Amira connects to 1,000+ tools and takes action across WhatsApp, Instagram, Messenger, Email and Voice — so your business never misses a customer.",
+  title: "Amira — Your AI Operator for Work",
+  description: "Amira is your AI Operator that gets work done across all your tools. Delegate outcomes, not tasks. Connect 1,000+ tools and let Amira execute complete workflows.",
   manifest: "/manifest.json",
   icons: {
     icon: "/favicon.ico",
@@ -50,34 +50,44 @@ export default function RootLayout({
           src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
           strategy="afterInteractive"
         />
-        <Script id="google-translate-init" strategy="afterInteractive">
-          {`
-            window.googleTranslateElementInit = function() {
-              new google.translate.TranslateElement({
-                pageLanguage: 'en',
-                includedLanguages: 'en,es,fr,de,yo,ig,ha,zh-CN,ja,ar,pt,it',
-                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-                autoDisplay: false
-              }, 'google_translate_element');
-            }
-          `}
-        </Script>
-        <Script id="register-sw" strategy="afterInteractive">
-          {`
-            if ('serviceWorker' in navigator) {
-              window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js').then(
-                  function(registration) {
-                    console.log('Service Worker registration successful with scope: ', registration.scope);
-                  },
-                  function(err) {
-                    console.log('Service Worker registration failed: ', err);
+        <Script
+          id="google-translate-init"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.googleTranslateElementInit = function() {
+                new google.translate.TranslateElement({
+                  pageLanguage: 'en',
+                  includedLanguages: 'en,es,fr,de,yo,ig,ha,zh-CN,ja,ar,pt,it',
+                  layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                  autoDisplay: false
+                }, 'google_translate_element');
+              }
+            `
+          }}
+        />
+        <Script
+          id="clear-sw"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                  for (let r of registrations) {
+                    r.unregister();
                   }
-                );
-              });
-            }
-          `}
-        </Script>
+                });
+                if ('caches' in window) {
+                  caches.keys().then(function(keys) {
+                    for (let k of keys) {
+                      caches.delete(k);
+                    }
+                  });
+                }
+              }
+            `
+          }}
+        />
         <style dangerouslySetInnerHTML={{__html: `
           /* Premium override: hide Google Translate frames, banner, and standard selectors */
           iframe.skiptranslate, .goog-te-banner-frame, #goog-gt-tt {

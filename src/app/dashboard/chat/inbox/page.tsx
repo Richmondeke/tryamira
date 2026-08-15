@@ -50,7 +50,10 @@ const channelIcons: Record<string, string> = {
   'Email': '📧',
 };
 
+import { useDemoMode } from '@/contexts/DemoModeContext';
+
 export default function ChatPage() {
+  const { isDemoMode } = useDemoMode();
   const supabase = createClient();
   const [activeChatId, setActiveChatId] = useState<string>('mock-1');
   const [conversations, setConversations] = useState<any[]>(MOCK_CONVERSATIONS);
@@ -65,25 +68,36 @@ export default function ChatPage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
-    const fetchConversations = async () => {
-      const { data, error } = await supabase
-        .from('conversations')
-        .select(`id, channel, status, leads (name)`)
-        .order('created_at', { ascending: false });
+    if (!isDemoMode) {
+      const fetchConversations = async () => {
+        const { data, error } = await supabase
+          .from('conversations')
+          .select(`id, channel, status, leads (name)`)
+          .order('created_at', { ascending: false });
 
-      if (!error && data && data.length > 0) {
-        const mappedData = data.map((conv: any) => ({
-          id: conv.id, name: conv.leads?.name || 'Unknown Lead',
-          channel: conv.channel, status: conv.status,
-          avatar: `https://i.pravatar.cc/150?u=${conv.id}`,
-          lastMessage: '', time: 'now', unread: 0
-        }));
-        setConversations(mappedData);
-        setActiveChatId(mappedData[0].id);
-        setUseLiveData(true);
-      }
-    };
-    fetchConversations();
+        if (!error && data && data.length > 0) {
+          const mappedData = data.map((conv: any) => ({
+            id: conv.id, name: conv.leads?.name || 'Unknown Lead',
+            channel: conv.channel, status: conv.status,
+            avatar: `https://i.pravatar.cc/150?u=${conv.id}`,
+            lastMessage: '', time: 'now', unread: 0
+          }));
+          setConversations(mappedData);
+          setActiveChatId(mappedData[0].id);
+          setUseLiveData(true);
+        } else {
+          setConversations([]);
+          setActiveChatId('');
+          setUseLiveData(true);
+        }
+      };
+      fetchConversations();
+    } else {
+      setConversations(MOCK_CONVERSATIONS);
+      setActiveChatId('mock-1');
+      setMessages(MOCK_MESSAGES['mock-1']);
+      setUseLiveData(false);
+    }
 
     const fetchUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -97,7 +111,7 @@ export default function ChatPage() {
       }
     };
     fetchUser();
-  }, []);
+  }, [isDemoMode]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -176,7 +190,7 @@ export default function ChatPage() {
   });
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%', height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ maxWidth: '1440px', margin: '0 auto', width: '100%', height: 'calc(100vh - 120px)', display: 'flex', flexDirection: 'column' }}>
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Take Over Chat?">
         <p style={{ color: 'var(--stripe-body)', fontSize: '13px', marginBottom: '1.5rem', lineHeight: 1.6 }}>
@@ -188,23 +202,23 @@ export default function ChatPage() {
         </div>
       </Modal>
 
-      <div style={{ display: 'flex', flex: 1, backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '8px', boxShadow: 'var(--stripe-shadow-ambient)', overflow: 'hidden' }}>
+      <div style={{ display: 'flex', flex: 1, backgroundColor: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.02)', overflow: 'hidden' }}>
         
         {/* Sidebar */}
-        <div style={{ width: '300px', borderRight: '1px solid var(--stripe-border)', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
-          <div style={{ padding: '1rem', borderBottom: '1px solid var(--stripe-border)' }}>
+        <div style={{ width: '320px', borderRight: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+          <div style={{ padding: '1rem', borderBottom: '1px solid var(--border-subtle)' }}>
             <input
               type="text" placeholder="Search conversations..." value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid var(--stripe-border)', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '0.55rem 0.85rem', borderRadius: '8px', border: '1px solid var(--border-subtle)', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
             />
-            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
+            <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
               {['All', 'AI Active', 'Manual', 'Resolved'].map(f => (
                 <button key={f} onClick={() => setFilter(f)}
-                  style={{ padding: '2px 8px', borderRadius: '20px', border: '1px solid', fontSize: '11px', cursor: 'pointer', fontWeight: filter === f ? 600 : 400,
-                    backgroundColor: filter === f ? '#4caf50' : 'transparent',
-                    color: filter === f ? '#fff' : 'var(--stripe-muted)',
-                    borderColor: filter === f ? '#4caf50' : 'var(--stripe-border)',
+                  style={{ padding: '3px 10px', borderRadius: '20px', border: '1px solid', fontSize: '11px', cursor: 'pointer', fontWeight: filter === f ? 600 : 400,
+                    backgroundColor: filter === f ? '#1b5a92' : 'transparent',
+                    color: filter === f ? '#fff' : 'var(--text-secondary)',
+                    borderColor: filter === f ? '#1b5a92' : 'var(--border-subtle)',
                   }}>
                   {f}
                 </button>
@@ -212,8 +226,16 @@ export default function ChatPage() {
             </div>
           </div>
           <div style={{ overflowY: 'auto', flex: 1 }}>
-            {filtered.length === 0 ? (
-              <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--stripe-muted)', fontSize: '13px' }}>No conversations found.</div>
+            {!isDemoMode && filtered.length === 0 ? (
+              <div style={{ padding: '3rem 1.25rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '28px' }}>💬</span>
+                <div style={{ fontWeight: 650, color: 'var(--text-primary)' }}>No Live Conversations Yet</div>
+                <p style={{ fontSize: '11.5px', margin: 0, lineHeight: 1.4 }}>
+                  Inbound chat conversations from your Webchat widget, WhatsApp, or SMS will appear here in real time.
+                </p>
+              </div>
+            ) : filtered.length === 0 ? (
+              <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13px' }}>No conversations found.</div>
             ) : filtered.map((chat) => (
               <div key={chat.id} onClick={() => setActiveChatId(chat.id)}
                 style={{ padding: '0.875rem 1rem', borderBottom: '1px solid var(--stripe-border)', display: 'flex', alignItems: 'flex-start', gap: '0.75rem', cursor: 'pointer', backgroundColor: activeChatId === chat.id ? '#f6f9fc' : '#fff', transition: 'background 0.1s', position: 'relative' }}>
@@ -276,8 +298,8 @@ export default function ChatPage() {
                   const isOutbound = msg.sender_type !== 'lead';
                   const isAI = msg.sender_type === 'ai';
                   return (
-                    <div key={i} style={{ alignSelf: isOutbound ? 'flex-end' : 'flex-start', maxWidth: '68%' }}>
-                      <div style={{ backgroundColor: isAI ? '#4caf50' : isOutbound ? '#1e293b' : '#ffffff', color: isOutbound ? '#ffffff' : 'var(--stripe-navy)', padding: '0.75rem 1rem', borderRadius: '12px', borderBottomRightRadius: isOutbound ? '2px' : '12px', borderBottomLeftRadius: isOutbound ? '12px' : '2px', fontSize: '13px', lineHeight: 1.5, boxShadow: '0 1px 2px rgba(0,0,0,0.06)', border: isOutbound ? 'none' : '1px solid var(--stripe-border)' }}>
+                    <div key={i} style={{ alignSelf: isOutbound ? 'flex-end' : 'flex-start', maxWidth: '550px' }}>
+                      <div style={{ backgroundColor: isAI ? '#1b5a92' : isOutbound ? '#0f172a' : '#ffffff', color: isOutbound ? '#ffffff' : 'var(--text-primary)', padding: '0.75rem 1rem', borderRadius: '12px', borderBottomRightRadius: isOutbound ? '2px' : '12px', borderBottomLeftRadius: isOutbound ? '12px' : '2px', fontSize: '13px', lineHeight: 1.5, boxShadow: '0 1px 4px rgba(0,0,0,0.04)', border: isOutbound ? 'none' : '1px solid var(--border-subtle)' }}>
                         {msg.content}
                       </div>
                       <div style={{ fontSize: '11px', color: 'var(--stripe-muted)', marginTop: '0.25rem', textAlign: isOutbound ? 'right' : 'left', paddingLeft: isOutbound ? 0 : '0.25rem' }}>

@@ -43,7 +43,7 @@ Your goal is to triage inbound calls for plumbing issues.
     id: 'hvac-scheduler',
     name: 'HVAC Repair Scheduler',
     category: 'HVAC',
-    categoryColor: '#8b5cf6',
+    categoryColor: '#10b981',
     desc: 'Qualifies heating/cooling failures, schedules technician slots, and logs furnace/AC details to your CRM.',
     capabilities: [
       'Qualify system details (furnace, AC)',
@@ -196,14 +196,18 @@ const tagsList = [
 ];
 
 const audioPreviewUrls = [
-  'https://storage.googleapis.com/eleven-public-prod/previews/21m00Tcm4TlvDq8ikWAM.mp3', // Rachel
-  'https://storage.googleapis.com/eleven-public-prod/previews/TxGEqnHWrfWFTfGW9XjX.mp3', // Josh
-  'https://storage.googleapis.com/eleven-public-prod/previews/AZnzlk1XvdvUeBnXmlld.mp3', // Nova
-  'https://storage.googleapis.com/eleven-public-prod/previews/ErXwobaYiN019PkySvjV.mp3', // Alloy
-  'https://storage.googleapis.com/eleven-public-prod/previews/VR6A4mxSTDLrjDlsgcTC.mp3', // Fin
-  'https://storage.googleapis.com/eleven-public-prod/previews/EXAVITQu4vr4xnSDxMaL.mp3', // Bella
-  'https://storage.googleapis.com/eleven-public-prod/previews/yoZ06a0ZtWhg3xoI4ILV.mp3', // Thomas
-  'https://storage.googleapis.com/eleven-public-prod/previews/pNInz6obpgq5paNs9W5D.mp3'  // Serena
+  '/audio/voices/rachel.mp3',
+  '/audio/voices/josh.mp3',
+  '/audio/voices/adam.mp3',
+  '/audio/voices/bella.mp3',
+  '/audio/voices/sarah.mp3',
+  '/audio/voices/liam.mp3',
+  '/audio/voices/george.mp3',
+  '/audio/voices/charlotte.mp3',
+  '/audio/voices/tunde.mp3',
+  '/audio/voices/zuri.mp3',
+  '/audio/voices/kofi.mp3',
+  '/audio/voices/chidimma.mp3'
 ];
 
 const generate100Voices = () => {
@@ -211,20 +215,20 @@ const generate100Voices = () => {
   
   // Baseline premium core & local voices
   const base = [
-    { id: 'rachel', name: 'Rachel', provider: 'ElevenLabs', gender: 'Female', accent: 'US Friendly', tag: 'Best for Support', text: "Hi! I'm Rachel. I speak with a warm, empathetic, and professional tone. Perfect for customer support.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/21m00Tcm4TlvDq8ikWAM.mp3' },
-    { id: 'josh', name: 'Josh', provider: 'ElevenLabs', gender: 'Male', accent: 'US Professional', tag: 'Best for Sales', text: "Hello! I'm Josh. My voice is deep, confident, and persuasive. Excellent for outbound sales.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/TxGEqnHWrfWFTfGW9XjX.mp3' },
-    { id: 'kemi', name: 'Kemi', provider: 'ElevenLabs', gender: 'Female', accent: 'Nigerian (West Africa)', tag: 'Premium Local', text: "Kedu! I am Kemi. I speak with a clear and professional Nigerian English accent. Excellent for West African customer service.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/21m00Tcm4TlvDq8ikWAM.mp3' },
-    { id: 'chinedu', name: 'Chinedu', provider: 'ElevenLabs', gender: 'Male', accent: 'Nigerian (West Africa)', tag: 'Premium Local', text: "Hello! I am Chinedu. My voice is warm and trustworthy, with a classic Nigerian accent.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/TxGEqnHWrfWFTfGW9XjX.mp3' },
-    { id: 'nova', name: 'Nova', provider: 'OpenAI', gender: 'Female', accent: 'US Energetic', tag: 'Best for Retail', text: "Hi there! I'm Nova. I have a bright, energetic, and highly engaging voice.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/AZnzlk1XvdvUeBnXmlld.mp3' },
-    { id: 'alloy', name: 'Alloy', provider: 'OpenAI', gender: 'Male', accent: 'US Neutral', tag: 'Best for FAQs', text: "Hello, I'm Alloy. I offer a clear, calm, and neutral voice.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/ErXwobaYiN019PkySvjV.mp3' },
-    { id: 'fin', name: 'Fin', provider: 'ElevenLabs', gender: 'Male', accent: 'British Warm', tag: 'Best for Consulting', text: "Cheers! I'm Fin. My British accent brings a warm, refined, and trustworthy tone.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/VR6A4mxSTDLrjDlsgcTC.mp3' },
-    { id: 'bella', name: 'Bella', provider: 'ElevenLabs', gender: 'Female', accent: 'US Soft', tag: 'Best for Wellness', text: "Hi, I'm Bella. I have a gentle, soothing, and attentive voice.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/EXAVITQu4vr4xnSDxMaL.mp3' },
-    { id: 'thomas', name: 'Thomas', provider: 'PlayHT', gender: 'Male', accent: 'Aussie Friendly', tag: 'Best for Trades', text: "G'day! I'm Thomas. My Australian voice is friendly, down-to-earth, and relatable.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/yoZ06a0ZtWhg3xoI4ILV.mp3' },
-    { id: 'serena', name: 'Serena', provider: 'ElevenLabs', gender: 'Female', accent: 'US Conversational', tag: 'Best for Marketing', text: "Hey! I'm Serena. I have an upbeat, natural, and highly conversational voice.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/pNInz6obpgq5paNs9W5D.mp3' },
-    { id: 'mwangi', name: 'Mwangi', provider: 'PlayHT', gender: 'Male', accent: 'Kenyan (East Africa)', tag: 'Warm Support', text: "Jambo! I am Mwangi. I offer a warm, articulate Kenyan English voice profile.", lang: 'en', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/TxGEqnHWrfWFTfGW9XjX.mp3' },
-    { id: 'ambrose', name: 'Ambrose', provider: 'ElevenLabs', gender: 'Male', accent: 'Yoruba Dialect', tag: 'Native Voice', text: "E nle o! I am Ambrose. I speak fluent Yoruba and English, bridging communications.", lang: 'yo', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/TxGEqnHWrfWFTfGW9XjX.mp3' },
-    { id: 'chioma', name: 'Chioma', provider: 'ElevenLabs', gender: 'Female', accent: 'Igbo Dialect', tag: 'Native Voice', text: "Nnoo! I am Chioma. I speak fluent Igbo and English, providing native guidance.", lang: 'ig', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/21m00Tcm4TlvDq8ikWAM.mp3' },
-    { id: 'amina', name: 'Amina', provider: 'ElevenLabs', gender: 'Female', accent: 'Hausa Dialect', tag: 'Native Voice', text: "Sannu! I am Amina. I speak fluent Hausa and English, providing professional communication.", lang: 'ha', previewUrl: 'https://storage.googleapis.com/eleven-public-prod/previews/21m00Tcm4TlvDq8ikWAM.mp3' }
+    { id: 'rachel', name: 'Rachel', provider: 'ElevenLabs', gender: 'Female', accent: 'US Friendly', tag: 'Best for Support', text: "Hi! I'm Rachel. I speak with a warm, empathetic, and professional tone. Perfect for customer support.", lang: 'en', previewUrl: '/audio/voices/rachel.mp3' },
+    { id: 'josh', name: 'Josh', provider: 'ElevenLabs', gender: 'Male', accent: 'US Professional', tag: 'Best for Sales', text: "Hello! I'm Josh. My voice is deep, confident, and persuasive. Excellent for outbound sales.", lang: 'en', previewUrl: '/audio/voices/josh.mp3' },
+    { id: 'kemi', name: 'Kemi', provider: 'ElevenLabs', gender: 'Female', accent: 'Nigerian (West Africa)', tag: 'Premium Local', text: "Kedu! I am Kemi. I speak with a clear and professional Nigerian English accent. Excellent for West African customer service.", lang: 'en', previewUrl: '/audio/voices/tunde.mp3' },
+    { id: 'chinedu', name: 'Chinedu', provider: 'ElevenLabs', gender: 'Male', accent: 'Nigerian (West Africa)', tag: 'Premium Local', text: "Hello! I am Chinedu. My voice is warm and trustworthy, with a classic Nigerian accent.", lang: 'en', previewUrl: '/audio/voices/tunde.mp3' },
+    { id: 'nova', name: 'Nova', provider: 'OpenAI', gender: 'Female', accent: 'US Energetic', tag: 'Best for Retail', text: "Hi there! I'm Nova. I have a bright, energetic, and highly engaging voice.", lang: 'en', previewUrl: '/audio/voices/nova.mp3' },
+    { id: 'alloy', name: 'Alloy', provider: 'OpenAI', gender: 'Male', accent: 'US Neutral', tag: 'Best for FAQs', text: "Hello, I'm Alloy. I offer a clear, calm, and neutral voice.", lang: 'en', previewUrl: '/audio/voices/alloy.mp3' },
+    { id: 'fin', name: 'Fin', provider: 'ElevenLabs', gender: 'Male', accent: 'British Warm', tag: 'Best for Consulting', text: "Cheers! I'm Fin. My British accent brings a warm, refined, and trustworthy tone.", lang: 'en', previewUrl: '/audio/voices/george.mp3' },
+    { id: 'bella', name: 'Bella', provider: 'ElevenLabs', gender: 'Female', accent: 'US Soft', tag: 'Best for Wellness', text: "Hi, I'm Bella. I have a gentle, soothing, and attentive voice.", lang: 'en', previewUrl: '/audio/voices/bella.mp3' },
+    { id: 'thomas', name: 'Thomas', provider: 'PlayHT', gender: 'Male', accent: 'Aussie Friendly', tag: 'Best for Trades', text: "G'day! I'm Thomas. My Australian voice is friendly, down-to-earth, and relatable.", lang: 'en', previewUrl: '/audio/voices/charlie.mp3' },
+    { id: 'serena', name: 'Serena', provider: 'ElevenLabs', gender: 'Female', accent: 'US Conversational', tag: 'Best for Marketing', text: "Hey! I'm Serena. I have an upbeat, natural, and highly conversational voice.", lang: 'en', previewUrl: '/audio/voices/sarah.mp3' },
+    { id: 'mwangi', name: 'Mwangi', provider: 'PlayHT', gender: 'Male', accent: 'Kenyan (East Africa)', tag: 'Warm Support', text: "Jambo! I am Mwangi. I offer a warm, articulate Kenyan English voice profile.", lang: 'en', previewUrl: '/audio/voices/zuri.mp3' },
+    { id: 'ambrose', name: 'Ambrose', provider: 'ElevenLabs', gender: 'Male', accent: 'Yoruba Dialect', tag: 'Native Voice', text: "E nle o! I am Ambrose. I speak fluent Yoruba and English, bridging communications.", lang: 'yo', previewUrl: '/audio/voices/tunde.mp3' },
+    { id: 'chioma', name: 'Chioma', provider: 'ElevenLabs', gender: 'Female', accent: 'Igbo Dialect', tag: 'Native Voice', text: "Nnoo! I am Chioma. I speak fluent Igbo and English, providing native guidance.", lang: 'ig', previewUrl: '/audio/voices/chidimma.mp3' },
+    { id: 'amina', name: 'Amina', provider: 'ElevenLabs', gender: 'Female', accent: 'Hausa Dialect', tag: 'Native Voice', text: "Sannu! I am Amina. I speak fluent Hausa and English, providing professional communication.", lang: 'ha', previewUrl: '/audio/voices/amina.mp3' }
   ];
 
   list.push(...base);
@@ -1386,7 +1390,7 @@ function AgentContent() {
 
         <div style={{ backgroundColor: '#ffffff', border: '1px solid var(--stripe-border)', borderRadius: '12px', overflow: 'hidden', boxShadow: 'var(--stripe-shadow-ambient)' }}>
           {/* Cover Header */}
-          <div style={{ padding: '2.5rem', background: `linear-gradient(135deg, ${selectedTemplate.categoryColor}15 0%, ${selectedTemplate.categoryColor}25 100%)`, borderBottom: '1px solid var(--stripe-border)' }}>
+          <div style={{ padding: '2.5rem', backgroundColor: 'var(--bg-subtle)', borderBottom: '1px solid var(--stripe-border)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
               <span style={{ fontSize: '11px', fontWeight: 600, color: selectedTemplate.categoryColor, backgroundColor: `${selectedTemplate.categoryColor}20`, padding: '4px 12px', borderRadius: '20px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 {selectedTemplate.category}
@@ -2477,7 +2481,7 @@ function AgentContent() {
             borderRadius: '12px', 
             textAlign: 'center', 
             boxShadow: 'var(--stripe-shadow-ambient)',
-            background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.02) 0%, rgba(76, 175, 80, 0.05) 100%)',
+            backgroundColor: 'var(--bg-subtle)',
             borderWidth: '1.5px'
           }}>
             <span style={{ fontSize: '32px', display: 'block', marginBottom: '0.75rem' }}>🤖</span>
@@ -2632,7 +2636,7 @@ function AgentContent() {
               }}
             >
               {/* Card Cover Header */}
-              <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--stripe-border)', background: `linear-gradient(135deg, ${tpl.categoryColor}08 0%, ${tpl.categoryColor}12 100%)` }}>
+              <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--stripe-border)', backgroundColor: 'var(--bg-subtle)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                   <span style={{
                     fontSize: '10.5px',

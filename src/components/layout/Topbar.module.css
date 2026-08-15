@@ -1,15 +1,15 @@
 .topbar {
-  height: var(--header-height);
+  height: 68px;
   background-color: var(--bg-surface);
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 2rem;
+  padding: 0 1.75rem;
 }
 .title {
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: 1.15rem;
+  font-weight: 650;
   color: var(--text-primary);
   margin: 0;
 }

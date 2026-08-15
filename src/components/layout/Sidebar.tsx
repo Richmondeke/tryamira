@@ -2,393 +2,485 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useDemoMode } from '@/contexts/DemoModeContext';
 import { usePathname, useRouter } from 'next/navigation';
 import { useUserProfile } from '@/contexts/UserProfileContext';
-import { AmiraLogo } from '../ui/AmiraLogo';
-import { hapticMedium } from '../../utils/haptics';
 import { createClient } from '@/utils/supabase/client';
+import { GlowIcon } from '@/components/ui/GlowIcon';
 
-interface NavItem {
-  name: string;
-  href: string;
-  badge?: string;
-  count?: number;
-}
+const V2_NAV_ITEMS = [
+  { name: 'Home',           href: '/dashboard',             iconName: 'home-outline' },
+  { name: 'Today',          href: '/dashboard/today',       iconName: 'calendar-outline' },
+  { name: 'Voice Agents',   href: '/dashboard/agents',      iconName: 'headphones-outline' },
+  { name: 'Your Decisions', href: '/dashboard/decisions',   iconName: 'zap-outline', badge: '3' },
+  { name: 'Workflows',      href: '/dashboard/workflows',   iconName: 'layers-outline' },
+  { name: 'Projects',       href: '/dashboard/projects',    iconName: 'folder-outline' },
+  { name: 'Knowledge',      href: '/dashboard/knowledge',   iconName: 'search-outline' },
+  { name: 'Integrations',   href: '/dashboard/integrations',iconName: 'link-outline' },
+  { name: 'Settings',       href: '/dashboard/settings',    iconName: 'gear-outline' },
+];
 
-const navItems: Record<string, NavItem[]> = {
-  MAIN: [
-    { name: 'Overview',   href: '/dashboard' },
-    { name: 'Agent',      href: '/dashboard/ai-agent' },
-    { name: 'Chat',       href: '/dashboard/chat' },
-    { name: 'Leads',      href: '/dashboard/leads' },
-    { name: 'Forms',      href: '/dashboard/forms' },
-    { name: 'Analytics',  href: '/dashboard/analytics' },
-  ],
-  SETUP: [
-    { name: 'Tutorials', href: '/dashboard/tutorials' },
-    { name: 'Webchat & Widget', href: '/dashboard/webchat-setup' },
-    { name: 'Integrations & Channels', href: '/dashboard/integrations' },
-  ],
-};
-
-interface SidebarUser {
-  fullName: string;
-  initials: string;
-  email: string;
-  plan: string;
-  role: string;
-}
-
+const V3_NAV_CATEGORIES = [
+  {
+    name: 'Home',
+    items: [
+      { name: 'Overview', href: '/dashboard/v3', iconName: 'grid-outline' },
+      { name: 'Analytics', href: '/dashboard/v3/analytics', iconName: 'chart-up-outline' },
+    ]
+  },
+  {
+    name: 'Setup Agent',
+    items: [
+      { name: 'Voice Agents', href: '/dashboard/v3/agents', iconName: 'headphones-outline' },
+      { name: 'Knowledge Base (RAG)', href: '/dashboard/knowledge', iconName: 'book-open-outline' },
+      { name: 'Lead Forms', href: '/dashboard/forms', iconName: 'doc-outline' },
+      { name: 'Webchat Widget', href: '/dashboard/webchat-setup', iconName: 'code-outline' },
+    ]
+  },
+  {
+    name: 'Call Operations',
+    items: [
+      { name: 'Amira Outreach', href: '/dashboard/v3/outreach', iconName: 'phone-outgoing-outline', badge: '🔒 Admin' },
+      { name: 'Phone Numbers', href: '/dashboard/v3/phone', iconName: 'phone-outline' },
+      { name: 'Calls & Transcripts', href: '/dashboard/v3/calls', iconName: 'phone-incoming-outline' },
+      { name: 'Campaign Auto-Dialer', href: '/dashboard/leads', iconName: 'users-outline' },
+      { name: 'Decision Escalations', href: '/dashboard/decisions', iconName: 'zap-outline', badge: '3' },
+    ]
+  },
+  {
+    name: 'Channels & Messages',
+    items: [
+      { name: 'Omnichannel Chat', href: '/dashboard/chat/inbox', iconName: 'message-square-outline' },
+      { name: 'Workspace Actions', href: '/dashboard/v3/actions', iconName: 'checkmark-circle-outline' },
+    ]
+  },
+  {
+    name: 'Integrations & Config',
+    items: [
+      { name: 'Workflows', href: '/dashboard/v3/workflows', iconName: 'layers-outline' },
+      { name: 'Integrations', href: '/dashboard/v3/integrations', iconName: 'link-alt-outline' },
+      { name: 'Billing', href: '/dashboard/v3/billing', iconName: 'credit-card-outline' },
+      { name: 'Settings', href: '/dashboard/v3/settings', iconName: 'gear-outline' },
+    ]
+  }
+];
 
 export function Sidebar({ closeMobileMenu }: { closeMobileMenu?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
-  const [isDemoMode, setIsDemoMode] = useState(false);
-
-  // ── Use shared profile context instead of fetching independently ─────────
-  // Profile was already fetched once at dashboard/layout.tsx level.
-  // Zero additional Supabase calls here.
   const { profile } = useUserProfile();
+  const [theme, setTheme] = useState('light');
+  const [focusUntil, setFocusUntil] = useState<string | null>(null);
+  const [collapsedCategories, setCollapsedCategories] = useState<Record<string, boolean>>({});
 
-  const billingTier = (profile?.plan?.toLowerCase() || 'starter') as 'starter' | 'pro' | 'team' | 'enterprise';
+  const toggleCategory = (catName: string) => {
+    setCollapsedCategories(prev => ({ ...prev, [catName]: !prev[catName] }));
+  };
+
+  // Default to V3 OS sidebar experience across all dashboard routes unless explicitly on /dashboard/v2
+  const isV3 = !pathname.startsWith('/dashboard/v2');
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const focusVal = localStorage.getItem('amira_focus_mode');
+    if (focusVal) setFocusUntil(focusVal);
+
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    setTheme(currentTheme);
+
+    const observer = new MutationObserver(() => {
+      const updatedTheme = document.documentElement.getAttribute('data-theme') || 'light';
+      setTheme(updatedTheme);
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => observer.disconnect();
+  }, []);
+
+  const toggleFocusMode = () => {
+    if (focusUntil) {
+      setFocusUntil(null);
+      localStorage.removeItem('amira_focus_mode');
+    } else {
+      const until = '2:00 PM';
+      setFocusUntil(until);
+      localStorage.setItem('amira_focus_mode', until);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    } catch (e) {}
+    if (typeof window !== 'undefined') {
+      document.cookie = 'amira_demo_user=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    }
+    router.push('/login');
+  };
+
   const sidebarUser = profile ? {
     fullName: profile.full_name || profile.email.split('@')[0],
     initials: profile.initials,
     email: profile.email,
     plan: profile.plan,
-    role: profile.role,
   } : null;
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setIsDemoMode(localStorage.getItem('amira_demo_mode') === 'true');
-    }
-  }, []);
+    // V3.0 SIDEBAR
+  if (isV3) {
+    const isDark = theme === 'dark';
+    return (
+      <aside style={{
+        width: '255px',
+        height: '100vh',
+        background: '#1b5a92 url(/amira-background.png) center/cover no-repeat',
+        borderRight: '1px solid rgba(255, 255, 255, 0.1)',
+        display: 'flex',
+        flexDirection: 'column',
+        fontFamily: "'Satoshi', sans-serif",
+        flexShrink: 0,
+        position: 'sticky',
+        top: 0,
+        transition: 'all 0.2s ease'
+      }}>
+        {/* Brand Header */}
+        <div style={{
+          height: '64px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 1.25rem',
+          borderBottom: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.06)'
+        }}>
+          <Link href="/dashboard/v3" onClick={() => closeMobileMenu?.()} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', textDecoration: 'none' }}>
+            <img src="/amira-logo.svg" alt="AMIRA" style={{ height: '24px', width: 'auto' }} />
+          </Link>
+        </div>
 
-  const toggleDemoMode = () => {
-    const next = !isDemoMode;
-    setIsDemoMode(next);
-    localStorage.setItem('amira_demo_mode', String(next));
-    window.location.reload();
-  };
+        {/* Categorized Collapsible Navigation */}
+        <nav style={{ flex: 1, overflowY: 'auto', padding: '0.85rem 0.65rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {V3_NAV_CATEGORIES.map(cat => {
+              const isCollapsed = collapsedCategories[cat.name] || false;
+              const hasActiveChild = cat.items.some(item => 
+                pathname === item.href || (item.href !== '/dashboard/v3' && pathname.startsWith(item.href))
+              );
 
-  const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push('/login');
-  };
+              return (
+                <div key={cat.name} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  {/* Collapsible Category Parent Header */}
+                  <button
+                    onClick={() => toggleCategory(cat.name)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      padding: '0.45rem 0.6rem',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      borderRadius: '6px',
+                      fontSize: '11px',
+                      fontWeight: 800,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      color: hasActiveChild ? '#10b981' : 'rgba(255, 255, 255, 0.7)',
+                      transition: 'color 0.15s ease'
+                    }}
+                  >
+                    <span>{cat.name}</span>
+                    <span style={{ fontSize: '10px', opacity: 0.7 }}>{isCollapsed ? '►' : '▼'}</span>
+                  </button>
 
+                  {/* Category Children Links */}
+                  {!isCollapsed && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', paddingLeft: '0.25rem' }}>
+                      {cat.items.map(item => {
+                        const isActive = pathname === item.href || (item.href !== '/dashboard/v3' && pathname.startsWith(item.href));
 
-  const toggleSection = (section: string) => {
-    setCollapsedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
-  };
+                        return (
+                          <Link
+                            key={item.name}
+                            href={item.href}
+                            onClick={() => closeMobileMenu?.()}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.65rem',
+                              padding: '0.55rem 0.75rem',
+                              color: isActive ? '#10b981' : '#ffffff',
+                              textDecoration: 'none',
+                              fontSize: '13px',
+                              fontWeight: isActive ? 700 : 500,
+                              borderRadius: '8px',
+                              backgroundColor: isActive ? 'rgba(16, 185, 129, 0.18)' : 'transparent',
+                              border: isActive ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid transparent',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            <GlowIcon
+                              name={item.iconName}
+                              size={15}
+                              color={isActive ? '#10b981' : 'rgba(255, 255, 255, 0.85)'}
+                            />
+                            <span style={{ flex: 1 }}>{item.name}</span>
+                            {item.badge && (
+                              <span style={{ fontSize: '10px', fontWeight: 800, padding: '1px 6px', borderRadius: '99px', backgroundColor: '#10b981', color: '#ffffff' }}>
+                                {item.badge}
+                              </span>
+                            )}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </nav>
 
+        {/* Enterprise Plan Card Widget */}
+        <div style={{ padding: '0.75rem 0.85rem' }}>
+          <div style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+            border: '1px solid rgba(255, 255, 255, 0.18)',
+            borderRadius: '12px',
+            padding: '0.95rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.5rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '14px' }}>💎</span>
+              <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff' }}>Enterprise Plan</span>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '11.5px', color: 'rgba(255, 255, 255, 0.85)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ color: '#10b981', fontWeight: 800 }}>✓</span> Unlimited Agents
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ color: '#10b981', fontWeight: 800 }}>✓</span> 10,000 mins / month
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ color: '#10b981', fontWeight: 800 }}>✓</span> 100+ Countries
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ color: '#10b981', fontWeight: 800 }}>✓</span> Priority Support
+              </div>
+            </div>
+
+            <Link
+              href="/dashboard/v3/billing"
+              style={{
+                marginTop: '0.25rem',
+                padding: '0.45rem',
+                borderRadius: '8px',
+                backgroundColor: '#10b981',
+                color: '#ffffff',
+                fontSize: '12px',
+                fontWeight: 700,
+                textAlign: 'center',
+                textDecoration: 'none'
+              }}
+            >
+              Manage Plan
+            </Link>
+          </div>
+        </div>
+
+        {/* User Profile Footer Widget */}
+        <div style={{ padding: '0.75rem', borderTop: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.05)' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '0.5rem',
+            borderRadius: '10px',
+            backgroundColor: isDark ? '#191e32' : '#f8fafc',
+            border: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.04)'
+          }}>
+            <div style={{ position: 'relative' }}>
+              <img
+                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120"
+                alt="User Avatar"
+                style={{ width: '34px', height: '34px', borderRadius: '50%', objectFit: 'cover' }}
+              />
+              <span style={{
+                position: 'absolute', bottom: '0', right: '0', width: '9px', height: '9px',
+                borderRadius: '50%', backgroundColor: '#10b981', border: isDark ? '2px solid #191e32' : '2px solid #ffffff'
+              }} />
+            </div>
+
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: isDark ? '#ffffff' : '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {sidebarUser?.fullName || 'David O.'}
+              </div>
+              <div style={{ fontSize: '11px', color: isDark ? '#94a3b8' : '#64748b' }}>
+                Admin
+              </div>
+            </div>
+
+            <button
+              onClick={handleLogout}
+              title="Log Out"
+              style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '4px' }}
+            >
+              <GlowIcon name="power-outline" size={15} color="#94a3b8" />
+            </button>
+          </div>
+        </div>
+      </aside>
+    );
+  }
+
+  // ── V2.0 DARK SIDEBAR ───────────────────────────────────────────────────
   return (
     <aside style={{ 
-      width: '260px', 
+      width: '245px', 
       height: '100vh', 
-      backgroundColor: '#174275', // Amira brand navy
+      background: '#1b5a92 url(/amira-background.png) center/cover no-repeat',
       borderRight: '1px solid rgba(255, 255, 255, 0.1)',
       display: 'flex', 
       flexDirection: 'column',
-      fontFeatureSettings: '"ss01"'
+      fontFamily: "'Satoshi', sans-serif",
+      flexShrink: 0
     }}>
-      {/* Logo Section */}
+      {/* Brand Header */}
       <div style={{ 
-        height: '120px', 
+        height: '64px', 
         display: 'flex', 
         alignItems: 'center', 
-        padding: '0 1.5rem',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+        padding: '0 1.25rem',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.06)'
       }}>
-        <Link href="/dashboard" onClick={() => closeMobileMenu?.()} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }}>
-          <AmiraLogo size={32} style={{ color: '#ffffff' }} />
+        <Link href="/dashboard" onClick={() => closeMobileMenu?.()} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', textDecoration: 'none' }}>
+          <img src="/amira-logo.svg" alt="Amira" style={{ height: '24px', width: 'auto' }} />
         </Link>
       </div>
 
-      {/* Navigation */}
-      <nav style={{ flex: 1, overflowY: 'auto', padding: '1.5rem 1rem' }}> {/* Increased top padding for spacing */}
-        {Object.entries(navItems).map(([section, items]) => {
-          const isCollapsed = collapsedSections[section];
-          return (
-            <div key={section} style={{ marginBottom: '2rem' }}> {/* Increased spacing between sections */}
-              <div 
-                onClick={() => { hapticMedium(); toggleSection(section); }}
-                style={{ 
-                  padding: '0 0.75rem 0.5rem', 
-                  fontSize: '12px', 
-                  color: '#94a3b8', 
-                  fontWeight: 600,
-                  cursor: 'pointer',
+      {/* Focus Mode Banner with Robot Mascot */}
+      <div style={{ padding: '0.85rem 1rem 0.35rem 1rem' }}>
+        <button
+          onClick={toggleFocusMode}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0.55rem 0.75rem',
+            borderRadius: '10px',
+            border: focusUntil ? '1px solid rgba(16,185,129,0.3)' : '1px solid rgba(255,255,255,0.08)',
+            background: focusUntil ? 'rgba(16,185,129,0.1)' : 'rgba(255,255,255,0.04)',
+            color: focusUntil ? '#10b981' : '#9299ab',
+            cursor: 'pointer',
+            fontSize: '12px',
+            fontWeight: 600,
+            transition: 'all 0.2s ease',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <img src="/robot-mascot.png" alt="Robot Mascot" style={{ width: '22px', height: '22px', borderRadius: '4px', objectFit: 'cover' }} />
+            <span>{focusUntil ? `Focus until ${focusUntil}` : 'Focus Mode'}</span>
+          </div>
+          <span style={{ fontSize: '10px', fontWeight: 700, opacity: 0.8 }}>{focusUntil ? 'ON' : 'OFF'}</span>
+        </button>
+      </div>
+
+      {/* Primary PRD Navigation */}
+      <nav style={{ flex: 1, overflowY: 'auto', padding: '0.75rem 0.75rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+          {V2_NAV_ITEMS.map(item => {
+            const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(`${item.href}`));
+
+            return (
+              <Link 
+                key={item.name} 
+                href={item.href} 
+                onClick={() => closeMobileMenu?.()}
+                style={{
                   display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  padding: '0.55rem 0.75rem',
+                  color: isActive ? '#ffffff' : '#9299ab',
+                  textDecoration: 'none',
+                  fontSize: '13px',
+                  fontWeight: isActive ? 700 : 500,
+                  borderRadius: '8px',
+                  backgroundColor: isActive ? 'rgba(27,90,146, 0.22)' : 'transparent',
+                  border: isActive ? '1px solid rgba(27,90,146, 0.4)' : '1px solid transparent',
+                  transition: 'all 0.15s ease'
                 }}
               >
-                <span>{section}</span>
-                <span style={{ fontSize: '10px' }}>{isCollapsed ? '▼' : '▲'}</span>
-              </div>
-              
-              {!isCollapsed && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  {items.map(item => {
-                    const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(`${item.href}/`));
-                    let tourId = undefined;
-                    if (item.name === 'Leads') tourId = 'tour-leads';
-                    if (item.name === 'Chat') tourId = 'tour-chat';
-                    if (item.name === 'Webchat & Widget') tourId = 'tour-setup';
-
-                    return (
-                      <Link 
-                        key={item.name} 
-                        href={item.href} 
-                        id={tourId}
-                        onClick={() => { hapticMedium(); closeMobileMenu?.(); }}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.75rem',
-                          padding: '0.5rem 0.75rem',
-                          color: isActive ? '#ffffff' : '#cbd5e1',
-                          textDecoration: 'none',
-                          fontSize: '12px',
-                          fontWeight: 500,
-                          borderRadius: '6px',
-                          backgroundColor: isActive ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                          transition: 'all 0.15s ease'
-                        }}
-                      >
-                        {item.name}
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          );
-        })}
+                <GlowIcon
+                  name={item.iconName}
+                  size={16}
+                  color={isActive ? '#ffffff' : '#9299ab'}
+                />
+                <span style={{ flex: 1 }}>{item.name}</span>
+                {item.badge && (
+                  <span style={{ 
+                    fontSize: '10px', 
+                    fontWeight: 700, 
+                    padding: '1px 6px', 
+                    borderRadius: '99px', 
+                    background: '#1b5a92', 
+                    color: '#ffffff' 
+                  }}>
+                    {item.badge}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+        </div>
       </nav>
 
-      {/* Premium Upgrade Widget */}
-      {billingTier === 'starter' && (
+      {/* User Profile Footer */}
+      <div style={{ padding: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <div style={{
-          padding: '1.25rem',
-          margin: '0 1rem 1.5rem 1rem',
-          borderRadius: '12px',
-          background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.12) 0%, rgba(56, 142, 60, 0.12) 100%)',
-          border: '1px solid rgba(76, 175, 80, 0.25)',
-          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.2)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.75rem'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '16px' }}>⚡</span>
-            <div style={{ fontSize: '13px', fontWeight: 600, color: '#ffffff', letterSpacing: '0.3px' }}>Upgrade Workspace</div>
-          </div>
-          <p style={{ fontSize: '11px', color: '#94a3b8', margin: 0, lineHeight: 1.4 }}>
-            Unlock unlimited AI conversations, local Safaricom/MTN SIP trunks, and outbound dialer campaigns.
-          </p>
-          <Link 
-            href="/dashboard/account?tab=upgrade"
-            style={{
-              display: 'block',
-              textAlign: 'center',
-              backgroundColor: '#4caf50',
-              color: '#ffffff',
-              textDecoration: 'none',
-              fontSize: '12px',
-              fontWeight: 600,
-              padding: '0.5rem 1rem',
-              borderRadius: '6px',
-              boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)',
-              transition: 'all 0.2s ease-in-out'
-            }}
-          >
-            Upgrade Now
-          </Link>
-        </div>
-      )}
-
-      {(billingTier === 'pro' || billingTier === 'team') && (
-        <div style={{
-          padding: '1rem',
-          margin: '0 1rem 1.5rem 1rem',
-          borderRadius: '12px',
-          background: 'rgba(255, 255, 255, 0.03)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.5rem'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '14px' }}>👑</span>
-            <div style={{ fontSize: '12px', fontWeight: 600, color: '#ffffff' }}>
-              {billingTier === 'pro' ? 'Pro Workspace' : 'Team Workspace'}
-            </div>
-          </div>
-          <p style={{ fontSize: '10px', color: '#94a3b8', margin: 0 }}>
-            Enjoy premium localized telephony and deep app integrations.
-          </p>
-          <Link 
-            href="/dashboard/account?tab=upgrade"
-            style={{
-              fontSize: '10px',
-              color: '#a5b4fc',
-              textDecoration: 'underline',
-              fontWeight: 500,
-              cursor: 'pointer'
-            }}
-          >
-            Modify subscription limits
-          </Link>
-        </div>
-      )}
-
-      {billingTier === 'enterprise' && (
-        <div style={{
-          padding: '1rem',
-          margin: '0 1rem 1.5rem 1rem',
-          borderRadius: '12px',
-          background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0.5) 100%)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px'
-        }}>
-          <span style={{ fontSize: '18px' }}>🏢</span>
-          <div>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: '#ffffff' }}>Enterprise Active</div>
-            <div style={{ fontSize: '9px', color: '#94a3b8', marginTop: '2px' }}>99.9% Support SLA</div>
-          </div>
-        </div>
-      )}
-
-      {/* ── User Profile Block ── */}
-      <Link
-        href="/dashboard/account"
-        onClick={() => closeMobileMenu?.()}
-        style={{
-          display: 'flex', alignItems: 'center', gap: '10px',
-          padding: '1rem 1.25rem',
-          margin: '0 0 0 0',
-          borderTop: '1px solid rgba(255,255,255,0.08)',
-          textDecoration: 'none',
-          transition: 'background 0.15s ease',
-        }}
-        onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)')}
-        onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
-      >
-        <div style={{
-          width: '36px', height: '36px', borderRadius: '8px',
-          background: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
-          color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontWeight: 700, fontSize: '13px', flexShrink: 0,
-        }}>
-          {sidebarUser?.initials || '…'}
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: '12px', fontWeight: 600, color: '#ffffff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {sidebarUser?.fullName || '…'}
-          </div>
-          <div style={{ fontSize: '10px', color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {sidebarUser?.email || ''}
-          </div>
-        </div>
-        {sidebarUser?.role === 'admin' && (
-          <span style={{
-            fontSize: '9px', fontWeight: 700, color: '#4caf50',
-            backgroundColor: 'rgba(76,175,80,0.15)',
-            border: '1px solid rgba(76,175,80,0.3)',
-            padding: '2px 5px', borderRadius: '4px', flexShrink: 0,
-          }}>
-            ADMIN
-          </span>
-        )}
-      </Link>
-
-      {/* ── Admin Demo Mode Toggle ── */}
-      {sidebarUser?.role === 'admin' && (
-        <div style={{
-          padding: '0.75rem 1.25rem',
-          borderTop: '1px solid rgba(255,255,255,0.06)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: '14px' }}>🎭</span>
-            <div>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: isDemoMode ? '#f59e0b' : '#94a3b8' }}>
-                {isDemoMode ? 'Demo Mode ON' : 'Demo Mode'}
-              </div>
-              <div style={{ fontSize: '9px', color: '#64748b' }}>Admin only · investor preview</div>
-            </div>
-          </div>
-          <button
-            onClick={toggleDemoMode}
-            style={{
-              width: '36px', height: '20px', borderRadius: '10px', border: 'none',
-              backgroundColor: isDemoMode ? '#f59e0b' : 'rgba(255,255,255,0.15)',
-              cursor: 'pointer', position: 'relative', transition: 'background 0.2s ease',
-              flexShrink: 0,
-            }}
-          >
-            <span style={{
-              position: 'absolute', top: '2px',
-              left: isDemoMode ? '18px' : '2px',
-              width: '16px', height: '16px', borderRadius: '8px',
-              backgroundColor: '#ffffff',
-              transition: 'left 0.2s ease',
-              display: 'block',
-            }} />
-          </button>
-        </div>
-      )}
-
-      {/* ── Logout ── */}
-      <button
-        onClick={handleLogout}
-        style={{
           display: 'flex',
           alignItems: 'center',
           gap: '10px',
-          width: '100%',
-          padding: '0.85rem 1.25rem',
-          borderTop: '1px solid rgba(255,255,255,0.06)',
-          background: 'none',
-          cursor: 'pointer',
-          textAlign: 'left' as const,
-          transition: 'background 0.15s ease',
-          color: '#94a3b8',
-        }}
-        onMouseEnter={e => {
-          e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.08)';
-          e.currentTarget.style.color = '#f87171';
-        }}
-        onMouseLeave={e => {
-          e.currentTarget.style.backgroundColor = 'transparent';
-          e.currentTarget.style.color = '#94a3b8';
-        }}
-      >
-        {/* Door/exit SVG icon */}
-        <svg
-          width="16" height="16" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-          style={{ flexShrink: 0 }}
-        >
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-          <polyline points="16 17 21 12 16 7" />
-          <line x1="21" y1="12" x2="9" y2="12" />
-        </svg>
-        <span style={{ fontSize: '12px', fontWeight: 500 }}>Log Out</span>
-      </button>
-
+          padding: '0.5rem',
+          borderRadius: '8px',
+          backgroundColor: 'rgba(255,255,255,0.03)',
+        }}>
+          <div style={{
+            width: '32px', height: '32px', borderRadius: '8px',
+            background: '#1b5a92',
+            color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontWeight: 700, fontSize: '12px', flexShrink: 0,
+          }}>
+            {sidebarUser?.initials || 'RA'}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: '12px', fontWeight: 600, color: '#ffffff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {sidebarUser?.fullName || 'Richmond'}
+            </div>
+            <div style={{ fontSize: '10px', color: '#9299ab', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {sidebarUser?.email || 'richmond@heyamira.com'}
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            title="Log Out"
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#9299ab',
+              cursor: 'pointer',
+              padding: '4px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <GlowIcon name="power-outline" size={15} color="#9299ab" />
+          </button>
+        </div>
+      </div>
     </aside>
-
   );
 }

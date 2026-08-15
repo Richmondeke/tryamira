@@ -1141,7 +1141,7 @@ function AccountSettingsInner() {
                   <button
                     onClick={() => { setTargetUpgradeTier('pro'); setIsUpgradeSuccess(false); setShowUpgradeModal(true); }}
                     disabled={isCheckoutLoading}
-                    style={{ width: '100%', padding: '0.55rem', backgroundColor: '#4caf50', backgroundImage: 'linear-gradient(135deg, #4caf50, #4f46e5)', color: '#ffffff', border: 'none', borderRadius: '4px', fontWeight: 600, fontSize: '11.5px', cursor: 'pointer', boxShadow: '0 2px 8px rgba(76, 175, 80, 0.2)' }}
+                    style={{ width: '100%', padding: '0.55rem', backgroundColor: '#1b5a92', color: '#ffffff', border: 'none', borderRadius: '4px', fontWeight: 600, fontSize: '11.5px', cursor: 'pointer' }}
                   >Upgrade to Pro — ₦45,000/mo</button>
                 )}
               </div>

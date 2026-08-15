@@ -6,63 +6,51 @@ export async function updateSession(request: NextRequest) {
     request,
   })
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({
-            request,
-          })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
-        },
-      },
-    }
-  )
+  const isDemoUser = request.cookies.get('amira_demo_user')?.value === 'true';
 
-  // IMPORTANT: Avoid writing any logic between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
+  let user = null;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  try {
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll()
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+            supabaseResponse = NextResponse.next({
+              request,
+            })
+            cookiesToSet.forEach(({ name, value, options }) =>
+              supabaseResponse.cookies.set(name, value, options)
+            )
+          },
+        },
+      }
+    )
+
+    const { data } = await supabase.auth.getUser()
+    user = data?.user || null
+  } catch (err) {
+    // Supabase unreachable / fetch failed
+  }
 
   const isAuthPage = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/signup')
-  
+
   // Protect dashboard routes
   if (request.nextUrl.pathname.startsWith('/dashboard') || request.nextUrl.pathname.startsWith('/onboarding')) {
-    if (!user) {
+    if (!user && !isDemoUser) {
       const url = request.nextUrl.clone()
       url.pathname = '/login'
       return NextResponse.redirect(url)
     }
-
-    // Check onboarding status if trying to access dashboard directly
-    if (request.nextUrl.pathname.startsWith('/dashboard')) {
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('onboarding_completed')
-            .eq('id', user.id)
-            .single()
-
-        if (!profile?.onboarding_completed) {
-            const url = request.nextUrl.clone()
-            url.pathname = '/onboarding'
-            return NextResponse.redirect(url)
-        }
-    }
   }
 
-  // Redirect auth pages to dashboard if already logged in
-  if (isAuthPage && user) {
+  // Redirect auth pages to dashboard if already logged in or demo active
+  if (isAuthPage && (user || isDemoUser)) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)

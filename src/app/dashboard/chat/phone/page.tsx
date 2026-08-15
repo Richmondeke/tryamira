@@ -250,7 +250,7 @@ export default function PhoneAgentPage() {
             </div>
 
             <div>
-              <button type="submit" disabled={isLoading} style={{ padding: '0.75rem 1.5rem', backgroundColor: '#4caf50', color: '#fff', border: 'none', borderRadius: '4px', cursor: isLoading ? 'not-allowed' : 'pointer', fontWeight: 500, opacity: isLoading ? 0.7 : 1, transition: 'background 0.2s' }} onMouseOver={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#4f46e5' }} onMouseOut={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#4caf50' }}>
+              <button type="submit" disabled={isLoading} style={{ padding: '0.75rem 1.5rem', backgroundColor: '#4caf50', color: '#fff', border: 'none', borderRadius: '4px', cursor: isLoading ? 'not-allowed' : 'pointer', fontWeight: 500, opacity: isLoading ? 0.7 : 1, transition: 'background 0.2s' }} onMouseOver={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#10b981' }} onMouseOut={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#4caf50' }}>
                 {isLoading ? 'Saving...' : 'Save & Activate Inbound'}
               </button>
             </div>
@@ -284,7 +284,7 @@ export default function PhoneAgentPage() {
                 <input name="scheduledTime" type="datetime-local" style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px' }} />
                 <p style={{ fontSize: '11px', color: 'var(--stripe-muted)', marginTop: '4px' }}>Leave blank to dial immediately.</p>
               </div>
-              <button type="submit" disabled={isLoading} style={{ marginTop: '0.5rem', padding: '0.75rem', backgroundColor: '#4caf50', color: '#fff', border: 'none', borderRadius: '4px', cursor: isLoading ? 'not-allowed' : 'pointer', fontWeight: 500, opacity: isLoading ? 0.7 : 1, transition: 'background 0.2s' }} onMouseOver={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#4f46e5' }} onMouseOut={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#4caf50' }}>
+              <button type="submit" disabled={isLoading} style={{ marginTop: '0.5rem', padding: '0.75rem', backgroundColor: '#4caf50', color: '#fff', border: 'none', borderRadius: '4px', cursor: isLoading ? 'not-allowed' : 'pointer', fontWeight: 500, opacity: isLoading ? 0.7 : 1, transition: 'background 0.2s' }} onMouseOver={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#10b981' }} onMouseOut={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#4caf50' }}>
                 {isLoading ? 'Launching...' : 'Launch Campaign'}
               </button>
             </form>

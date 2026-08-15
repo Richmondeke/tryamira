@@ -127,7 +127,7 @@ export default function SuccessConfirmation({
             width: '100%',
             padding: '0.65rem 1rem',
             backgroundColor: 'var(--stripe-purple)',
-            backgroundImage: 'linear-gradient(135deg, #4caf50, #4f46e5)',
+            backgroundColor: '#1b5a92',
             color: '#fff',
             border: 'none',
             borderRadius: '6px',

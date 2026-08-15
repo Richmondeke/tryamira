@@ -199,7 +199,7 @@ export default function IntegrationsPage() {
                 <span style={{ color: connectStep > 1 ? '#4caf50' : '#3b82f6', fontWeight: 'bold' }}>
                   {connectStep > 1 ? '✓' : '●'}
                 </span>
-                <span>Generating Composio OAuth session...</span>
+                <span>Generating OAuth session...</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: connectStep >= 2 ? '#0f172a' : '#94a3b8' }}>
                 <span style={{ color: connectStep > 2 ? '#4caf50' : connectStep === 2 ? '#3b82f6' : '#94a3b8', fontWeight: 'bold' }}>
@@ -235,7 +235,7 @@ export default function IntegrationsPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '12px', color: 'var(--stripe-body)', lineHeight: 1.5 }}>
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                   <span style={{ color: '#4caf50', fontWeight: 'bold' }}>✓</span>
-                  <span>OAuth 2.0 connection powered securely by <strong>Composio</strong></span>
+                  <span>OAuth 2.0 connection powered securely by <strong>Amira Core Engine</strong></span>
                 </div>
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                   <span style={{ color: '#4caf50', fontWeight: 'bold' }}>✓</span>

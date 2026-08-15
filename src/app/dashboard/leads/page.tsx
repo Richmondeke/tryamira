@@ -202,7 +202,7 @@ export default function LeadsPage() {
     const email = formData.get('email') as string;
     const phone = formData.get('phone') as string;
 
-    let wsId = profile?.workspace_id;
+    let wsId: string | undefined = undefined;
     if (!wsId) {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
@@ -594,7 +594,7 @@ export default function LeadsPage() {
             <button onClick={handleExport} disabled={isExporting} style={{ backgroundColor: '#ffffff', color: 'var(--stripe-navy)', border: '1px solid var(--stripe-border)', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '12px', fontWeight: 500, cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
               {isExporting ? 'Exporting...' : 'Export CSV'}
             </button>
-            <button onClick={() => setShowAddModal(true)} style={{ backgroundColor: '#4caf50', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '12px', fontWeight: 500, cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', transition: 'background 0.2s' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4f46e5'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4caf50'}>
+            <button onClick={() => setShowAddModal(true)} style={{ backgroundColor: '#4caf50', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.5rem 1rem', fontSize: '12px', fontWeight: 500, cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', transition: 'background 0.2s' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#10b981'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4caf50'}>
               + Add Lead
             </button>
           </div>
@@ -726,7 +726,7 @@ export default function LeadsPage() {
                   onClick={() => window.location.href = '/dashboard/account?tab=upgrade'}
                   style={{
                     backgroundColor: 'var(--stripe-purple)',
-                    backgroundImage: 'linear-gradient(135deg, #4caf50, #4caf50)',
+                    backgroundColor: '#10b981',
                     color: '#fff',
                     border: 'none',
                     borderRadius: '6px',
@@ -1238,7 +1238,7 @@ export default function LeadsPage() {
                     style={{ 
                       width: `${(selectedCampaignRun.completed / selectedCampaignRun.queued) * 100}%`, 
                       height: '100%', 
-                      backgroundImage: 'linear-gradient(90deg, #4caf50, #10b981)',
+                      backgroundColor: '#10b981',
                       borderRadius: '4px',
                       transition: 'width 0.5s ease-out'
                     }} 

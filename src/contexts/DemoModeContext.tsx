@@ -5,12 +5,14 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 interface DemoModeContextType {
   isDemoMode: boolean;
   toggleDemoMode: () => void;
+  setDemoMode: (val: boolean) => void;
   isAdmin: boolean;
 }
 
 const DemoModeContext = createContext<DemoModeContextType>({
-  isDemoMode: false,
+  isDemoMode: true,
   toggleDemoMode: () => {},
+  setDemoMode: () => {},
   isAdmin: false,
 });
 
@@ -23,17 +25,23 @@ export function DemoModeProvider({
   children: React.ReactNode;
   isAdminUser?: boolean;
 }) {
-  const [isDemoMode, setIsDemoMode] = useState(false);
+  // Default Demo Mode to TRUE on first load so users see populated demo data immediately
+  const [isDemoMode, setIsDemoMode] = useState<boolean>(true);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(DEMO_MODE_KEY);
-      setIsDemoMode(stored === 'true');
+      if (stored !== null) {
+        setIsDemoMode(stored === 'true');
+      } else {
+        localStorage.setItem(DEMO_MODE_KEY, 'true');
+      }
+      setMounted(true);
     }
   }, [isAdminUser]);
 
   const toggleDemoMode = () => {
-    
     setIsDemoMode(prev => {
       const next = !prev;
       if (typeof window !== 'undefined') {
@@ -43,8 +51,15 @@ export function DemoModeProvider({
     });
   };
 
+  const setDemoMode = (val: boolean) => {
+    setIsDemoMode(val);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(DEMO_MODE_KEY, String(val));
+    }
+  };
+
   return (
-    <DemoModeContext.Provider value={{ isDemoMode, toggleDemoMode, isAdmin: isAdminUser }}>
+    <DemoModeContext.Provider value={{ isDemoMode, toggleDemoMode, setDemoMode, isAdmin: isAdminUser }}>
       {children}
     </DemoModeContext.Provider>
   );

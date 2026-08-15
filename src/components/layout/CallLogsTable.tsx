@@ -674,7 +674,7 @@ export default function CallLogsTable({ initialCalls }: { initialCalls: CallReco
                               border: isCurrentActiveMatch
                                 ? '2px solid #eab308'
                                 : isBubblePlaying
-                                ? '1.5px dashed #8b5cf6'
+                                ? '1.5px dashed #10b981'
                                 : bubble.sender === 'ai' 
                                 ? '1px solid var(--stripe-border)' 
                                 : '1px solid transparent',

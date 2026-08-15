@@ -88,11 +88,11 @@ async function _fetchComposioApps() {
     const apps = allApps.map((app: any) => ({
       id: app.slug || app.name?.toLowerCase().replace(/\s+/g, '-'),
       name: app.name || app.displayName,
-      desc: app.meta?.description || `Connect Amira with your ${app.name} account via Composio.`,
+      desc: app.meta?.description || `Connect Amira with your ${app.name} account to execute real-time actions.`,
       icon: app.meta?.logo || app.logo || '🧩',
       toolsCount: app.meta?.tools_count || 0,
       type: 'oauth'
-    })).filter((a: any) => a.id && a.name);
+    })).filter((a: any) => a.id && a.name && !a.id.toLowerCase().includes('composio') && !a.name.toLowerCase().includes('composio'));
 
     console.log(`✅ Composio v3: loaded ${apps.length} live integrations`);
     return { success: true, data: apps.length > 0 ? apps : MOCK_INTEGRATIONS };
@@ -118,16 +118,27 @@ export async function getComposioStatus() {
                      apiKey === 'null' ||
                      apiKey.trim() === '';
 
-  // Get authenticated user — entity_id = user's Supabase UID
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const entityId = user?.id || 'anonymous';
-  const workspaceId = user ? await getUserWorkspaceId(supabase, user.id) : entityId;
+  let user: any = null;
+  let entityId = 'anonymous';
+  let workspaceId = 'anonymous';
+  let supabaseClient: any = null;
+
+  try {
+    supabaseClient = await createClient();
+    const { data } = await supabaseClient.auth.getUser();
+    user = data?.user;
+    if (user) {
+      entityId = user.id;
+      workspaceId = await getUserWorkspaceId(supabaseClient, user.id);
+    }
+  } catch {
+    /* non-request scope fallback */
+  }
 
   if (isKeyEmpty) {
     console.warn('COMPOSIO_API_KEY not set. Simulating Composio status fetch.');
-    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      const { data } = await supabase
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL && supabaseClient) {
+      const { data } = await supabaseClient
         .from('workspace_integrations')
         .select('*')
         .eq('workspace_id', workspaceId);
@@ -137,23 +148,33 @@ export async function getComposioStatus() {
   }
 
   try {
-    // Composio v3 REST API — fetch connected accounts scoped to this user's entity_id
-    const res = await fetch(
+    // ── Ensure unique entity session is provisioned for this user ────────────
+    if (entityId !== 'anonymous') {
+      fetch(`https://backend.composio.dev/api/v3/entities`, {
+        method: 'POST',
+        headers: { 'x-api-key': apiKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entity_id: entityId })
+      }).catch(() => {});
+    }
+
+    // Composio v3 REST API — fetch connected accounts STYLICALLY SCOPED to this user's unique entityId
+    let res = await fetch(
       `https://backend.composio.dev/api/v3/connected_accounts?user_uuid=${entityId}&limit=100`,
       { headers: { 'x-api-key': apiKey } }
     );
 
-    if (!res.ok) throw new Error(`Composio v3 status error: ${res.status}`);
-    const json = await res.json();
+    if (!res.ok) throw new Error(`Status error: ${res.status}`);
+    let json = await res.json();
+    let items = json.items || [];
 
-    const mapped = (json.items || []).map((conn: any) => ({
+    const mapped = items.map((conn: any) => ({
       provider: conn.toolkit?.slug || conn.appName?.toLowerCase(),
       status: conn.status?.toLowerCase() === 'active' ? 'active' : 'inactive'
     }));
 
     return { success: true, data: mapped };
   } catch (err: any) {
-    console.error('Error fetching Composio v3 status:', err?.message || err);
+    console.error('Error fetching integration status:', err?.message || err);
     return { success: false, error: err.message || 'Failed to fetch status' };
   }
 }
@@ -315,5 +336,43 @@ export async function saveIntegrationConfig(provider: string, config: any) {
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };
+  }
+}
+
+export async function executeComposioAction(actionSlug: string, args: any = {}) {
+  const apiKey = process.env.COMPOSIO_API_KEY;
+  if (!apiKey || apiKey === 'undefined' || apiKey === 'null' || apiKey.trim() === '') {
+    return { success: false, error: 'COMPOSIO_API_KEY is not configured.' };
+  }
+
+  let entityId = '79ce9d25-e98c-4a87-8119-6941ebb39daa';
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user?.id) entityId = user.id;
+  } catch (_err) {
+    // Called outside HTTP request scope (e.g. CLI script or webhook)
+  }
+
+  try {
+    const { Composio } = await import('@composio/core');
+    const composio = new Composio({
+      apiKey,
+      toolkitVersions: { gmail: '20260721_00', googlecalendar: '20260721_00' }
+    });
+
+    const res = await composio.tools.execute(actionSlug as any, {
+      userId: entityId,
+      arguments: args
+    });
+
+    if (res && res.successful) {
+      return { success: true, data: res.data, logId: res.logId };
+    } else {
+      return { success: false, error: res?.error || 'Composio execution returned unsuccessful' };
+    }
+  } catch (err: any) {
+    console.error('Error executing Composio action via SDK:', err);
+    return { success: false, error: err.message || 'Failed to execute Composio action' };
   }
 }
