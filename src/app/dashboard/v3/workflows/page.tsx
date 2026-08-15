@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDemoMode } from '@/contexts/DemoModeContext';
 import { getWorkspaceWorkflows, saveWorkflowRecipe, toggleWorkflowStatus, deleteWorkflowRecipe, WorkflowRecipe } from '@/app/actions/workflows';
-import { getWorkspaceAgents } from '@/app/actions/agent';
+import { getAgents } from '@/app/actions/agent';
 
 export default function V3WorkflowsPage() {
   const { isDemoMode } = useDemoMode();
@@ -34,16 +34,16 @@ export default function V3WorkflowsPage() {
     try {
       const [wfRes, agRes] = await Promise.all([
         getWorkspaceWorkflows(),
-        getWorkspaceAgents()
+        getAgents()
       ]);
 
       if (wfRes.success && wfRes.data) {
         setWorkflows(wfRes.data);
       }
-      if (agRes.success && agRes.data) {
-        setAgents(agRes.data);
-        if (agRes.data.length > 0) {
-          setSelectedAgentId(agRes.data[0].id);
+      if (agRes && Array.isArray(agRes)) {
+        setAgents(agRes);
+        if (agRes.length > 0) {
+          setSelectedAgentId(agRes[0].id);
         }
       }
     } catch (err) {
