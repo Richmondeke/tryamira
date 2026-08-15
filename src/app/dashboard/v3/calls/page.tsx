@@ -190,15 +190,19 @@ export default function V3CallsPage() {
       getVapiCalls().then(data => {
         if (Array.isArray(data) && data.length > 0) {
           const mapped: CallRecord[] = data.map((item: any, idx: number) => {
-            const rawMessages = item.messages || item.artifact?.messages || item.transcriptMessages || [];
-            let parsedTranscript = rawMessages.map((msg: any, i: number) => ({
-              speaker: msg.role === 'assistant' || msg.role === 'agent' || msg.role === 'bot' ? 'Agent' : 'Customer',
-              text: msg.message || msg.content || msg.text || '',
-              timestamp: `00:${String(Math.min(i * 12, 59)).padStart(2, '0')}`,
-              seconds: i * 12
-            })).filter((t: any) => t.text.trim().length > 0);
+            // Parse transcript from Vapi messages — exclude system prompts
+            const rawMessages = Array.isArray(item.messages) ? item.messages : (Array.isArray(item.artifact?.messages) ? item.artifact.messages : []);
+            let parsedTranscript = rawMessages
+              .filter((msg: any) => msg.role !== 'system' && (msg.message || msg.content || msg.text || '').trim().length > 0)
+              .map((msg: any, i: number) => ({
+                speaker: (msg.role === 'assistant' || msg.role === 'agent' || msg.role === 'bot') ? 'Agent' : 'Customer',
+                text: msg.message || msg.content || msg.text || '',
+                timestamp: `00:${String(Math.min(i * 12, 59)).padStart(2, '0')}`,
+                seconds: i * 12
+              }));
 
-            if (parsedTranscript.length === 0 && typeof item.transcript === 'string' && item.transcript.trim()) {
+            // Fallback: parse the transcript plain-text string from Vapi
+            if (parsedTranscript.length === 0 && typeof item.transcript === 'string' && item.transcript.trim().length > 0) {
               parsedTranscript = item.transcript.split('\n').filter(Boolean).map((line: string, i: number) => {
                 const isAgent = line.toLowerCase().startsWith('ai:') || line.toLowerCase().startsWith('assistant:') || line.toLowerCase().startsWith('agent:');
                 const cleanText = line.replace(/^(ai|assistant|agent|user|customer):\s*/i, '');
@@ -211,42 +215,38 @@ export default function V3CallsPage() {
               });
             }
 
-            const DYNAMIC_NAMES = ['David O.', 'Rajesh Kumar', 'Sarah Jenkins', 'Emeka Okafor', 'Elena Vance', 'Marcus Aurelius', 'Aisha Bello', 'Sophia Chen', 'Liam Smith', 'Amara Diallo'];
-            const rawName = item.customer?.name;
-            const customerName = (rawName && !rawName.toLowerCase().includes('orlando') && rawName !== 'Inbound Caller')
-              ? rawName
-              : DYNAMIC_NAMES[idx % DYNAMIC_NAMES.length];
+            // Use actual Vapi customer name — no overrides
+            const customerName = item.customer?.name || item.customer?.number || 'Unknown Caller';
 
             const recUrl = item.recordingUrl || item.stereoRecordingUrl || item.artifact?.recordingUrl || '';
 
             return {
               id: item.id || `live-${idx}`,
               flag: '🌐',
-              num: item.customer?.number || item.phoneNumber?.number || item.phoneNumber || '+1 (415) 555-0198',
+              num: item.customer?.number || item.phoneNumber?.number || item.phoneNumber || 'Unknown Number',
               customerName,
               location: 'Global Phone Route',
               agent: item.assistant?.name || 'Amira Agent',
               engine: item.assistant?.voice?.provider ? `Amira ${item.assistant.voice.provider}` : 'Amira Voice Engine',
-              dur: item.duration ? `${Math.floor(item.duration / 60)}:${String(Math.floor(item.duration % 60)).padStart(2, '0')}` : '01:15',
-              durSeconds: item.duration || 75,
-              cost: `$${(item.cost || 0.05).toFixed(2)}`,
-              latency: '310ms',
+              dur: item.duration ? `${Math.floor(item.duration / 60)}:${String(Math.floor(item.duration % 60)).padStart(2, '0')}` : '0:00',
+              durSeconds: item.duration || 0,
+              cost: `$${(item.cost || 0).toFixed(2)}`,
+              latency: item.artifact?.latency ? `${item.artifact.latency}ms` : '--',
               status: item.status === 'ended' ? 'Completed' : item.status || 'Completed',
               time: item.createdAt ? new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent',
               fullDate: new Date(item.createdAt || item.startedAt || Date.now()).toLocaleString(),
-              sentiment: item.analysis?.sentiment || 'Positive',
-              sentimentScore: '94%',
-              outcome: item.analysis?.summary || item.endedReason || 'Call Processed',
+              sentiment: item.analysis?.sentiment || '--',
+              sentimentScore: item.analysis?.sentimentScore ? `${Math.round(item.analysis.sentimentScore * 100)}%` : '--',
+              outcome: item.analysis?.summary || item.endedReason || 'No summary',
               recordingUrl: recUrl,
               summary: Array.isArray(item.analysis?.structuredData?.takeaways)
                 ? item.analysis.structuredData.takeaways
-                : [item.analysis?.summary || 'Call processed successfully by Amira Voice Engine.'],
+                : [item.analysis?.summary || item.endedReason || 'No AI summary available for this call.'],
               toolActions: Array.isArray(item.analysis?.structuredData?.toolCalls)
                 ? item.analysis.structuredData.toolCalls.map((t: any) => `✓ ${t.name || 'Tool Action Executed'}`)
                 : ['✓ Call Logged'],
               transcript: parsedTranscript.length > 0 ? parsedTranscript : [
-                { speaker: 'Agent', text: 'Call connected with customer.', timestamp: '00:02', seconds: 2 },
-                { speaker: 'Customer', text: `Hello, I am ${customerName} calling regarding my account inquiry.`, timestamp: '00:08', seconds: 8 }
+                { speaker: 'Agent', text: `No transcript available — call ended: ${item.endedReason || 'unknown reason'}`, timestamp: '00:00', seconds: 0 }
               ]
             };
           });
