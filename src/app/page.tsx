@@ -1233,15 +1233,35 @@ export default function LandingPage() {
       </section>
 
       {/* ── FINAL CTA ────────────────────────────────────────────────────────── */}
-      <section className={styles.ctaSection} style={{ background: '#1b5a92 url(/amira-background.png) center/cover no-repeat', color: '#ffffff', padding: '6rem 1.5rem 0 1.5rem', overflow: 'hidden' }}>
+      <section className={styles.ctaSection} style={{ background: '#1b5a92 url(/amira-background.png) center/cover no-repeat', color: '#ffffff', padding: '5.5rem 1.5rem 6rem 1.5rem', overflow: 'hidden' }}>
         <div className={styles.ctaInner} style={{ maxWidth: '920px', textAlign: 'center', margin: '0 auto' }}>
           <span className={styles.eyebrow} style={{ color: '#10b981', fontWeight: 800 }}>YOUR CUSTOMERS ARE WAITING</span>
           <h2 className={styles.ctaTitle} style={{ fontSize: 'clamp(2.25rem, 4.5vw, 3.25rem)', color: '#ffffff', marginTop: '0.5rem' }}>
             Put your customer support on autopilot.
           </h2>
-          <p className={styles.ctaSub} style={{ color: 'rgba(255,255,255,0.85)', fontSize: '17px', lineHeight: 1.6, margin: '1rem 0 2rem 0' }}>
+          <p className={styles.ctaSub} style={{ color: 'rgba(255,255,255,0.85)', fontSize: '17px', lineHeight: 1.6, margin: '1rem 0 0 0' }}>
             Don't make them wait for an answer. Deploy an AI customer support agent that works <strong>24/7, across every channel, and at the speed your customers expect.</strong>
           </p>
+
+          {/* Autopilot Showcase Image — Placed between Title/Description and CTA Buttons */}
+          <div style={{ width: '100%', margin: '2rem auto 2.5rem auto', textAlign: 'center', lineHeight: 0 }}>
+            <ScrollReveal direction="up" distance={80} duration={0.9}>
+              <img 
+                src="/amira-auto-2.png" 
+                alt="Put your customer support on autopilot - Amira AI" 
+                style={{ 
+                  width: '100%', 
+                  maxWidth: '820px', 
+                  height: 'auto', 
+                  display: 'block', 
+                  margin: '0 auto',
+                  borderRadius: '16px',
+                  boxShadow: '0 16px 40px rgba(0, 0, 0, 0.25)',
+                  objectFit: 'contain'
+                }} 
+              />
+            </ScrollReveal>
+          </div>
 
           <p style={{ fontSize: '20px', fontWeight: 800, color: '#10b981', marginBottom: '2rem' }}>
             Focus on what matters. Let AI handle the rest.
@@ -1257,28 +1277,9 @@ export default function LandingPage() {
             </a>
           </div>
 
-          <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', marginBottom: '3rem' }}>
+          <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', margin: 0 }}>
             No complicated setup. No massive support team required.
           </p>
-
-          {/* Amira Section Last Image Showcase */}
-          <div style={{ width: '100%', margin: '0 auto', textAlign: 'center', lineHeight: 0 }}>
-            <ScrollReveal direction="up" distance={80} duration={0.9}>
-              <img 
-                src="/amira-section-last.png" 
-                alt="Put your customer support on autopilot - Amira AI" 
-                style={{ 
-                  width: '95%', 
-                  maxWidth: '720px', 
-                  height: 'auto', 
-                  display: 'block', 
-                  margin: '0 auto',
-                  borderRadius: '16px 16px 0 0',
-                  objectFit: 'contain'
-                }} 
-              />
-            </ScrollReveal>
-          </div>
         </div>
       </section>
 
