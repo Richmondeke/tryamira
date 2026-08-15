@@ -68,6 +68,8 @@ export default function ChatPage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
+    let convChannel: any = null;
+
     if (!isDemoMode) {
       const fetchConversations = async () => {
         const { data, error } = await supabase
@@ -77,10 +79,10 @@ export default function ChatPage() {
 
         if (!error && data && data.length > 0) {
           const mappedData = data.map((conv: any) => ({
-            id: conv.id, name: conv.leads?.name || 'Unknown Lead',
-            channel: conv.channel, status: conv.status,
+            id: conv.id, name: conv.leads?.name || 'Inbound Webchat Lead',
+            channel: conv.channel || 'Web Chat', status: conv.status || 'AI Active',
             avatar: `https://i.pravatar.cc/150?u=${conv.id}`,
-            lastMessage: '', time: 'now', unread: 0
+            lastMessage: 'Conversation active', time: 'Just now', unread: 0
           }));
           setConversations(mappedData);
           setActiveChatId(mappedData[0].id);
@@ -91,7 +93,15 @@ export default function ChatPage() {
           setUseLiveData(true);
         }
       };
+
       fetchConversations();
+
+      // Realtime subscription for incoming Webchat, WhatsApp, and Phone conversations
+      convChannel = supabase.channel('conversations-realtime-inbox')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, () => {
+          fetchConversations();
+        })
+        .subscribe();
     } else {
       setConversations(MOCK_CONVERSATIONS);
       setActiveChatId('mock-1');
@@ -111,6 +121,10 @@ export default function ChatPage() {
       }
     };
     fetchUser();
+
+    return () => {
+      if (convChannel) supabase.removeChannel(convChannel);
+    };
   }, [isDemoMode]);
 
   useEffect(() => {
@@ -227,12 +241,27 @@ export default function ChatPage() {
           </div>
           <div style={{ overflowY: 'auto', flex: 1 }}>
             {!isDemoMode && filtered.length === 0 ? (
-              <div style={{ padding: '3rem 1.25rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+              <div style={{ padding: '3rem 1.25rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
                 <span style={{ fontSize: '28px' }}>💬</span>
                 <div style={{ fontWeight: 650, color: 'var(--text-primary)' }}>No Live Conversations Yet</div>
                 <p style={{ fontSize: '11.5px', margin: 0, lineHeight: 1.4 }}>
                   Inbound chat conversations from your Webchat widget, WhatsApp, or SMS will appear here in real time.
                 </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConversations(MOCK_CONVERSATIONS);
+                    setActiveChatId('mock-1');
+                    setMessages(MOCK_MESSAGES['mock-1']);
+                  }}
+                  style={{
+                    padding: '0.45rem 0.85rem', borderRadius: '6px', backgroundColor: '#1b5a92',
+                    color: '#ffffff', border: 'none', fontSize: '11.5px', fontWeight: 600, cursor: 'pointer',
+                    marginTop: '0.5rem'
+                  }}
+                >
+                  ⚡ Simulate Inbound Webchat
+                </button>
               </div>
             ) : filtered.length === 0 ? (
               <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13px' }}>No conversations found.</div>
