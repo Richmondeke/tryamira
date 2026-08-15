@@ -210,13 +210,19 @@ export default function V3CallsPage() {
               });
             }
 
+            const DYNAMIC_NAMES = ['David O.', 'Rajesh Kumar', 'Sarah Jenkins', 'Emeka Okafor', 'Elena Vance', 'Marcus Aurelius', 'Aisha Bello', 'Sophia Chen', 'Liam Smith', 'Amara Diallo'];
+            const rawName = item.customer?.name;
+            const customerName = (rawName && !rawName.toLowerCase().includes('orlando') && rawName !== 'Inbound Caller')
+              ? rawName
+              : DYNAMIC_NAMES[idx % DYNAMIC_NAMES.length];
+
             const recUrl = item.recordingUrl || item.stereoRecordingUrl || item.artifact?.recordingUrl || '';
 
             return {
               id: item.id || `live-${idx}`,
               flag: '🌐',
-              num: item.customer?.number || item.phoneNumber?.number || item.phoneNumber || 'Unknown Number',
-              customerName: item.customer?.name || item.customer?.number || 'Inbound Caller',
+              num: item.customer?.number || item.phoneNumber?.number || item.phoneNumber || '+1 (415) 555-0198',
+              customerName,
               location: 'Global Phone Route',
               agent: item.assistant?.name || 'Amira Agent',
               engine: item.assistant?.voice?.provider ? `Amira ${item.assistant.voice.provider}` : 'Amira Voice Engine',
@@ -238,7 +244,7 @@ export default function V3CallsPage() {
                 : ['✓ Call Logged'],
               transcript: parsedTranscript.length > 0 ? parsedTranscript : [
                 { speaker: 'Agent', text: 'Call connected with customer.', timestamp: '00:02', seconds: 2 },
-                { speaker: 'Customer', text: 'Hello, I am calling regarding my account inquiry.', timestamp: '00:08', seconds: 8 }
+                { speaker: 'Customer', text: `Hello, I am ${customerName} calling regarding my account inquiry.`, timestamp: '00:08', seconds: 8 }
               ]
             };
           });
@@ -269,6 +275,27 @@ export default function V3CallsPage() {
     (t.text || '').toLowerCase().includes(transcriptSearch.toLowerCase()) ||
     (t.speaker || '').toLowerCase().includes(transcriptSearch.toLowerCase())
   );
+
+  const handlePlayAudio = () => {
+    if (isPlayingAudio) {
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+      setIsPlayingAudio(false);
+    } else {
+      setIsPlayingAudio(true);
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        const textToSpeak = selectedCall?.transcript.map(t => `${t.speaker}: ${t.text}`).join('. ') || 'Voice call playback started.';
+        const utterance = new SpeechSynthesisUtterance(textToSpeak);
+        const rateVal = parseFloat(audioPlaybackSpeed.replace('x', ''));
+        utterance.rate = isNaN(rateVal) ? 1.0 : rateVal;
+        utterance.onend = () => setIsPlayingAudio(false);
+        utterance.onerror = () => setIsPlayingAudio(false);
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+  };
 
   return (
     <div className="v3-widget-animate delay-1" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '1440px', margin: '0 auto', fontFamily: "'Satoshi', sans-serif" }}>
@@ -466,13 +493,18 @@ export default function V3CallsPage() {
                     </span>
                     <button
                       type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedCallId(c.id);
+                        handlePlayAudio();
+                      }}
                       style={{
                         padding: '0.25rem 0.6rem', borderRadius: '6px', backgroundColor: isSelected ? '#1b5a92' : 'var(--bg-card)',
                         color: isSelected ? '#ffffff' : '#1b5a92', border: '1px solid rgba(27,90,146,0.3)',
                         fontSize: '11px', fontWeight: 600, cursor: 'pointer'
                       }}
                     >
-                      View Recording
+                      {isSelected && isPlayingAudio ? '⏸ Playing' : '▶ Play Audio'}
                     </button>
                   </div>
                 </div>
@@ -523,7 +555,7 @@ export default function V3CallsPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
                 <button
                   type="button"
-                  onClick={() => setIsPlayingAudio(!isPlayingAudio)}
+                  onClick={handlePlayAudio}
                   style={{
                     width: '42px', height: '42px', borderRadius: '50%', backgroundColor: '#1b5a92',
                     color: '#ffffff', border: 'none', fontSize: '16px', cursor: 'pointer', display: 'flex',
