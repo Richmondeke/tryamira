@@ -1346,9 +1346,39 @@ export default function LandingPage() {
               <h2 className={styles.sectionTitle} style={{ color: '#ffffff', marginTop: '0.5rem' }}>
                 AI support you can trust.
               </h2>
-              <p className={styles.sectionSub} style={{ color: 'rgba(255, 255, 255, 0.85)', margin: '0.75rem auto 2rem auto', maxWidth: '720px' }}>
-                Your customers are trusting you with their questions, information, and conversations. Amira is built to help businesses deliver reliable, consistent customer experiences while keeping your support operation organized and under control.
+              <p className={styles.sectionSub} style={{ color: 'rgba(255, 255, 255, 0.85)', margin: '0.75rem auto 2.5rem auto', maxWidth: '720px' }}>
+                Your customers trust you with their conversations, data, and inquiries. Amira provides enterprise-grade compliance, HIPAA-ready privacy, and STIR/SHAKEN certified voice telephony.
               </p>
+
+              {/* Security & Compliance Certifications Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem', marginBottom: '2.5rem' }}>
+                {[
+                  { badge: "SOC 2 Type II", title: "Audited & Certified", desc: "Enterprise infrastructure audited for Security, Availability, and Confidentiality." },
+                  { badge: "HIPAA Compliant", title: "Healthcare Ready", desc: "BAA agreement ready with Zero Data Retention (ZDR) and PII redaction." },
+                  { badge: "GDPR & CCPA", title: "Data Privacy Standards", desc: "AES-256 encryption at rest, TLS 1.3 in transit, and complete data deletion rights." },
+                  { badge: "STIR / SHAKEN", title: "Certified Telephony", desc: "A-level caller ID verification preventing outbound calls from being flagged as spam." },
+                  { badge: "ISO 27001 & PCI", title: "Cloud & Payment Security", desc: "ISO 27001 security controls and PCI-DSS compliant transaction pipelines." }
+                ].map(cert => (
+                  <div key={cert.badge} className={styles.hoverCard} style={{
+                    backgroundColor: '#ffffff', borderRadius: '16px', padding: '1.35rem',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.06)', textAlign: 'left',
+                    display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
+                  }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 800, padding: '4px 10px', borderRadius: '99px', backgroundColor: '#10b98115', color: '#047857', border: '1px solid #10b98130', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                          {cert.badge}
+                        </span>
+                        <div style={{ width: '28px', height: '28px', borderRadius: '8px', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <GlowIcon name="shield-outline" size={16} color="#1b5a92" />
+                        </div>
+                      </div>
+                      <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#1b5a92', margin: '0 0 0.35rem 0' }}>{cert.title}</h3>
+                      <p style={{ fontSize: '13px', color: '#475569', lineHeight: 1.5, margin: 0 }}>{cert.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
               <div style={{
                 padding: '1.5rem 2.25rem', backgroundColor: '#ffffff', borderRadius: '16px',
