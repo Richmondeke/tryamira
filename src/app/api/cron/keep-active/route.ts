@@ -234,6 +234,7 @@ export async function GET(request: NextRequest) {
     // ── 4. DISPATCH EMAIL VIA RESEND / SENDGRID / COMPOSIO ───────────────────
     let emailSent = false;
     let deliveryMethod = 'none';
+    let deliveryError = null;
     const resendApiKey = 
       process.env.RESEND_API_KEY || 
       process.env.RESEND_KEY || 
@@ -241,6 +242,8 @@ export async function GET(request: NextRequest) {
       process.env.NEXT_PUBLIC_RESEND_API_KEY;
     const sendgridApiKey = process.env.SENDGRID_API_KEY;
     const composioApiKey = process.env.COMPOSIO_API_KEY;
+
+    console.log('[keep-active] Email dispatch check. Resend key present:', !!resendApiKey);
 
     // 1. Try Resend (Fastest & Most Reliable for Next.js)
     if (resendApiKey && !emailSent) {
@@ -263,9 +266,11 @@ export async function GET(request: NextRequest) {
           emailSent = true;
           deliveryMethod = 'resend';
         } else {
-          console.warn('[keep-active] Resend error:', await resendRes.text());
+          deliveryError = await resendRes.text();
+          console.warn('[keep-active] Resend error:', deliveryError);
         }
-      } catch (rErr) {
+      } catch (rErr: any) {
+        deliveryError = rErr?.message || String(rErr);
         console.warn('[keep-active] Resend dispatch error:', rErr);
       }
     }
@@ -329,6 +334,7 @@ export async function GET(request: NextRequest) {
       databaseKeepAlive: 'active_read_write_succeeded',
       emailSent,
       deliveryMethod,
+      deliveryError,
       recipients: adminEmails,
       metrics: {
         totalUsers: totalUsers || 0,
