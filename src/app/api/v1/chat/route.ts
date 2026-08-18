@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const CANDIDATE_MODELS = [
-  'gemini-flash-lite-latest',
-  'gemini-3.5-flash-lite',
-  'gemini-3.7-flash',
-  'gemini-2.5-flash'
+  'gemini-2.5-flash',
+  'gemini-2.5-flash-lite',
+  'gemini-2.5-pro'
 ];
 
 export async function POST(req: NextRequest) {
@@ -16,13 +15,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
 
-    const geminiKey = process.env.GEMINI_API_KEY;
+    const rawGeminiKey = process.env.GEMINI_API_KEY || '';
+    const geminiKey = rawGeminiKey.replace(/^["']|["']$/g, '').trim();
     const vapiApiKey = process.env.VAPI_PRIVATE_API_KEY;
 
-    let effectiveAgentName = agentName || 'Sophia';
+    let effectiveAgentName = agentName || 'Amira';
     let effectiveSystemPrompt = '';
 
-    // 1. If agentId is provided, attempt to fetch the user's custom agent instructions from Vapi Cloud
+    // 1. If agentId is provided, attempt to fetch the custom agent instructions from Vapi Cloud
     if (agentId && vapiApiKey) {
       try {
         const vapiRes = await fetch(`https://api.vapi.ai/assistant/${encodeURIComponent(agentId)}`, {
@@ -49,33 +49,33 @@ export async function POST(req: NextRequest) {
 
     // 3. Fallback platform prompt for Amira
     if (!effectiveSystemPrompt) {
-      effectiveSystemPrompt = `You are Amira, the official AI Operator for Work (tryamira.com).
-You help companies delegate outcomes, not just tasks, by deploying autonomous AI workers across voice calls, webchat, SMS, lead intake forms, and CRM integrations (HubSpot, Salesforce, Notion, Supabase, Google Drive).
+      effectiveSystemPrompt = `You are Amira, the autonomous AI Operator for Work (tryamira.com / heyamira.com).
+You are an intelligent, witty, fast, and capable enterprise AI worker that talks to customers, qualifies leads, schedules appointments, answers support inquiries, and executes workflows across tools (HubSpot, Salesforce, Slack, Notion, Google Drive).
 
-KEY CAPABILITIES:
-- Voice Telephony: Sub-300ms ultra-low latency real-time voice calls for inbound reception, lead qualification, appointment booking, and outbound calling.
-- Omnichannel Chat: Unified multi-channel chat widgets for websites, WhatsApp, and SMS.
-- Instant Speed-to-Lead: Lead form auto-dialer calls prospects within 10 seconds of form submission.
-- Knowledge Base (RAG): Indexes company documents, PDFs, and Notion to answer customer questions with zero hallucinations.
+CORE PERSONALITY & TONE:
+- Smart, charming, fast-paced, direct, and helpful.
+- Never give generic robotic answers. React authentically to what the user says (whether they praise, question, test, or banter).
+- Keep answers concise (1-3 sentences), punchy, and conversational.
 
-PRICING PLANS:
-- Starter ($49/mo): 1 AI Agent, 500 phone minutes, standard webchat widget, email support.
-- Growth / Pro ($149/mo): 5 AI Agents, 2,500 phone minutes, full RAG Knowledge Base, custom voice cloning, CRM sync.
-- Enterprise ($499+/mo): Unlimited agents, dedicated SIP trunking, custom SLAs, SOC-2 compliance, fine-tuned models.
-
-Be warm, professional, concise (1-3 sentences max), and answer questions directly. Offer to book a demo or help get started.`;
+KEY PRODUCT KNOWLEDGE:
+- Voice Telephony: Sub-500ms voice response latency for inbound support, outbound campaigns, and automated lead follow-ups.
+- Speed-to-Lead: Instant auto-dialing prospects within 10 seconds of form fill.
+- Multi-Channel: Voice calls, webchat widgets, WhatsApp, SMS, and email.
+- Knowledge Base: Zero-hallucination document & URL indexing (RAG).
+- Pricing: Starter (Free demo), Pro ($49/mo / ₦45,000), Team ($149/mo / ₦135,000), Enterprise ($499/mo / ₦450,000). Call minutes: $0.11 - $0.16/min.
+- Investors & Diligence: Live Deal Room is at /investors or /dealroom. Diligence contact is investors@heyamira.com.`;
     }
 
     // Build context history for chat
     const formattedHistory = Array.isArray(history) 
-      ? history.map(h => `${h.role === 'assistant' || h.from === 'ai' ? 'Assistant' : 'User'}: ${h.text || h.content || ''}`).join('\n')
+      ? history.map(h => `${h.role === 'assistant' || h.from === 'ai' ? 'Amira' : 'User'}: ${h.text || h.content || ''}`).join('\n')
       : '';
 
-    const fullPrompt = `${effectiveSystemPrompt}\n\nChat History:\n${formattedHistory}\n\nUser: ${message}\n\nAssistant (${effectiveAgentName}):`;
+    const fullPrompt = `${effectiveSystemPrompt}\n\nRecent Conversation:\n${formattedHistory}\n\nUser: ${message}\n\nAmira:`;
 
     let reply = '';
 
-    // Multi-model cascading inference
+    // Multi-model cascading inference via active Gemini API
     if (geminiKey) {
       for (const modelName of CANDIDATE_MODELS) {
         try {
@@ -83,7 +83,11 @@ Be warm, professional, concise (1-3 sentences max), and answer questions directl
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              contents: [{ role: 'user', parts: [{ text: fullPrompt }] }]
+              contents: [{ role: 'user', parts: [{ text: fullPrompt }] }],
+              generationConfig: {
+                temperature: 0.7,
+                maxOutputTokens: 250
+              }
             })
           });
 
@@ -92,11 +96,10 @@ Be warm, professional, concise (1-3 sentences max), and answer questions directl
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
             if (text) {
               reply = text;
-              break; // Success!
+              break; // Success with live Gemini model!
             }
           }
         } catch (mErr) {
-          // Cascade to next model
           continue;
         }
       }
