@@ -69,12 +69,16 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
 
         const vapi_assistant_id = profileData?.vapi_assistant_id || `vapi-ast-${user.id.replace(/[^a-zA-Z0-9]/g, '').slice(0, 12)}`;
 
+        const isExplicitAdmin = 
+          user.email === 'richmondeke@gmail.com' || 
+          profileData?.role === 'admin';
+
         const constructed: UserProfile = {
           id: user.id,
           email: user.email || '',
           full_name,
-          role: profileData?.role || 'user',
-          plan: profileData?.plan || 'pro',
+          role: isExplicitAdmin ? 'admin' : (profileData?.role || 'user'),
+          plan: isExplicitAdmin ? 'enterprise' : (profileData?.plan || 'pro'),
           workspace_id: profileData?.workspace_id || null,
           vapi_assistant_id,
           initials,
@@ -89,6 +93,7 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
           if (constructed.plan) {
             localStorage.setItem('amira_billing_tier', constructed.plan);
           }
+          localStorage.setItem('amira_is_admin', isExplicitAdmin ? 'true' : 'false');
           localStorage.setItem('amira_user_vapi_id', vapi_assistant_id);
         }
         setIsLoading(false);
@@ -99,9 +104,9 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
     }
 
     // Fallback profile for dev/demo or local offline mode
-    let userEmail = 'richondeke@gmail.com';
-    let userFullName = 'Richon Deke';
-    let userInitials = 'RD';
+    let userEmail = 'richmondeke@gmail.com';
+    let userFullName = 'Richmond Eke';
+    let userInitials = 'RE';
 
     if (typeof window !== 'undefined') {
       const match = document.cookie.match(/amira_user_email=([^;]+)/);
