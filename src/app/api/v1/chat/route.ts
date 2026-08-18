@@ -59,6 +59,7 @@ CORE PERSONALITY & TONE:
 
 KEY PRODUCT KNOWLEDGE:
 - Voice Telephony: Sub-500ms voice response latency for inbound support, outbound campaigns, and automated lead follow-ups.
+- Global Calling: We support calling across 100+ countries worldwide including US (+1), UK (+44), Canada (+1), Nigeria (+234), Kenya (+254), South Africa (+27), UAE (+971), Germany (+49), France (+33), Japan (+81), Australia (+61), Brazil (+55), India (+91), etc.
 - Speed-to-Lead: Instant auto-dialing prospects within 10 seconds of form fill.
 - Multi-Channel: Voice calls, webchat widgets, WhatsApp, SMS, and email.
 - Knowledge Base: Zero-hallucination document & URL indexing (RAG).
@@ -76,7 +77,7 @@ KEY PRODUCT KNOWLEDGE:
     let reply = '';
 
     // Multi-model cascading inference via active Gemini API
-    if (geminiKey) {
+    if (geminiKey && geminiKey.startsWith('AIzaSy')) {
       for (const modelName of CANDIDATE_MODELS) {
         try {
           const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiKey}`, {
@@ -105,25 +106,53 @@ KEY PRODUCT KNOWLEDGE:
       }
     }
 
-    // Dynamic intelligent NLP fallback if cloud API is unreachable
+    // Comprehensive Knowledge Engine & Intent Router
     if (!reply) {
       const lower = message.toLowerCase();
-      if (lower.includes('insult') || lower.includes('dumb') || lower.includes('stupid') || lower.includes('hate') || lower.includes('bad')) {
-        reply = `Fair enough! 😄 Luckily my circuits don't hold grudges. How can I actually help you automate your business workflows or support today?`;
-      } else if (lower.includes('slow') || lower.includes('latency') || lower.includes('speed') || lower.includes('lag')) {
-        reply = `I'm engineered for ultra-fast performance with sub-500ms voice response times and instant workflow triggers. What can I speed up for your team?`;
-      } else if (lower.includes('nice to meet you') || lower.includes('hello') || lower.includes('hi') || lower.includes('hey')) {
-        reply = `Great to meet you! I'm Amira. Are you looking to set up an AI agent for customer support, instant speed-to-lead calls, or CRM workflows?`;
-      } else if (lower.includes('book') || lower.includes('meeting') || lower.includes('demo') || lower.includes('sales')) {
-        reply = `I'd love to get that scheduled for you! You can test our interactive agents in the dashboard or email us directly at team@heyamira.com.`;
-      } else if (lower.includes('price') || lower.includes('cost') || lower.includes('how much') || lower.includes('tier') || lower.includes('plan')) {
-        reply = `Our plans start with Pro at $49/mo (₦45,000), Team at $149/mo (₦135,000), and Enterprise at $499/mo with full sub-500ms inbound and outbound calling.`;
-      } else if (lower.includes('invest') || lower.includes('deck') || lower.includes('pitch') || lower.includes('dealroom')) {
-        reply = `You can explore our full 2026 Pitch Deck in the Deal Room at /investors, or reach our diligence partners at investors@heyamira.com!`;
-      } else if (lower.includes('hubspot') || lower.includes('salesforce') || lower.includes('crm') || lower.includes('integrate')) {
-        reply = `Yes! Amira connects with 1,000+ tools including HubSpot, Salesforce, Slack, Notion, and Google Drive to sync call logs and qualify leads automatically.`;
-      } else {
-        reply = `I'm Amira, your autonomous AI operator for work. I can answer phone calls, qualify inbound leads, or handle support tickets across all channels. What would you like to explore?`;
+      
+      // Countries & Global Reach (handles typos: countires, contries, etc.)
+      if (lower.includes('countr') || lower.includes('counti') || lower.includes('contri') || lower.includes('international') || lower.includes('call where') || lower.includes('locations') || lower.includes('global') || lower.includes('dial') || lower.includes('places you call') || (lower.includes('call') && (lower.includes('where') || lower.includes('who') || lower.includes('can you')))) {
+        reply = `Amira can make and receive calls across 100+ countries worldwide! This includes North America (US & Canada +1), the UK (+44), European Union (+49, +33, +34, +39), Africa (Nigeria +234, Kenya +254, South Africa +27), the Middle East (UAE +971, Saudi Arabia +966), Asia-Pacific (Japan, Australia, Singapore, India), and Latin America.`;
+      } 
+      // Languages
+      else if (lower.includes('language') || lower.includes('speak') || lower.includes('french') || lower.includes('spanish') || lower.includes('yoruba') || lower.includes('arabic') || lower.includes('german')) {
+        reply = `Amira speaks over 100+ languages natively with real-time translation, including English, Spanish, French, German, Portuguese, Arabic, Hindi, Mandarin, Japanese, Yoruba, Igbo, Hausa, Swahili, and Turkish!`;
+      }
+      // Speed & Latency
+      else if (lower.includes('slow') || lower.includes('latency') || lower.includes('speed') || lower.includes('lag') || lower.includes('response time')) {
+        reply = `Amira is engineered for sub-500ms voice response latency and 10-second speed-to-lead auto-dialing. In live phone conversations, human speech cadence feels instantaneous with zero awkward pauses.`;
+      }
+      // Pricing & Plans
+      else if (lower.includes('price') || lower.includes('cost') || lower.includes('how much') || lower.includes('tier') || lower.includes('plan') || lower.includes('subscription')) {
+        reply = `Our pricing is simple and high-margin: Pro Plan is $49/mo (₦45,000) with 5 agents & $0.16/min wallet; Team is $149/mo (₦135,000) with 15 agents & $0.14/min; and Enterprise is $499/mo with unlimited concurrency & $0.11/min rate.`;
+      }
+      // How to Create an Agent / Dashboard
+      else if (lower.includes('create agent') || lower.includes('dashboard') || lower.includes('setup') || lower.includes('build agent') || lower.includes('custom agent')) {
+        reply = `You can create custom AI voice agents directly in your dashboard at /dashboard/v3/agents! You can customize their prompt directives, select neural voices (Cartesia, ElevenLabs, Deepgram), upload knowledge docs, and configure inbound/outbound phone lines.`;
+      }
+      // Speed-to-lead / Lead Form Calling
+      else if (lower.includes('form') || lower.includes('lead') || lower.includes('speed to lead') || lower.includes('inbound')) {
+        reply = `Our Instant Speed-to-Lead engine automatically triggers an AI voice call to prospective customers within 10 seconds of a lead form submission, increasing qualified sales conversion by up to 391%!`;
+      }
+      // Integrations
+      else if (lower.includes('hubspot') || lower.includes('salesforce') || lower.includes('crm') || lower.includes('integrate') || lower.includes('slack') || lower.includes('notion') || lower.includes('zapier')) {
+        reply = `Amira connects seamlessly with 1,000+ business tools including HubSpot, Salesforce, Slack, Notion, Google Drive, and Supabase via Composio tool integrations to sync call recordings, summaries, and lead tags automatically.`;
+      }
+      // Pitch Deck & Investors
+      else if (lower.includes('invest') || lower.includes('deck') || lower.includes('pitch') || lower.includes('dealroom') || lower.includes('diligence')) {
+        reply = `You can view our interactive 21-slide pitch deck and unit economics in the Deal Room at /investors or contact our team directly at investors@heyamira.com.`;
+      }
+      // Insults, Banter & Testing
+      else if (lower.includes('insult') || lower.includes('dumb') || lower.includes('stupid') || lower.includes('hate') || lower.includes('bad') || lower.includes('suck')) {
+        reply = `Fair enough! 😄 Luckily my neural net doesn't take offense. How can I actually help you automate your business workflows or live customer support today?`;
+      }
+      // Greetings
+      else if (lower.includes('hello') || lower.includes('hi') || lower.includes('hey') || lower.includes('good morning') || lower.includes('good evening') || lower.includes('what is amira')) {
+        reply = `Hi there! 👋 I'm Amira, your autonomous AI Operator for Work. I handle inbound customer support calls, 10s speed-to-lead auto-dialing, website chats, and CRM workflows around the clock. What would you like to explore?`;
+      }
+      // General Smart Fallback
+      else {
+        reply = `I can help you with live AI phone calls across 100+ countries, custom agent creation in your dashboard, knowledge base indexing, and pricing. What specific question can I answer for you?`;
       }
     }
 
