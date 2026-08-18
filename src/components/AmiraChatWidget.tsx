@@ -16,7 +16,7 @@ export default function AmiraChatWidget() {
     {
       id: 'welcome',
       role: 'assistant',
-      text: "Hi there! 👋 I'm Amira, your autonomous AI Operator for Work. How can I help you automate your workflows or customer care today?",
+      text: "Hi there! 👋 I'm Amira, your autonomous AI Operator for Work. How can I help you automate customer care, voice calls, or team workflows today?",
       time: 'Just now'
     }
   ]);
@@ -92,20 +92,20 @@ export default function AmiraChatWidget() {
   return (
     <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 999999, fontFamily: "'Satoshi', -apple-system, BlinkMacSystemFont, sans-serif" }}>
       
-      {/* ── EXPANDED CHAT WINDOW ────────────────────────────────────────── */}
+      {/* ── EXPANDED CHAT WINDOW (HERO AMIRABACKGROUND CONTAINER) ───────── */}
       {isOpen && (
         <div style={{
           position: 'fixed',
           bottom: '96px',
           right: '24px',
-          width: '380px',
+          width: '390px',
           maxWidth: 'calc(100vw - 32px)',
-          height: '560px',
+          height: '580px',
           maxHeight: 'calc(100vh - 120px)',
-          backgroundColor: '#ffffff',
-          borderRadius: '20px',
-          boxShadow: '0 16px 48px rgba(0, 0, 0, 0.2), 0 4px 16px rgba(27, 90, 146, 0.12)',
-          border: '1px solid rgba(0, 0, 0, 0.08)',
+          background: '#1b5a92 url(/amira-background.png) center/cover no-repeat',
+          borderRadius: '24px',
+          boxShadow: '0 20px 60px rgba(27, 90, 146, 0.45), 0 8px 24px rgba(0, 0, 0, 0.25)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -114,62 +114,65 @@ export default function AmiraChatWidget() {
           
           {/* Header */}
           <div style={{
-            padding: '1rem 1.25rem',
-            backgroundColor: '#1b5a92',
-            background: 'linear-gradient(135deg, #1b5a92 0%, #0d3860 100%)',
+            padding: '1.1rem 1.25rem',
+            backgroundColor: 'rgba(13, 56, 96, 0.65)',
+            backdropFilter: 'blur(12px)',
             color: '#ffffff',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+            borderBottom: '1px solid rgba(255, 255, 255, 0.15)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{ position: 'relative' }}>
                 <img
                   src="/amira-head.png"
-                  alt="Amira AI"
+                  alt="Amira Head"
                   style={{
-                    width: '38px',
-                    height: '38px',
+                    width: '42px',
+                    height: '42px',
                     borderRadius: '50%',
                     backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                    border: '2px solid rgba(255, 255, 255, 0.6)',
-                    objectFit: 'contain'
+                    border: '2px solid rgba(255, 255, 255, 0.8)',
+                    objectFit: 'contain',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
                   }}
                 />
                 <span style={{
                   position: 'absolute',
-                  bottom: '0',
-                  right: '0',
-                  width: '10px',
-                  height: '10px',
+                  bottom: '1px',
+                  right: '1px',
+                  width: '11px',
+                  height: '11px',
                   backgroundColor: '#10b981',
                   borderRadius: '50%',
-                  border: '2px solid #1b5a92'
+                  border: '2px solid #0d3860'
                 }} />
               </div>
 
               <div>
-                <div style={{ fontSize: '15px', fontWeight: 800, letterSpacing: '-0.01em', lineHeight: 1.2 }}>
-                  Amira <span style={{ color: '#10b981', fontSize: '12px' }}>AI</span>
+                <div style={{ fontSize: '16px', fontWeight: 800, letterSpacing: '-0.01em', lineHeight: 1.2 }}>
+                  Amira <span style={{ color: '#10b981', fontSize: '12.5px' }}>AI</span>
                 </div>
-                <div style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.8)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <div style={{ fontSize: '11.5px', color: 'rgba(255, 255, 255, 0.85)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <span>⚡</span> Autonomous Work Operator
                 </div>
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Link
                 href="/investors"
                 style={{
                   fontSize: '11px',
-                  fontWeight: 700,
-                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  fontWeight: 750,
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
                   color: '#ffffff',
-                  padding: '4px 8px',
-                  borderRadius: '6px',
-                  textDecoration: 'none'
+                  padding: '5px 9px',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  border: '1px solid rgba(255, 255, 255, 0.25)',
+                  transition: 'all 0.15s ease'
                 }}
               >
                 📊 Deal Room
@@ -177,16 +180,18 @@ export default function AmiraChatWidget() {
               <button
                 onClick={() => setIsOpen(false)}
                 style={{
-                  background: 'none',
+                  background: 'rgba(255, 255, 255, 0.15)',
                   border: 'none',
-                  color: 'rgba(255, 255, 255, 0.8)',
+                  color: '#ffffff',
                   cursor: 'pointer',
-                  fontSize: '18px',
-                  padding: '4px 6px',
-                  borderRadius: '6px',
+                  fontSize: '16px',
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  transition: 'background 0.15s ease'
                 }}
                 aria-label="Close chat"
               >
@@ -195,7 +200,7 @@ export default function AmiraChatWidget() {
             </div>
           </div>
 
-          {/* Messages Body */}
+          {/* Messages Body with Frosted Gradient Container */}
           <div style={{
             flex: 1,
             padding: '1.25rem',
@@ -203,7 +208,8 @@ export default function AmiraChatWidget() {
             display: 'flex',
             flexDirection: 'column',
             gap: '12px',
-            backgroundColor: '#f8fafc'
+            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+            backdropFilter: 'blur(8px)'
           }}>
             {messages.map((m) => {
               const isUser = m.role === 'user';
@@ -219,19 +225,19 @@ export default function AmiraChatWidget() {
                   }}
                 >
                   <div style={{
-                    padding: '10px 14px',
-                    borderRadius: isUser ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                    backgroundColor: isUser ? '#1b5a92' : '#ffffff',
-                    color: isUser ? '#ffffff' : '#0d0f1a',
+                    padding: '11px 15px',
+                    borderRadius: isUser ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                    backgroundColor: isUser ? '#10b981' : '#ffffff',
+                    color: isUser ? '#ffffff' : '#0f172a',
                     fontSize: '13.5px',
                     lineHeight: 1.5,
-                    boxShadow: isUser ? '0 2px 8px rgba(27, 90, 146, 0.25)' : '0 2px 6px rgba(0, 0, 0, 0.05)',
-                    border: isUser ? 'none' : '1px solid rgba(0, 0, 0, 0.06)',
+                    boxShadow: isUser ? '0 4px 12px rgba(16, 185, 129, 0.35)' : '0 4px 16px rgba(0, 0, 0, 0.15)',
+                    border: isUser ? 'none' : '1px solid rgba(255, 255, 255, 0.8)',
                     wordBreak: 'break-word'
                   }}>
                     {m.text}
                   </div>
-                  <span style={{ fontSize: '10px', color: '#94a3b8', marginTop: '3px', padding: '0 4px' }}>
+                  <span style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.75)', marginTop: '3px', padding: '0 4px' }}>
                     {m.time}
                   </span>
                 </div>
@@ -239,17 +245,17 @@ export default function AmiraChatWidget() {
             })}
 
             {isLoading && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', alignSelf: 'flex-start', padding: '8px 12px', backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.06)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', alignSelf: 'flex-start', padding: '10px 14px', backgroundColor: '#ffffff', borderRadius: '14px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
                 <div style={{ width: '6px', height: '6px', backgroundColor: '#1b5a92', borderRadius: '50%', animation: 'amiraPulse 1s infinite' }} />
                 <div style={{ width: '6px', height: '6px', backgroundColor: '#1b5a92', borderRadius: '50%', animation: 'amiraPulse 1s infinite 0.2s' }} />
                 <div style={{ width: '6px', height: '6px', backgroundColor: '#1b5a92', borderRadius: '50%', animation: 'amiraPulse 1s infinite 0.4s' }} />
               </div>
             )}
 
-            {/* Quick Prompt Pills (Shown until heavy interaction) */}
+            {/* Suggested Questions Pills */}
             {!hasInteracted && (
               <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Suggested Questions:</span>
+                <span style={{ fontSize: '11px', fontWeight: 800, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Suggested Questions:</span>
                 {[
                   "What workflows can Amira automate?",
                   "How does the Voice AI speed-to-lead work?",
@@ -261,14 +267,15 @@ export default function AmiraChatWidget() {
                     onClick={() => handleSend(q)}
                     style={{
                       textAlign: 'left',
-                      padding: '8px 12px',
-                      borderRadius: '8px',
-                      backgroundColor: '#ffffff',
-                      border: '1px solid #cbd5e1',
-                      fontSize: '12px',
+                      padding: '9px 13px',
+                      borderRadius: '10px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                      border: '1px solid rgba(255, 255, 255, 0.4)',
+                      fontSize: '12.5px',
                       color: '#1b5a92',
-                      fontWeight: 650,
+                      fontWeight: 700,
                       cursor: 'pointer',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                       transition: 'all 0.15s ease'
                     }}
                   >
@@ -289,8 +296,9 @@ export default function AmiraChatWidget() {
             }}
             style={{
               padding: '12px 14px',
-              backgroundColor: '#ffffff',
-              borderTop: '1px solid #e2e8f0',
+              backgroundColor: 'rgba(13, 56, 96, 0.75)',
+              backdropFilter: 'blur(12px)',
+              borderTop: '1px solid rgba(255, 255, 255, 0.15)',
               display: 'flex',
               alignItems: 'center',
               gap: '8px'
@@ -303,23 +311,23 @@ export default function AmiraChatWidget() {
               onChange={(e) => setInputText(e.target.value)}
               style={{
                 flex: 1,
-                padding: '10px 14px',
+                padding: '11px 16px',
                 borderRadius: '99px',
-                border: '1px solid #cbd5e1',
+                border: '1px solid rgba(255, 255, 255, 0.25)',
                 fontSize: '13.5px',
                 outline: 'none',
-                backgroundColor: '#f8fafc',
-                color: '#0d0f1a'
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                color: '#0f172a'
               }}
             />
             <button
               type="submit"
               disabled={isLoading || !inputText.trim()}
               style={{
-                width: '38px',
-                height: '38px',
+                width: '40px',
+                height: '40px',
                 borderRadius: '50%',
-                backgroundColor: '#1b5a92',
+                backgroundColor: '#10b981',
                 color: '#ffffff',
                 border: 'none',
                 cursor: isLoading || !inputText.trim() ? 'not-allowed' : 'pointer',
@@ -328,11 +336,11 @@ export default function AmiraChatWidget() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexShrink: 0,
-                boxShadow: '0 2px 8px rgba(27, 90, 146, 0.3)'
+                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)'
               }}
               aria-label="Send message"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M22 2L11 13" />
                 <path d="M22 2L15 22L11 13L2 9L22 2Z" />
               </svg>
@@ -342,46 +350,66 @@ export default function AmiraChatWidget() {
         </div>
       )}
 
-      {/* ── FLOATING TRIGGER BUBBLE ─────────────────────────────────────── */}
+      {/* ── FLOATING TRIGGER BUBBLE (AMIRA HEAD AVATAR & HERO BACKGROUND) ─ */}
       <button
         id="amira-global-chat-bubble"
         onClick={() => setIsOpen(!isOpen)}
         style={{
-          width: '60px',
-          height: '60px',
+          width: '64px',
+          height: '64px',
           borderRadius: '50%',
-          backgroundColor: '#1b5a92',
-          border: 'none',
+          background: '#1b5a92 url(/amira-background.png) center/cover no-repeat',
+          border: '2.5px solid rgba(255, 255, 255, 0.85)',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 8px 24px rgba(27, 90, 146, 0.4), 0 2px 8px rgba(0, 0, 0, 0.1)',
+          boxShadow: '0 10px 28px rgba(27, 90, 146, 0.5), 0 4px 12px rgba(0, 0, 0, 0.2)',
           position: 'relative',
           transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease',
-          outline: 'none'
+          outline: 'none',
+          padding: '2px'
         }}
         aria-label={isOpen ? "Close Amira AI chat" : "Open Amira AI chat"}
       >
         {isOpen ? (
-          <span style={{ color: '#ffffff', fontSize: '24px', fontWeight: 800 }}>✕</span>
+          <div style={{
+            width: '100%',
+            height: '100%',
+            borderRadius: '50%',
+            backgroundColor: 'rgba(13, 56, 96, 0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#ffffff',
+            fontSize: '24px',
+            fontWeight: 800
+          }}>
+            ✕
+          </div>
         ) : (
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <img
               src="/amira-head.png"
-              alt="Amira"
-              style={{ width: '38px', height: '38px', objectFit: 'contain' }}
+              alt="Amira Head"
+              style={{
+                width: '46px',
+                height: '46px',
+                objectFit: 'contain',
+                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))'
+              }}
             />
             {/* Green Online Badge */}
             <span style={{
               position: 'absolute',
-              top: '-2px',
-              right: '-2px',
-              width: '12px',
-              height: '12px',
+              top: '0px',
+              right: '0px',
+              width: '14px',
+              height: '14px',
               backgroundColor: '#10b981',
               borderRadius: '50%',
-              border: '2px solid #1b5a92'
+              border: '2.5px solid #1b5a92',
+              boxShadow: '0 0 8px rgba(16, 185, 129, 0.6)'
             }} />
           </div>
         )}
@@ -398,7 +426,7 @@ export default function AmiraChatWidget() {
         }
         #amira-global-chat-bubble:hover {
           transform: scale(1.08);
-          box-shadow: 0 12px 32px rgba(27, 90, 146, 0.5);
+          box-shadow: 0 14px 36px rgba(27, 90, 146, 0.65);
         }
       `}</style>
 
