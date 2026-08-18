@@ -1618,24 +1618,6 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-
-      {/* ── AMIRA AI WEBCHAT WIDGET (LANDING PAGE) ────────────────────── */}
-      <Script
-        id="amira-landing-webchat"
-        strategy="lazyOnload"
-        dangerouslySetInnerHTML={{
-          __html: `
-            window.AmiraConfig = {
-              agentName: "Amira",
-              primaryColor: "#1b5a92",
-              position: "bottom-right",
-              welcomeMessage: "Hi there! 👋 I'm Amira, your AI Operator for Work. Ask me anything about our platform, voice agents, or workflows!",
-              theme: "light"
-            };
-          `
-        }}
-      />
-      <Script src="/widget.js" strategy="lazyOnload" />
     </div>
   );
 }

@@ -33,6 +33,8 @@ export const metadata: Metadata = {
   },
 };
 
+import AmiraChatWidget from '@/components/AmiraChatWidget';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -124,6 +126,7 @@ export default function RootLayout({
           }}
         />
         {children}
+        <AmiraChatWidget />
         <div id="google_translate_element" style={{ display: 'none' }} />
       </body>
     </html>
