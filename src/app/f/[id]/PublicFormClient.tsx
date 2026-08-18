@@ -199,10 +199,49 @@ export default function PublicFormClient({ formId, initialForm, initialError }: 
             </div>
           ))}
 
+          {/* ── TCPA / Multi-Channel Consent ──────────────────────────── */}
+          <div style={{ padding: '0.85rem 1rem', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', marginTop: '0.25rem' }}>
+            <span style={{ display: 'block', fontSize: '12px', fontWeight: 650, color: '#1e293b', marginBottom: '8px' }}>
+              I agree to receive communications by:
+            </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', color: '#475569', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={answers.consentBusinessPhone ?? true}
+                  onChange={(e) => handleInputChange('consentBusinessPhone', e.target.checked)}
+                  style={{ accentColor: brandColor, cursor: 'pointer' }}
+                />
+                📞 Business Phone
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', color: '#475569', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={answers.consentMobilePhone ?? true}
+                  onChange={(e) => handleInputChange('consentMobilePhone', e.target.checked)}
+                  style={{ accentColor: brandColor, cursor: 'pointer' }}
+                />
+                📱 Mobile Phone (AI Voice & SMS)
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', color: '#475569', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={answers.consentEmail ?? true}
+                  onChange={(e) => handleInputChange('consentEmail', e.target.checked)}
+                  style={{ accentColor: brandColor, cursor: 'pointer' }}
+                />
+                ✉️ Email (Confirmations & Updates)
+              </label>
+            </div>
+            <p style={{ fontSize: '10.5px', color: '#94a3b8', margin: '8px 0 0 0', lineHeight: 1.4 }}>
+              By submitting, you authorize Amira AI to connect via selected channels. Consent is not a condition of purchase. Message and data rates may apply.
+            </p>
+          </div>
+
           <button
             type="submit"
             disabled={submitting}
-            style={{ marginTop: '0.75rem', width: '100%', padding: '0.8rem', backgroundColor: brandColor, color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '14px', fontWeight: 600, cursor: submitting ? 'wait' : 'pointer', boxShadow: `0 4px 12px ${brandColor}25`, transition: 'opacity 0.2s', opacity: submitting ? 0.75 : 1 }}
+            style={{ marginTop: '0.5rem', width: '100%', padding: '0.8rem', backgroundColor: brandColor, color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '14px', fontWeight: 600, cursor: submitting ? 'wait' : 'pointer', boxShadow: `0 4px 12px ${brandColor}25`, transition: 'opacity 0.2s', opacity: submitting ? 0.75 : 1 }}
           >
             {submitting ? 'Submitting Responses...' : config.buttonText || 'Submit'}
           </button>
