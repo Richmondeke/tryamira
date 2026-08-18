@@ -32,10 +32,6 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const adminEmail = process.env.ADMIN_EMAIL || 'investors@heyamira.com';
-
   if (!supabaseUrl || !serviceRoleKey) {
     return NextResponse.json({ error: 'Missing Supabase credentials' }, { status: 500 });
   }
@@ -48,6 +44,36 @@ export async function GET(request: NextRequest) {
   const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
 
   try {
+    // ── 0. DYNAMICALLY RESOLVE ADMIN RECIPIENTS FROM SUPABASE ─────────────────
+    let adminEmails: string[] = [];
+
+    // Query users with admin role or flag in Supabase
+    const { data: adminProfiles } = await supabase
+      .from('profiles')
+      .select('email, role, is_admin')
+      .or('role.eq.admin,is_admin.eq.true');
+
+    if (adminProfiles && adminProfiles.length > 0) {
+      adminEmails = adminProfiles
+        .map(p => p.email)
+        .filter((e): e is string => Boolean(e && typeof e === 'string' && e.includes('@')));
+    }
+
+    // Fallback: If no profile has is_admin flag, fetch the primary account owner from DB
+    if (adminEmails.length === 0) {
+      const { data: firstUser } = await supabase
+        .from('profiles')
+        .select('email')
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (firstUser?.email) {
+        adminEmails = [firstUser.email];
+      } else {
+        adminEmails = ['investors@heyamira.com'];
+      }
+    }
     // ── 1. GATHER PLATFORM METRICS FROM SUPABASE (ACTIVE READ QUERIES) ──────────
 
     // Total Users & Signups in past 24h
@@ -197,18 +223,20 @@ export async function GET(request: NextRequest) {
         const { Composio } = await import('@composio/core');
         const composio = new Composio({ apiKey: composioApiKey });
 
-        const emailResult = await composio.tools.execute('GMAIL_SEND_EMAIL' as any, {
-          userId: 'admin',
-          arguments: {
-            recipient_email: adminEmail,
-            subject: `📊 Amira Daily Report [${reportDate}]: +${newSignups24h || 0} Signups, +${newLeads24h || 0} Leads`,
-            body: emailHtml,
-            is_html: true
-          }
-        });
+        for (const recipient of adminEmails) {
+          const emailResult = await composio.tools.execute('GMAIL_SEND_EMAIL' as any, {
+            userId: 'admin',
+            arguments: {
+              recipient_email: recipient,
+              subject: `📊 Amira Daily Report [${reportDate}]: +${newSignups24h || 0} Signups, +${newLeads24h || 0} Leads`,
+              body: emailHtml,
+              is_html: true
+            }
+          });
 
-        if (emailResult && emailResult.successful) {
-          emailSent = true;
+          if (emailResult && emailResult.successful) {
+            emailSent = true;
+          }
         }
       } catch (emailErr) {
         console.warn('[keep-active] Composio email delivery notice:', emailErr);
@@ -220,7 +248,7 @@ export async function GET(request: NextRequest) {
       reportDate,
       databaseKeepAlive: 'active_read_write_succeeded',
       emailSent,
-      recipient: adminEmail,
+      recipients: adminEmails,
       metrics: {
         totalUsers: totalUsers || 0,
         newSignups24h: newSignups24h || 0,
