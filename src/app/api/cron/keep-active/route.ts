@@ -222,11 +222,69 @@ export async function GET(request: NextRequest) {
 </html>
 `;
 
-    // ── 4. DISPATCH EMAIL VIA COMPOSIO GMAIL / NOTIFIER ───────────────────────
+    // ── 4. DISPATCH EMAIL VIA RESEND / SENDGRID / COMPOSIO ───────────────────
     let emailSent = false;
+    let deliveryMethod = 'none';
+    const resendApiKey = process.env.RESEND_API_KEY;
+    const sendgridApiKey = process.env.SENDGRID_API_KEY;
     const composioApiKey = process.env.COMPOSIO_API_KEY;
 
-    if (composioApiKey) {
+    // 1. Try Resend (Fastest & Most Reliable for Next.js)
+    if (resendApiKey && !emailSent) {
+      try {
+        const resendRes = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${resendApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: process.env.EMAIL_FROM || 'Amira Intelligence <onboarding@resend.dev>',
+            to: adminEmails,
+            subject: `📊 Amira Daily Report [${reportDate}]: +${newSignups24h || 0} Signups, +${newLeads24h || 0} Leads`,
+            html: emailHtml,
+          }),
+        });
+
+        if (resendRes.ok) {
+          emailSent = true;
+          deliveryMethod = 'resend';
+        } else {
+          console.warn('[keep-active] Resend error:', await resendRes.text());
+        }
+      } catch (rErr) {
+        console.warn('[keep-active] Resend dispatch error:', rErr);
+      }
+    }
+
+    // 2. Try SendGrid
+    if (sendgridApiKey && !emailSent) {
+      try {
+        const sgRes = await fetch('https://api.sendgrid.com/v3/mail/send', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${sendgridApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            personalizations: [{ to: adminEmails.map((e) => ({ email: e })) }],
+            from: { email: process.env.EMAIL_FROM || 'admin@heyamira.com', name: 'Amira AI' },
+            subject: `📊 Amira Daily Report [${reportDate}]: +${newSignups24h || 0} Signups, +${newLeads24h || 0} Leads`,
+            content: [{ type: 'text/html', value: emailHtml }],
+          }),
+        });
+
+        if (sgRes.status >= 200 && sgRes.status < 300) {
+          emailSent = true;
+          deliveryMethod = 'sendgrid';
+        }
+      } catch (sgErr) {
+        console.warn('[keep-active] SendGrid dispatch error:', sgErr);
+      }
+    }
+
+    // 3. Fallback: Composio Gmail
+    if (composioApiKey && !emailSent) {
       try {
         const { Composio } = await import('@composio/core');
         const composio = new Composio({ apiKey: composioApiKey });
@@ -238,12 +296,13 @@ export async function GET(request: NextRequest) {
               recipient_email: recipient,
               subject: `📊 Amira Daily Report [${reportDate}]: +${newSignups24h || 0} Signups, +${newLeads24h || 0} Leads`,
               body: emailHtml,
-              is_html: true
-            }
+              is_html: true,
+            },
           });
 
           if (emailResult && emailResult.successful) {
             emailSent = true;
+            deliveryMethod = 'composio_gmail';
           }
         }
       } catch (emailErr) {
@@ -256,6 +315,7 @@ export async function GET(request: NextRequest) {
       reportDate,
       databaseKeepAlive: 'active_read_write_succeeded',
       emailSent,
+      deliveryMethod,
       recipients: adminEmails,
       metrics: {
         totalUsers: totalUsers || 0,
