@@ -159,45 +159,53 @@ export async function GET(request: NextRequest) {
 <head>
   <meta charset="utf-8">
   <title>Amira Daily Executive Briefing</title>
+  <style>
+    @import url('https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,400&display=swap');
+    body, table, td, p, a, li, blockquote {
+      font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+  </style>
 </head>
-<body style="margin: 0; padding: 0; background-color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-  <div style="max-width: 600px; margin: 30px auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
+<body style="margin: 0; padding: 0; background-color: #0b132b; font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-font-smoothing: antialiased;">
+  <div style="max-width: 600px; margin: 30px auto; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); border: 1px solid rgba(255,255,255,0.1);">
     
-    <!-- Top Header -->
-    <div style="background: #1b5a92 url('https://heyamira.com/amira-background.png') center/cover no-repeat; padding: 35px 30px; text-align: center; color: #ffffff;">
-      <img src="https://heyamira.com/amira-head.png" alt="Amira AI" style="width: 52px; height: 52px; border-radius: 50%; background-color: rgba(255,255,255,0.2); border: 2px solid #10b981; margin-bottom: 12px;">
-      <h1 style="margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.02em;">Amira Executive Briefing</h1>
-      <p style="margin: 6px 0 0 0; font-size: 13.5px; color: #a7f3d0; font-weight: 600;">${reportDate}</p>
+    <!-- Top Hero Header with amira-background -->
+    <div style="background: #1b5a92 url('https://heyamira.com/amira-background.png') center/cover no-repeat; padding: 40px 30px; text-align: center; color: #ffffff; border-bottom: 3px solid #10b981;">
+      <div style="display: inline-block; position: relative; margin-bottom: 14px;">
+        <img src="https://heyamira.com/amira-head.png" alt="Amira AI" style="width: 58px; height: 58px; border-radius: 50%; background-color: rgba(255,255,255,0.15); border: 2.5px solid #10b981; box-shadow: 0 8px 16px rgba(0,0,0,0.25); display: block; margin: 0 auto;">
+      </div>
+      <h1 style="margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -0.03em; color: #ffffff;">Amira Executive Briefing</h1>
+      <p style="margin: 6px 0 0 0; font-size: 13.5px; color: #a7f3d0; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase;">${reportDate}</p>
     </div>
 
-    <!-- Main Content -->
-    <div style="padding: 30px 25px;">
-      <p style="margin: 0 0 20px 0; font-size: 15px; color: #334155; line-height: 1.5;">
-        Good morning! Here is your daily summary of Amira platform growth, customer lead generation, and database health metrics.
+    <!-- Main Body Content -->
+    <div style="padding: 32px 28px;">
+      <p style="margin: 0 0 24px 0; font-size: 15.5px; color: #334155; line-height: 1.6; font-weight: 500;">
+        Good morning! Here is your automated executive summary of platform user growth, speed-to-lead pipeline captures, and infrastructure health.
       </p>
 
       <!-- KPI Grid -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px;">
-        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; text-align: center;">
-          <span style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase;">New Signups (24h)</span>
-          <div style="font-size: 26px; font-weight: 850; color: #10b981; margin: 4px 0;">+${newSignups24h || 0}</div>
-          <span style="font-size: 11.5px; color: #94a3b8;">${totalUsers || 0} Total Users</span>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 28px;">
+        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px; text-align: center;">
+          <span style="font-size: 11.5px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">New Signups (24h)</span>
+          <div style="font-size: 28px; font-weight: 900; color: #10b981; margin: 4px 0; letter-spacing: -0.02em;">+${newSignups24h || 0}</div>
+          <span style="font-size: 12px; color: #94a3b8; font-weight: 600;">${totalUsers || 0} Total Registered</span>
         </div>
 
-        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; text-align: center;">
-          <span style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase;">Leads Captured (24h)</span>
-          <div style="font-size: 26px; font-weight: 850; color: #1b5a92; margin: 4px 0;">+${newLeads24h || 0}</div>
-          <span style="font-size: 11.5px; color: #94a3b8;">${totalLeads || 0} Total Form Fills</span>
+        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px; text-align: center;">
+          <span style="font-size: 11.5px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Leads Captured (24h)</span>
+          <div style="font-size: 28px; font-weight: 900; color: #1b5a92; margin: 4px 0; letter-spacing: -0.02em;">+${newLeads24h || 0}</div>
+          <span style="font-size: 12px; color: #94a3b8; font-weight: 600;">${totalLeads || 0} Total Submissions</span>
         </div>
       </div>
 
-      <!-- System & Health Status -->
-      <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 16px; margin-bottom: 25px;">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-          <strong style="color: #166534; font-size: 14px;">🛡️ Infrastructure Status</strong>
-          <span style="background-color: #10b981; color: #ffffff; font-size: 10.5px; font-weight: 800; padding: 2px 8px; border-radius: 99px;">100% OPERATIONAL</span>
+      <!-- Infrastructure & Supabase Keep-Alive Health -->
+      <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 14px; padding: 18px 20px; margin-bottom: 28px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <strong style="color: #166534; font-size: 14px; font-weight: 800; letter-spacing: -0.01em;">🛡️ Infrastructure Status</strong>
+          <span style="background-color: #10b981; color: #ffffff; font-size: 10.5px; font-weight: 900; padding: 3px 9px; border-radius: 99px; letter-spacing: 0.04em;">100% OPERATIONAL</span>
         </div>
-        <ul style="margin: 0; padding-left: 18px; font-size: 12.5px; color: #15803d; line-height: 1.6;">
+        <ul style="margin: 0; padding-left: 18px; font-size: 13px; color: #15803d; line-height: 1.7; font-weight: 600;">
           <li>Supabase Database: <strong>Active & Keep-Alive Verified</strong></li>
           <li>Vapi Voice Telephony: <strong>Sub-500ms Turn-Taking Ready</strong></li>
           <li>Composio Tool MCP: <strong>1,000+ Integrations Connected</strong></li>
@@ -205,16 +213,17 @@ export async function GET(request: NextRequest) {
         </ul>
       </div>
 
-      <div style="text-align: center; margin-top: 25px;">
-        <a href="https://heyamira.com/dashboard/v3" style="display: inline-block; background-color: #1b5a92; color: #ffffff; font-size: 14px; font-weight: 700; padding: 12px 28px; border-radius: 99px; text-decoration: none; box-shadow: 0 4px 14px rgba(27,90,146,0.3);">
+      <!-- CTA Button -->
+      <div style="text-align: center; margin: 30px 0 10px 0;">
+        <a href="https://heyamira.com/dashboard/v3" style="display: inline-block; background-color: #1b5a92; color: #ffffff; font-size: 14.5px; font-weight: 800; padding: 14px 32px; border-radius: 99px; text-decoration: none; box-shadow: 0 4px 16px rgba(27,90,146,0.35); letter-spacing: -0.01em;">
           Open Amira Admin Console →
         </a>
       </div>
     </div>
 
     <!-- Footer -->
-    <div style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px 20px; text-align: center; font-size: 11px; color: #94a3b8;">
-      Amira AI Inc. • Automated Operations • <a href="https://heyamira.com" style="color: #64748b; text-decoration: none;">heyamira.com</a>
+    <div style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px; text-align: center; font-size: 11.5px; color: #94a3b8; font-weight: 500;">
+      Amira AI Inc. • Autonomous Operations Engine • <a href="https://heyamira.com" style="color: #64748b; text-decoration: none; font-weight: 700;">heyamira.com</a>
     </div>
 
   </div>
