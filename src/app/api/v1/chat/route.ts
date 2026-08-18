@@ -146,13 +146,17 @@ KEY PRODUCT KNOWLEDGE:
       else if (lower.includes('insult') || lower.includes('dumb') || lower.includes('stupid') || lower.includes('hate') || lower.includes('bad') || lower.includes('suck')) {
         reply = `Fair enough! 😄 Luckily my neural net doesn't take offense. How can I actually help you automate your business workflows or live customer support today?`;
       }
-      // Greetings
-      else if (lower.includes('hello') || lower.includes('hi') || lower.includes('hey') || lower.includes('good morning') || lower.includes('good evening') || lower.includes('what is amira')) {
-        reply = `Hi there! 👋 I'm Amira, your autonomous AI Operator for Work. I handle inbound customer support calls, 10s speed-to-lead auto-dialing, website chats, and CRM workflows around the clock. What would you like to explore?`;
+      // Getting Started / Start / Sign Up CTA
+      else if (lower.includes('start') || lower.includes('sign up') || lower.includes('signup') || lower.includes('register') || lower.includes('join') || lower.includes('begin') || lower.includes('how can i use') || lower.includes('get started') || lower.includes('try')) {
+        reply = `Getting started with Amira takes less than 2 minutes! 🚀\n1. Click "Get Started" at the top or head to /signup to create your account.\n2. Pick your plan or start on our free trial.\n3. Build your first AI voice agent in /dashboard/v3/agents and start automating calls & workflows immediately!`;
       }
-      // General Smart Fallback
+      // Demo / Contact Sales CTA
+      else if (lower.includes('demo') || lower.includes('sales') || lower.includes('contact') || lower.includes('call me') || lower.includes('talk to someone')) {
+        reply = `You can try a live demo instantly! 🎯 Click "Get Started" to test an agent in your dashboard, or email our founding team directly at team@heyamira.com to schedule an executive walkthrough.`;
+      }
+      // General Smart Fallback with CTA
       else {
-        reply = `I can help you with live AI phone calls across 100+ countries, custom agent creation in your dashboard, knowledge base indexing, and pricing. What specific question can I answer for you?`;
+        reply = `I can help you launch live AI phone agents across 100+ countries, automate customer support, and sync 1,000+ CRM tools. Ready to start? Click "Get Started" at the top of the page or visit /signup!`;
       }
     }
 
