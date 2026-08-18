@@ -124,7 +124,7 @@ KEY PRODUCT KNOWLEDGE:
       }
       // Pricing & Plans
       else if (lower.includes('price') || lower.includes('cost') || lower.includes('how much') || lower.includes('tier') || lower.includes('plan') || lower.includes('subscription')) {
-        reply = `Our pricing is simple and high-margin: Pro Plan is $49/mo (₦45,000) with 5 agents & $0.16/min wallet; Team is $149/mo (₦135,000) with 15 agents & $0.14/min; and Enterprise is $499/mo with unlimited concurrency & $0.11/min rate.`;
+        reply = `Our pricing is simple and high-margin: Pro Plan is 49 USD/mo (₦45,000) with 5 agents and 0.16 USD/min wallet; Team is 149 USD/mo (₦135,000) with 15 agents and 0.14 USD/min; and Enterprise is 499 USD/mo with unlimited concurrency and 0.11 USD/min rate.`;
       }
       // How to Create an Agent / Dashboard
       else if (lower.includes('create agent') || lower.includes('dashboard') || lower.includes('setup') || lower.includes('build agent') || lower.includes('custom agent')) {
