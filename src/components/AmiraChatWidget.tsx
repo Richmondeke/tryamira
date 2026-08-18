@@ -154,29 +154,10 @@ export default function AmiraChatWidget() {
                 <div style={{ fontSize: '16px', fontWeight: 800, letterSpacing: '-0.01em', lineHeight: 1.2 }}>
                   Amira <span style={{ color: '#10b981', fontSize: '12.5px' }}>AI</span>
                 </div>
-                <div style={{ fontSize: '11.5px', color: 'rgba(255, 255, 255, 0.85)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span>⚡</span> Autonomous Work Operator
-                </div>
               </div>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Link
-                href="/investors"
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 750,
-                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                  color: '#ffffff',
-                  padding: '5px 9px',
-                  borderRadius: '8px',
-                  textDecoration: 'none',
-                  border: '1px solid rgba(255, 255, 255, 0.25)',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                📊 Deal Room
-              </Link>
               <button
                 onClick={() => setIsOpen(false)}
                 style={{
