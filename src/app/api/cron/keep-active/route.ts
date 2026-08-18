@@ -234,7 +234,11 @@ export async function GET(request: NextRequest) {
     // ── 4. DISPATCH EMAIL VIA RESEND / SENDGRID / COMPOSIO ───────────────────
     let emailSent = false;
     let deliveryMethod = 'none';
-    const resendApiKey = process.env.RESEND_API_KEY;
+    const resendApiKey = 
+      process.env.RESEND_API_KEY || 
+      process.env.RESEND_KEY || 
+      process.env.RESEND || 
+      process.env.NEXT_PUBLIC_RESEND_API_KEY;
     const sendgridApiKey = process.env.SENDGRID_API_KEY;
     const composioApiKey = process.env.COMPOSIO_API_KEY;
 
