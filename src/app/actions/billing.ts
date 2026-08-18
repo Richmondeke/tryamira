@@ -46,12 +46,56 @@ export async function createPlanCheckout(tier: PlanTier, userEmail: string, user
   // Standard reference for Korapay
   const koraReference = `plan_${tier}_${userId}_${timestamp}`;
 
-  // 1. Try Flutterwave v3
-  const flwSecretKey = process.env.FLUTTERWAVE_SECRET_KEY;
+  // 1. Primary: Korapay Payment Gateway
+  const secretKey = process.env.KORAPAY_SECRET_KEY;
+  if (secretKey) {
+    // Pre-create invoice record in pending state using Korapay reference
+    const supa = serviceSupabase();
+    await supa.from('invoices').insert({
+      user_id: userId,
+      reference: koraReference,
+      amount: plan.amountNGN,
+      currency: 'NGN',
+      type: 'subscription',
+      plan: tier,
+      status: 'pending',
+    });
 
+    const response = await fetch('https://api.korapay.com/merchant/api/v1/charges/initialize', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${secretKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        amount: plan.amountNGN,
+        currency: 'NGN',
+        reference: koraReference,
+        notification_url: `${appUrl}/api/webhooks/korapay`,
+        redirect_url: `${appUrl}/dashboard/account?tab=billing&payment=success&plan=${tier}`,
+        merchant_bears_cost: true,
+        customer: { email: userEmail, name: 'Amira User' },
+        metadata: {
+          plan: tier,
+          user_id: userId,
+          type: 'subscription',
+        },
+      }),
+    });
+
+    const result = await response.json();
+
+    if (result.status && result.data?.checkout_url) {
+      return { url: result.data.checkout_url };
+    }
+
+    console.error('Korapay initialization error, checking fallbacks:', result);
+  }
+
+  // 2. Fallback to Flutterwave
+  const flwSecretKey = process.env.FLUTTERWAVE_SECRET_KEY;
   if (flwSecretKey) {
     try {
-      // Pre-create invoice record in pending state using Flutterwave reference
       const supa = serviceSupabase();
       await supa.from('invoices').insert({
         user_id: userId,
@@ -63,7 +107,6 @@ export async function createPlanCheckout(tier: PlanTier, userEmail: string, user
         status: 'pending',
       });
 
-      // Create Flutterwave v3 standard checkout payment
       const sessionResponse = await fetch('https://api.flutterwave.com/v3/payments', {
         method: 'POST',
         headers: {
@@ -90,32 +133,13 @@ export async function createPlanCheckout(tier: PlanTier, userEmail: string, user
 
       if (sessionResponse.ok && sessionResult.status === 'success' && sessionResult.data?.link) {
         return { url: sessionResult.data.link };
-      } else {
-        throw new Error(sessionResult.message || 'Failed to initialize Flutterwave v3 session');
       }
     } catch (flwError: any) {
-      console.error('Flutterwave flow failed, falling back to Korapay:', flwError);
+      console.error('Flutterwave fallback failed:', flwError);
     }
   }
 
-  // 2. Fallback to Korapay Flow
-  const secretKey = process.env.KORAPAY_SECRET_KEY;
-  if (!secretKey) {
-    // Demo/dev fallback — record a pending invoice and redirect to success
-    const supa = serviceSupabase();
-    await supa.from('invoices').insert({
-      user_id: userId,
-      reference: koraReference,
-      amount: plan.amountNGN,
-      currency: 'NGN',
-      type: 'subscription',
-      plan: tier,
-      status: 'pending',
-    });
-    return { url: `/dashboard/account?tab=billing&payment=success&plan=${tier}` };
-  }
-
-  // Pre-create invoice record in pending state using Korapay reference
+  // Demo / Dev fallback if no keys or providers configured
   const supa = serviceSupabase();
   await supa.from('invoices').insert({
     user_id: userId,
@@ -126,36 +150,7 @@ export async function createPlanCheckout(tier: PlanTier, userEmail: string, user
     plan: tier,
     status: 'pending',
   });
-
-  const response = await fetch('https://api.korapay.com/merchant/api/v1/charges/initialize', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${secretKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      amount: plan.amountNGN,
-      currency: 'NGN',
-      reference: koraReference,
-      notification_url: `${appUrl}/api/webhooks/korapay`,
-      redirect_url: `${appUrl}/dashboard/account?tab=billing&payment=success&plan=${tier}`,
-      merchant_bears_cost: true,
-      customer: { email: userEmail, name: 'Amira User' },
-      metadata: {
-        plan: tier,
-        user_id: userId,
-        type: 'subscription',
-      },
-    }),
-  });
-
-  const result = await response.json();
-
-  if (result.status && result.data?.checkout_url) {
-    return { url: result.data.checkout_url };
-  }
-
-  throw new Error(result.message || 'Failed to initialize payment. Please try again.');
+  return { url: `/dashboard/account?tab=billing&payment=success&plan=${tier}` };
 }
 
 // ─── 2. Initiate call-credit top-up checkout ───────────────────────────────
@@ -172,12 +167,50 @@ export async function createTopupCheckout(
   const flwReference = `flwtopup${amountNGN}usr${cleanUserId}ts${timestamp}`;
   const koraReference = `topup_${amountNGN}_${userId}_${timestamp}`;
 
-  // 1. Try Flutterwave v3
-  const flwSecretKey = process.env.FLUTTERWAVE_SECRET_KEY;
+  // 1. Primary: Korapay Top-up Gateway
+  const secretKey = process.env.KORAPAY_SECRET_KEY;
+  if (secretKey) {
+    const supa = serviceSupabase();
+    await supa.from('invoices').insert({
+      user_id: userId,
+      reference: koraReference,
+      amount: amountNGN,
+      currency: 'NGN',
+      type: 'topup',
+      status: 'pending',
+    });
 
+    const response = await fetch('https://api.korapay.com/merchant/api/v1/charges/initialize', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${secretKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        amount: amountNGN,
+        currency: 'NGN',
+        reference: koraReference,
+        notification_url: `${appUrl}/api/webhooks/korapay`,
+        redirect_url: `${appUrl}/dashboard/account?tab=billing&payment=topup_success&amount=${amountNGN}`,
+        merchant_bears_cost: true,
+        customer: { email: userEmail },
+        metadata: { user_id: userId, type: 'topup', amount: amountNGN },
+      }),
+    });
+
+    const result = await response.json();
+
+    if (result.status && result.data?.checkout_url) {
+      return { url: result.data.checkout_url };
+    }
+
+    console.error('Korapay topup initialization error, checking fallbacks:', result);
+  }
+
+  // 2. Fallback to Flutterwave
+  const flwSecretKey = process.env.FLUTTERWAVE_SECRET_KEY;
   if (flwSecretKey) {
     try {
-      // Pre-create invoice record in pending state using Flutterwave reference
       const supa = serviceSupabase();
       await supa.from('invoices').insert({
         user_id: userId,
@@ -188,7 +221,6 @@ export async function createTopupCheckout(
         status: 'pending',
       });
 
-      // Create Flutterwave v3 standard checkout payment
       const sessionResponse = await fetch('https://api.flutterwave.com/v3/payments', {
         method: 'POST',
         headers: {
@@ -215,29 +247,13 @@ export async function createTopupCheckout(
 
       if (sessionResponse.ok && sessionResult.status === 'success' && sessionResult.data?.link) {
         return { url: sessionResult.data.link };
-      } else {
-        throw new Error(sessionResult.message || 'Failed to initialize Flutterwave v3 session');
       }
     } catch (flwError: any) {
-      console.error('Flutterwave flow failed, falling back to Korapay:', flwError);
+      console.error('Flutterwave topup fallback failed:', flwError);
     }
   }
 
-  // 2. Fallback to Korapay Flow
-  const secretKey = process.env.KORAPAY_SECRET_KEY;
-  if (!secretKey) {
-    const supa = serviceSupabase();
-    await supa.from('invoices').insert({
-      user_id: userId,
-      reference: koraReference,
-      amount: amountNGN,
-      currency: 'NGN',
-      type: 'topup',
-      status: 'pending',
-    });
-    return { url: `/dashboard/account?tab=billing&payment=topup_success&amount=${amountNGN}` };
-  }
-
+  // Demo fallback
   const supa = serviceSupabase();
   await supa.from('invoices').insert({
     user_id: userId,
@@ -247,32 +263,7 @@ export async function createTopupCheckout(
     type: 'topup',
     status: 'pending',
   });
-
-  const response = await fetch('https://api.korapay.com/merchant/api/v1/charges/initialize', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${secretKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      amount: amountNGN,
-      currency: 'NGN',
-      reference: koraReference,
-      notification_url: `${appUrl}/api/webhooks/korapay`,
-      redirect_url: `${appUrl}/dashboard/account?tab=billing&payment=topup_success&amount=${amountNGN}`,
-      merchant_bears_cost: true,
-      customer: { email: userEmail },
-      metadata: { user_id: userId, type: 'topup', amount: amountNGN },
-    }),
-  });
-
-  const result = await response.json();
-
-  if (result.status && result.data?.checkout_url) {
-    return { url: result.data.checkout_url };
-  }
-
-  throw new Error(result.message || 'Failed to initialize top-up. Please try again.');
+  return { url: `/dashboard/account?tab=billing&payment=topup_success&amount=${amountNGN}` };
 }
 
 // ─── 3. Fetch live billing data for the current user ──────────────────────

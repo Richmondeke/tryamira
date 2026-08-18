@@ -52,7 +52,7 @@ export async function updateSession(request: NextRequest) {
   // Redirect auth pages to dashboard if already logged in or demo active
   if (isAuthPage && (user || isDemoUser)) {
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    url.pathname = '/dashboard/v3'
     return NextResponse.redirect(url)
   }
 

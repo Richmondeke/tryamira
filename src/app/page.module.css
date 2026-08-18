@@ -1746,6 +1746,7 @@
   .stepCard { border-radius: 0; }
   .stepCard:first-child { border-radius: 14px 0 0 0; }
   .stepCard:nth-child(2) { border-right: 1px solid var(--border); border-radius: 0 14px 0 0; }
+  .stepCard:nth-child(2) .stepConnector { display: none; }
   .stepCard:nth-child(3) { border-top: none; border-radius: 0 0 0 14px; }
   .stepCard:last-child { border-top: none; border-radius: 0 0 14px 0; }
   .compareTable { overflow-x: auto; }
@@ -1753,8 +1754,9 @@
 }
 
 @media (max-width: 900px) {
-  .heroInner { grid-template-columns: 1fr; gap: 3rem; }
-  .heroRight { order: -1; }
+  .heroInner { grid-template-columns: 1fr; gap: 2rem; }
+  .heroLeft { order: 1; }
+  .heroRight { order: 2; }
   .navLinks, .navActions { display: none; }
   .mobileToggle { display: flex; }
   .positioningGrid { grid-template-columns: 1fr; max-width: 500px; }
@@ -1765,9 +1767,10 @@
 }
 
 @media (max-width: 640px) {
-  .hero { padding: 4rem 1rem 3rem; }
+  .hero { padding: 4rem 1rem 0; }
   .wfGrid { grid-template-columns: 1fr; }
   .stepsRow { grid-template-columns: 1fr; }
+  .stepConnector { display: none !important; }
   .stepCard { border-right: 1px solid var(--border) !important; border-radius: 0 !important; }
   .stepCard:first-child { border-radius: 14px 14px 0 0 !important; }
   .stepCard:last-child { border-radius: 0 0 14px 14px !important; }

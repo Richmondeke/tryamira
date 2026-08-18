@@ -46,10 +46,13 @@ function MiniSparkline({ color = '#10b981' }: { color?: string }) {
 }
 
 import { useDemoMode } from '@/contexts/DemoModeContext';
+import { useUserProfile } from '@/contexts/UserProfileContext';
 import { getVapiCalls, getVapiAssistants, getVapiPhoneNumbers } from '@/app/actions/vapi';
+import NotificationDrawer from '@/components/ui/NotificationDrawer';
 
 export default function V3DashboardPage() {
-  const { isDemoMode } = useDemoMode();
+  const { isDemoMode, toggleDemoMode } = useDemoMode();
+  const { profile } = useUserProfile();
   const [selectedCountry, setSelectedCountry] = useState('Global');
   const [showNotificationModal, setShowNotificationModal] = useState(false);
 
@@ -134,7 +137,7 @@ export default function V3DashboardPage() {
         {/* Welcome Text */}
         <div>
           <h1 style={{ fontSize: '24px', fontWeight: 650, color: 'var(--text-primary)', margin: '0 0 0.2rem 0' }}>
-            Welcome back, David 👋
+            Welcome back, {profile?.full_name ? profile.full_name.split(' ')[0] : 'there'} 👋
           </h1>
           <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', margin: 0 }}>
             Manage your Call center operations in real time.
@@ -143,6 +146,36 @@ export default function V3DashboardPage() {
 
         {/* Header Right Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
+          
+          {/* Live vs Demo Mode Toggle */}
+          <button
+            type="button"
+            onClick={toggleDemoMode}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              padding: '0.45rem 0.85rem',
+              borderRadius: '10px',
+              border: isDemoMode ? '1px solid #f59e0b' : '1px solid #10b981',
+              backgroundColor: isDemoMode ? '#fffbeb' : '#ecfdf5',
+              color: isDemoMode ? '#b45309' : '#047857',
+              fontSize: '12px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+            }}
+            title="Click to toggle between real workspace data and populated demo data"
+          >
+            <span style={{
+              width: '7px',
+              height: '7px',
+              borderRadius: '50%',
+              backgroundColor: isDemoMode ? '#f59e0b' : '#10b981',
+              boxShadow: isDemoMode ? '0 0 6px #f59e0b' : '0 0 6px #10b981'
+            }} />
+            <span>{isDemoMode ? 'Demo Data' : 'Live Data'}</span>
+          </button>
           
           {/* Global Selector */}
           <div style={{ position: 'relative' }}>
@@ -178,7 +211,7 @@ export default function V3DashboardPage() {
           {/* Notification Button */}
           <button
             type="button"
-            onClick={() => alert('Notifications: 3 live call escalations pending review.')}
+            onClick={() => setShowNotificationModal(true)}
             style={{
               position: 'relative',
               width: '38px', height: '38px',
@@ -484,217 +517,6 @@ export default function V3DashboardPage() {
               ))}
             </div>
           )}
-                <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Acme Inc.</div>
-              </div>
-
-              {/* Autonomous Actions */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '11px' }}>
-                <div style={{ color: '#10b981', fontWeight: 500 }}>✓ Contact found in HubSpot</div>
-                <div style={{ color: '#10b981', fontWeight: 500 }}>✓ Lead score updated</div>
-                <div style={{ color: '#94a3b8', fontWeight: 500 }}>◌ Scheduling follow-up</div>
-              </div>
-
-              {/* Actions */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <button
-                  type="button"
-                  onClick={() => alert('Opening Live Call Feed for Sales Closer...')}
-                  style={{
-                    padding: '0.4rem 0.75rem', borderRadius: '8px', backgroundColor: 'var(--bg-card)',
-                    border: '1px solid rgba(27,90,146,0.3)', color: '#1b5a92', fontSize: '11.5px',
-                    fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap'
-                  }}
-                >
-                  View Live Call
-                </button>
-                <button type="button" style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '14px', cursor: 'pointer' }}>⋮</button>
-              </div>
-            </div>
-
-            {/* ROW 2: Support Genie */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '1.4fr 1.3fr 0.9fr 1.2fr 1.4fr auto',
-              alignItems: 'center',
-              gap: '1rem',
-              padding: '1rem 1.1rem',
-              borderRadius: '12px',
-              backgroundColor: 'var(--bg-subtle)',
-              border: '1px solid var(--border-subtle)'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <div style={{ width: '38px', height: '38px', borderRadius: '10px', backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <GlowIcon name="headphones-outline" size={20} color="#ffffff" />
-                </div>
-                <div>
-                  <div style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-primary)' }}>Support Genie</div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Customer Support</div>
-                  <span style={{ fontSize: '10px', fontWeight: 500, color: '#10b981' }}>🟢 Live</span>
-                </div>
-              </div>
-
-              <div>
-                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 500 }}>Calling</div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>🇮🇳 +91 80 1234 5678</div>
-                <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Bangalore, India</div>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <LiveWaveform color="#3b82f6" />
-                <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>01:37</span>
-              </div>
-
-              <div>
-                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 500 }}>Current Action</div>
-                <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>Resolving billing issue</div>
-                <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Order #12345</div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '11px' }}>
-                <div style={{ color: '#10b981', fontWeight: 500 }}>✓ Verified customer</div>
-                <div style={{ color: '#10b981', fontWeight: 500 }}>✓ Refund initiated</div>
-                <div style={{ color: '#3b82f6', fontWeight: 500 }}>⚙️ Updating Zoho CRM</div>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <button
-                  type="button"
-                  onClick={() => alert('Opening Live Call Feed for Support Genie...')}
-                  style={{
-                    padding: '0.4rem 0.75rem', borderRadius: '8px', backgroundColor: 'var(--bg-card)',
-                    border: '1px solid rgba(27,90,146,0.3)', color: '#1b5a92', fontSize: '11.5px',
-                    fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap'
-                  }}
-                >
-                  View Live Call
-                </button>
-                <button type="button" style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '14px', cursor: 'pointer' }}>⋮</button>
-              </div>
-            </div>
-
-            {/* ROW 3: Appointment Pro */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '1.4fr 1.3fr 0.9fr 1.2fr 1.4fr auto',
-              alignItems: 'center',
-              gap: '1rem',
-              padding: '1rem 1.1rem',
-              borderRadius: '12px',
-              backgroundColor: 'var(--bg-subtle)',
-              border: '1px solid var(--border-subtle)'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <div style={{ width: '38px', height: '38px', borderRadius: '10px', backgroundColor: '#f97316', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <GlowIcon name="calendar-outline" size={20} color="#ffffff" />
-                </div>
-                <div>
-                  <div style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-primary)' }}>Appointment Pro</div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Scheduling</div>
-                  <span style={{ fontSize: '10px', fontWeight: 500, color: '#10b981' }}>🟢 Live</span>
-                </div>
-              </div>
-
-              <div>
-                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 500 }}>Calling</div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>🇬🇧 +44 20 7946 0958</div>
-                <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>London, UK</div>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <LiveWaveform color="#f97316" />
-                <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>03:22</span>
-              </div>
-
-              <div>
-                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 500 }}>Current Action</div>
-                <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>Booking appointment</div>
-                <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>For May 22, 2025</div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '11px' }}>
-                <div style={{ color: '#10b981', fontWeight: 500 }}>✓ Checked availability</div>
-                <div style={{ color: '#10b981', fontWeight: 500 }}>✓ Slot reserved</div>
-                <div style={{ color: '#1b5a92', fontWeight: 500 }}>⚙️ Creating calendar event</div>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <button
-                  type="button"
-                  onClick={() => alert('Opening Live Call Feed for Appointment Pro...')}
-                  style={{
-                    padding: '0.4rem 0.75rem', borderRadius: '8px', backgroundColor: 'var(--bg-card)',
-                    border: '1px solid rgba(27,90,146,0.3)', color: '#1b5a92', fontSize: '11.5px',
-                    fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap'
-                  }}
-                >
-                  View Live Call
-                </button>
-                <button type="button" style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '14px', cursor: 'pointer' }}>⋮</button>
-              </div>
-            </div>
-
-            {/* ROW 4: Onboarding Buddy */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '1.4fr 1.3fr 0.9fr 1.2fr 1.4fr auto',
-              alignItems: 'center',
-              gap: '1rem',
-              padding: '1rem 1.1rem',
-              borderRadius: '12px',
-              backgroundColor: 'var(--bg-subtle)',
-              border: '1px solid var(--border-subtle)'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <div style={{ width: '38px', height: '38px', borderRadius: '10px', backgroundColor: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <GlowIcon name="user-outline" size={20} color="#ffffff" />
-                </div>
-                <div>
-                  <div style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-primary)' }}>Onboarding Buddy</div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Onboarding</div>
-                  <span style={{ fontSize: '10px', fontWeight: 500, color: '#10b981' }}>🟢 Live</span>
-                </div>
-              </div>
-
-              <div>
-                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 500 }}>Calling</div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>🇳🇬 +234 812 345 6789</div>
-                <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Lagos, Nigeria</div>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <LiveWaveform color="#10b981" />
-                <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)' }}>00:58</span>
-              </div>
-
-              <div>
-                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>Current Action</div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>Collecting information</div>
-                <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>New customer</div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '11px' }}>
-                <div style={{ color: '#10b981', fontWeight: 700 }}>✓ Customer details saved</div>
-                <div style={{ color: '#1b5a92', fontWeight: 700 }}>⚙️ Creating Notion doc</div>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <button
-                  type="button"
-                  onClick={() => alert('Opening Live Call Feed for Onboarding Buddy...')}
-                  style={{
-                    padding: '0.4rem 0.75rem', borderRadius: '8px', backgroundColor: 'var(--bg-card)',
-                    border: '1px solid rgba(27,90,146,0.3)', color: '#1b5a92', fontSize: '11.5px',
-                    fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap'
-                  }}
-                >
-                  View Live Call
-                </button>
-                <button type="button" style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '14px', cursor: 'pointer' }}>⋮</button>
-              </div>
-            </div>
-
-          </div>
-          )}
         </div>
 
         {/* LIVE ACTIVITY SIDE FEED */}
@@ -942,6 +764,13 @@ export default function V3DashboardPage() {
         </div>
 
       </div>
+
+      {/* Notifications Right Sidebar Drawer */}
+      <NotificationDrawer
+        open={showNotificationModal}
+        onClose={() => setShowNotificationModal(false)}
+        workspaceId={profile?.workspace_id || undefined}
+      />
 
     </div>
   );

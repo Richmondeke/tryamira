@@ -12,7 +12,7 @@ const ASSETS_TO_CACHE = [
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(ASSETS_TO_CACHE);
+      return cache.addAll(ASSETS_TO_CACHE).catch(() => {});
     })
   );
   self.skipWaiting();
@@ -34,7 +34,7 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // Pass non-GET requests, Supabase API requests, and Vercel Cron jobs straight through
+  // Pass non-GET requests, API requests, and web sockets straight through
   if (
     event.request.method !== 'GET' ||
     event.request.url.includes('/api/') ||
@@ -46,7 +46,6 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     fetch(event.request)
       .then(response => {
-        // If we got a valid response, cache it (for assets, pages, etc.)
         if (response && response.status === 200 && response.type === 'basic') {
           const responseToCache = response.clone();
           caches.open(CACHE_NAME).then(cache => {
@@ -56,7 +55,6 @@ self.addEventListener('fetch', event => {
         return response;
       })
       .catch(() => {
-        // Offline: Try cached resource, fall back to offline page
         return caches.match(event.request).then(cachedResponse => {
           if (cachedResponse) {
             return cachedResponse;
@@ -66,5 +64,49 @@ self.addEventListener('fetch', event => {
           }
         });
       })
+  );
+});
+
+// Push Notification Events for Browser and Mobile PWA
+self.addEventListener('push', event => {
+  let data = { title: 'Amira Voice Alert', body: 'New lead or customer call received.', url: '/dashboard/v3/calls' };
+  try {
+    if (event.data) {
+      data = { ...data, ...event.data.json() };
+    }
+  } catch (e) {
+    if (event.data) {
+      data.body = event.data.text();
+    }
+  }
+
+  const options = {
+    body: data.body,
+    icon: '/icon.png',
+    badge: '/icon.png',
+    vibrate: [100, 50, 100],
+    data: {
+      url: data.url || '/dashboard/v3/calls'
+    }
+  };
+
+  event.waitUntil(self.registration.showNotification(data.title, options));
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const urlToOpen = event.notification.data?.url || '/dashboard/v3';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+      for (const client of clientList) {
+        if (client.url.includes('/dashboard') && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(urlToOpen);
+      }
+    })
   );
 });

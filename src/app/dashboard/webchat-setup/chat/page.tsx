@@ -14,18 +14,45 @@ export default function WebchatPage() {
   const [previewMessages, setPreviewMessages] = useState([
     { from: 'ai', text: 'Hi there! 👋 How can I help you today?' }
   ]);
+  const [isTyping, setIsTyping] = useState(false);
 
   const handleSave = () => setToast('Webchat settings saved successfully!');
 
-  const handlePreviewSend = (e: React.FormEvent) => {
+  const handlePreviewSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userMessage.trim()) return;
-    setPreviewMessages(prev => [
-      ...prev,
-      { from: 'user', text: userMessage },
-      { from: 'ai', text: 'Thanks for reaching out! This is a live preview. Your real agent will respond here.' }
-    ]);
+    if (!userMessage.trim() || isTyping) return;
+
+    const currentMsg = userMessage.trim();
     setUserMessage('');
+
+    const newHistory = [
+      ...previewMessages,
+      { from: 'user', text: currentMsg }
+    ];
+    setPreviewMessages(newHistory);
+    setIsTyping(true);
+
+    try {
+      const res = await fetch('/api/v1/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: currentMsg,
+          agentName,
+          history: newHistory
+        })
+      });
+      const data = await res.json();
+      const aiReply = data?.reply || "I'm here to help! What else would you like to know?";
+      setPreviewMessages(prev => [...prev, { from: 'ai', text: aiReply }]);
+    } catch (err) {
+      setPreviewMessages(prev => [
+        ...prev,
+        { from: 'ai', text: "Thanks for reaching out! I'm here to help answer questions about our services." }
+      ]);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   return (
@@ -113,12 +140,21 @@ export default function WebchatPage() {
                   </div>
                 </div>
               ))}
+              {isTyping && (
+                <div style={{ alignSelf: 'flex-start', maxWidth: '85%' }}>
+                  <div style={{ backgroundColor: '#ffffff', color: 'var(--stripe-muted)', padding: '0.5rem 0.875rem', borderRadius: '12px', borderBottomLeftRadius: '2px', fontSize: '11px', boxShadow: '0 1px 2px rgba(0,0,0,0.08)', border: '1px solid var(--stripe-border)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ animation: 'pulse 1s infinite' }}>●</span>
+                    <span style={{ animation: 'pulse 1s infinite 0.2s' }}>●</span>
+                    <span style={{ animation: 'pulse 1s infinite 0.4s' }}>●</span>
+                  </div>
+                </div>
+              )}
             </div>
             {/* Input */}
             <form onSubmit={handlePreviewSend} style={{ padding: '0.75rem', borderTop: '1px solid var(--stripe-border)', backgroundColor: '#fff', display: 'flex', gap: '0.5rem' }}>
-              <input type="text" value={userMessage} onChange={e => setUserMessage(e.target.value)} placeholder="Type a message..."
+              <input id="preview-chat-input" type="text" value={userMessage} onChange={e => setUserMessage(e.target.value)} placeholder="Type a message..."
                 style={{ flex: 1, padding: '0.5rem 0.75rem', borderRadius: '20px', border: '1px solid var(--stripe-border)', fontSize: '12px', outline: 'none' }} />
-              <button type="submit" style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: primaryColor, color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', flexShrink: 0 }}>↑</button>
+              <button id="preview-send-btn" type="submit" style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: primaryColor, color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', flexShrink: 0 }}>↑</button>
             </form>
           </div>
         </div>

@@ -40,3 +40,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .env*.local
+
+# test artifacts & scripts
+*-test.png
+dealroom*.png
+landing-page*.png
+test_*.js
+run_browser_test.js

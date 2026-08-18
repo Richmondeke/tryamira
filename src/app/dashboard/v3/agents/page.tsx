@@ -8,6 +8,7 @@ import {
   initiateComposioConnection, 
   removeComposioIntegration 
 } from '@/app/actions/integrations';
+import { LiveVoiceTester } from '@/components/voice/LiveVoiceTester';
 
 interface AgentConfig {
   name: string;
@@ -694,6 +695,16 @@ export default function V3AgentsPage() {
           {activeTab === 'voice' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', animation: 'fadeIn 0.2s' }}>
               
+              {/* Live WebRTC Voice Call Tester with Vapi SDK */}
+              <LiveVoiceTester
+                agentName={currentConfig.name}
+                systemPrompt={currentConfig.systemPrompt}
+                firstMessage={currentConfig.firstMessage}
+                voiceProvider={currentConfig.voiceProvider}
+                voiceId={currentConfig.voiceId}
+                model={currentConfig.llmModel}
+              />
+
               {/* Voice Sample Preview Player Banner */}
               <div style={{
                 backgroundColor: '#1b5a920f', border: '1px solid #1b5a9240', borderRadius: '12px',

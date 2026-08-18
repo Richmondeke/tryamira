@@ -89,7 +89,110 @@ export default function NotificationDrawer({ open, onClose, workspaceId }: Notif
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterTab, setFilterTab] = useState<'all' | 'unread' | 'calls'>('all');
+  const [pushStatus, setPushStatus] = useState<'default' | 'granted' | 'denied'>('default');
+  const [showTestBanner, setShowTestBanner] = useState(false);
   const supabase = createClient();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      setPushStatus(Notification.permission);
+    }
+  }, []);
+
+  const handleEnablePush = async () => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      const perm = await Notification.requestPermission();
+      setPushStatus(perm);
+      if (perm === 'granted') {
+        try {
+          if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            const reg = await navigator.serviceWorker.ready;
+            reg.showNotification('🔔 Amira Notifications Active', {
+              body: 'You will now receive instant desktop and mobile alerts for inbound calls and leads.',
+              icon: '/icon.png'
+            });
+          } else {
+            new Notification('🔔 Amira Notifications Active', {
+              body: 'You will now receive instant desktop and mobile alerts for inbound calls and leads.',
+              icon: '/icon.png'
+            });
+          }
+        } catch (e) {
+          console.warn('Push error:', e);
+        }
+      }
+    }
+  };
+
+  const playNotificationSound = () => {
+    try {
+      if (typeof window !== 'undefined') {
+        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioContext) {
+          const ctx = new AudioContext();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+          osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15); // A5
+          gain.gain.setValueAtTime(0.3, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.35);
+        }
+      }
+    } catch (e) {
+      console.warn('Audio chime error:', e);
+    }
+  };
+
+  const handleTriggerTestAlert = async () => {
+    playNotificationSound();
+    setShowTestBanner(true);
+    setTimeout(() => setShowTestBanner(false), 5000);
+
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'granted') {
+        // Try Service Worker registration first (standard for Chrome/PWA)
+        if ('serviceWorker' in navigator) {
+          try {
+            const reg = await navigator.serviceWorker.ready;
+            if (reg && reg.showNotification) {
+              await reg.showNotification('🚀 Live Alert from Amira', {
+                body: 'Customer call connected via +1 (415) 555-0198 (Sales Closer Agent).',
+                icon: '/icon.png',
+                badge: '/icon.png',
+                tag: 'amira-test-alert'
+              });
+              return;
+            }
+          } catch (swErr) {
+            console.warn('SW showNotification error, falling back to new Notification:', swErr);
+          }
+        }
+
+        // Direct Browser Notification API fallback
+        try {
+          const notif = new Notification('🚀 Live Alert from Amira', {
+            body: 'Customer call connected via +1 (415) 555-0198 (Sales Closer Agent).',
+            icon: '/icon.png',
+            badge: '/icon.png',
+            tag: 'amira-test-alert'
+          });
+          notif.onclick = () => {
+            window.focus();
+            notif.close();
+          };
+        } catch (err) {
+          console.warn('Direct notification error:', err);
+        }
+      } else {
+        handleEnablePush();
+      }
+    }
+  };
 
   const fetchNotifications = useCallback(async () => {
     setLoading(true);
@@ -292,6 +395,41 @@ export default function NotificationDrawer({ open, onClose, workspaceId }: Notif
           ))}
         </div>
 
+        {/* Browser / Phone Push Alert Banner */}
+        <div style={{
+          padding: '0.75rem 1.25rem',
+          backgroundColor: pushStatus === 'granted' ? '#ecfdf5' : '#1b5a920f',
+          borderBottom: pushStatus === 'granted' ? '1px solid #10b98125' : '1px solid #1b5a9225',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '0.75rem'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: '15px' }}>{pushStatus === 'granted' ? '🟢' : '📱'}</span>
+            <div style={{ fontSize: '11.5px', color: pushStatus === 'granted' ? '#047857' : '#1b5a92', fontWeight: 600, lineHeight: 1.3 }}>
+              {pushStatus === 'granted' ? 'Desktop & Mobile Alerts Active' : 'Enable Instant Push & Phone Alerts'}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={pushStatus === 'granted' ? handleTriggerTestAlert : handleEnablePush}
+            style={{
+              padding: '0.35rem 0.75rem',
+              borderRadius: '6px',
+              backgroundColor: pushStatus === 'granted' ? '#10b981' : '#1b5a92',
+              color: '#ffffff',
+              border: 'none',
+              fontSize: '11.5px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {pushStatus === 'granted' ? '🔔 Test Pop-up Alert' : 'Allow Alerts'}
+          </button>
+        </div>
+
         {/* Notification List */}
         <div style={{ flex: 1, overflowY: 'auto' }}>
           {loading ? (
@@ -377,6 +515,59 @@ export default function NotificationDrawer({ open, onClose, workspaceId }: Notif
           )}
         </div>
       </div>
+
+      {/* Floating In-App Live Alert Card */}
+      {showTestBanner && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          zIndex: 100000,
+          backgroundColor: '#0f172a',
+          color: '#ffffff',
+          borderRadius: '14px',
+          padding: '1rem 1.25rem',
+          boxShadow: '0 20px 40px -10px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.85rem',
+          maxWidth: '380px',
+          animation: 'slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+        }}>
+          <div style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: '10px',
+            backgroundColor: '#1b5a92',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0
+          }}>
+            <img src="/amira-head.png" alt="Amira" style={{ width: '80%', height: '80%', objectFit: 'contain' }} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff', marginBottom: '2px' }}>
+              🚀 Live Alert from Amira
+            </div>
+            <div style={{ fontSize: '11.5px', color: '#94a3b8', lineHeight: 1.4 }}>
+              Customer call connected via +1 (415) 555-0198 (Sales Closer Agent).
+            </div>
+          </div>
+          <button
+            onClick={() => setShowTestBanner(false)}
+            style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '16px', padding: '2px' }}
+          >
+            ✕
+          </button>
+          <style>{`
+            @keyframes slideInRight {
+              from { transform: translateX(100%); opacity: 0; }
+              to { transform: translateX(0); opacity: 1; }
+            }
+          `}</style>
+        </div>
+      )}
     </>
   );
 }

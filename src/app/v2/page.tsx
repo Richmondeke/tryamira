@@ -639,7 +639,7 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <a href="/dashboard" className={`${styles.planCta} ${plan.highlight ? styles.planCtaHighlight : styles.planCtaOutline}`}>
+                <a href="/dashboard/v3" className={`${styles.planCta} ${plan.highlight ? styles.planCtaHighlight : styles.planCtaOutline}`}>
                   {plan.cta} <ArrowRight size={14} />
                 </a>
               </div>

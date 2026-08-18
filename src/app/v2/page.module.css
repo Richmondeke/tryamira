@@ -1651,7 +1651,8 @@
 
 @media (max-width: 900px) {
   .heroInner { grid-template-columns: 1fr; gap: 3rem; }
-  .heroRight { order: -1; }
+  .heroLeft { order: 1; }
+  .heroRight { order: 2; }
   .navLinks, .navActions { display: none; }
   .mobileToggle { display: flex; }
   .positioningGrid { grid-template-columns: 1fr; max-width: 500px; }

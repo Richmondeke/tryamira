@@ -10,7 +10,7 @@ interface DemoModeContextType {
 }
 
 const DemoModeContext = createContext<DemoModeContextType>({
-  isDemoMode: true,
+  isDemoMode: false,
   toggleDemoMode: () => {},
   setDemoMode: () => {},
   isAdmin: false,
@@ -25,21 +25,23 @@ export function DemoModeProvider({
   children: React.ReactNode;
   isAdminUser?: boolean;
 }) {
-  // Default Demo Mode to TRUE on first load so users see populated demo data immediately
-  const [isDemoMode, setIsDemoMode] = useState<boolean>(true);
+  // Default Demo Mode to FALSE so signed-in users see LIVE data immediately
+  const [isDemoMode, setIsDemoMode] = useState<boolean>(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(DEMO_MODE_KEY);
-      if (stored !== null) {
-        setIsDemoMode(stored === 'true');
+      // If user explicitly chose demo mode in current session, respect it; otherwise always default to Live Mode (false)
+      if (stored === 'true') {
+        setIsDemoMode(true);
       } else {
-        localStorage.setItem(DEMO_MODE_KEY, 'true');
+        setIsDemoMode(false);
+        localStorage.setItem(DEMO_MODE_KEY, 'false');
       }
       setMounted(true);
     }
-  }, [isAdminUser]);
+  }, []);
 
   const toggleDemoMode = () => {
     setIsDemoMode(prev => {

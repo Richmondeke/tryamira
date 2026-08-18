@@ -98,21 +98,35 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
       console.warn('[UserProfileContext] Supabase fetch error, using local profile context');
     }
 
-    // Fallback profile for dev/demo mode
+    // Fallback profile for dev/demo or local offline mode
+    let userEmail = 'richondeke@gmail.com';
+    let userFullName = 'Richon Deke';
+    let userInitials = 'RD';
+
+    if (typeof window !== 'undefined') {
+      const match = document.cookie.match(/amira_user_email=([^;]+)/);
+      if (match && match[1]) {
+        userEmail = decodeURIComponent(match[1]);
+        const namePart = userEmail.split('@')[0];
+        userFullName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+        userInitials = namePart.slice(0, 2).toUpperCase();
+      }
+    }
+
     const demoProfile: UserProfile = {
-      id: 'demo-user-1',
-      email: 'richmond@heyamira.com',
-      full_name: 'Richmond (Amira Operator)',
+      id: `user-${userEmail.replace(/[^a-zA-Z0-9]/g, '')}`,
+      email: userEmail,
+      full_name: userFullName,
       role: 'admin',
       plan: 'pro',
-      workspace_id: 'demo-workspace-id',
+      workspace_id: `ws-${userEmail.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10)}`,
       vapi_assistant_id: 'ae0f0250-c62c-4c65-916e-85af7d7288b7',
-      initials: 'RA',
+      initials: userInitials,
     };
 
     setProfile(demoProfile);
     if (typeof window !== 'undefined') {
-      localStorage.setItem('amira_workspace_id', 'demo-workspace-id');
+      localStorage.setItem('amira_workspace_id', demoProfile.workspace_id || 'default-workspace');
       localStorage.setItem('amira_billing_tier', 'pro');
       localStorage.setItem('amira_is_admin', 'true');
       localStorage.setItem('amira_user_vapi_id', 'ae0f0250-c62c-4c65-916e-85af7d7288b7');

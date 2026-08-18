@@ -58,12 +58,24 @@ export default function PublicFormClient({ formId, initialForm, initialError }: 
   // ── Error State ──────────────────────────────────────────────────────────
   if (error || !form) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', backgroundColor: '#f8fafc', padding: '1.5rem', fontFamily: 'Inter, system-ui, sans-serif' }}>
-        <div style={{ maxWidth: '400px', width: '100%', backgroundColor: '#ffffff', borderRadius: '12px', padding: '2rem', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' }}>
-          <span style={{ fontSize: '40px' }}>⚠️</span>
-          <h1 style={{ fontSize: '18px', fontWeight: 600, color: '#0f172a', margin: '12px 0 6px 0' }}>Form Unavailable</h1>
-          <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 20px 0', lineHeight: 1.5 }}>{error || 'This form does not exist or has been deactivated.'}</p>
-          <a href="/" style={{ fontSize: '12px', color: '#4caf50', textDecoration: 'none', fontWeight: 500 }}>Powered by Amira Voice AI</a>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#f8fafc', padding: '1.5rem', fontFamily: "'Satoshi', Inter, system-ui, sans-serif" }}>
+        <div style={{ maxWidth: '420px', width: '100%', backgroundColor: '#ffffff', borderRadius: '18px', padding: '2.5rem 2rem', textAlign: 'center', boxShadow: '0 20px 40px -15px rgba(0,0,0,0.07)', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ width: '72px', height: '72px', borderRadius: '20px', backgroundColor: '#1b5a9212', border: '1px solid #1b5a9225', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem', padding: '8px' }}>
+            <img 
+              src="/amira-head.png" 
+              alt="Amira" 
+              style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} 
+            />
+          </div>
+          <h1 style={{ fontSize: '20px', fontWeight: 750, color: '#0f172a', margin: '0 0 8px 0', letterSpacing: '-0.3px' }}>
+            This Form is Unavailable
+          </h1>
+          <p style={{ fontSize: '13.5px', color: '#64748b', margin: '0 0 24px 0', lineHeight: 1.55 }}>
+            {error || 'This form does not exist, has expired, or has been deactivated.'}
+          </p>
+          <a href="/" style={{ fontSize: '12.5px', color: '#1b5a92', textDecoration: 'none', fontWeight: 600, padding: '0.5rem 1rem', borderRadius: '8px', backgroundColor: '#1b5a920f', border: '1px solid #1b5a9225', transition: 'all 0.15s ease' }}>
+            Powered by Amira Voice AI
+          </a>
         </div>
       </div>
     );

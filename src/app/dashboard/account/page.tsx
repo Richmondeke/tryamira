@@ -160,13 +160,18 @@ function AccountSettingsInner() {
     });
   }, []);
 
-  // ── Handle redirect back from secure payment ──────────────────────────
+  // ── Handle redirect back from secure payment (Korapay / Flutterwave) ───
   useEffect(() => {
     const payment = searchParams.get('payment');
+    const status = searchParams.get('status');
     const plan = searchParams.get('plan');
     const amount = searchParams.get('amount');
 
-    if (payment === 'success' && plan) {
+    const isSuccess = payment === 'success' || status === 'success' || status === 'completed';
+    const isTopupSuccess = payment === 'topup_success';
+    const isFailure = payment === 'failed' || status === 'failed' || status === 'cancelled' || status === 'canceled';
+
+    if (isSuccess && plan) {
       setPaymentSuccessType('subscription');
       setPaidPlan(plan);
       setShowPaymentSuccess(true);
@@ -184,9 +189,10 @@ function AccountSettingsInner() {
       // Clean up URL
       const url = new URL(window.location.href);
       url.searchParams.delete('payment');
+      url.searchParams.delete('status');
       url.searchParams.delete('plan');
       router.replace(url.pathname + url.search);
-    } else if (payment === 'topup_success') {
+    } else if (isTopupSuccess || (isSuccess && amount)) {
       setPaymentSuccessType('topup');
       setShowPaymentSuccess(true);
       getBillingData().then((data) => {
@@ -194,12 +200,14 @@ function AccountSettingsInner() {
       });
       const url = new URL(window.location.href);
       url.searchParams.delete('payment');
+      url.searchParams.delete('status');
       url.searchParams.delete('amount');
       router.replace(url.pathname + url.search);
-    } else if (payment === 'failed') {
+    } else if (isFailure) {
       setShowPaymentFailed(true);
       const url = new URL(window.location.href);
       url.searchParams.delete('payment');
+      url.searchParams.delete('status');
       router.replace(url.pathname + url.search);
     }
   }, [searchParams]);
@@ -1062,7 +1070,7 @@ function AccountSettingsInner() {
                     You are about to upgrade your workspace to the <strong>{targetUpgradeTier === 'pro' ? 'Pro Tier' : targetUpgradeTier === 'team' ? 'Team Plan' : 'Enterprise Plan'}</strong> for <strong>₦{targetUpgradeTier === 'pro' ? '45,000' : targetUpgradeTier === 'team' ? '135,000' : '450,000'}/mo</strong>. You will be redirected to our secure payment page to complete the transaction.
                   </p>
                   <div style={{ padding: '0.75rem 1rem', backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0', marginBottom: '1.25rem', fontSize: '12px', color: 'var(--stripe-muted)' }}>
-                    🔒 Secured by Flutterwave (Fallback: Korapay) · No card details stored on our servers
+                    🔒 Secured by Korapay (PCI-DSS Level 1 Compliant) · 256-bit Bank Grade Security
                   </div>
                   <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
                     <button onClick={() => setShowUpgradeModal(false)} style={{ padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid var(--stripe-border)', backgroundColor: '#fff', color: 'var(--stripe-navy)', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>Cancel</button>

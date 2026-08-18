@@ -81,6 +81,75 @@ export function Topbar({ toggleMobileMenu }: { toggleMobileMenu?: () => void }) 
     });
   }, []);
 
+  // Real-time instant SSE stream listener (zero latency multi-tab broadcast)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('EventSource' in window)) return;
+
+    let eventSource: EventSource | null = null;
+    try {
+      eventSource = new EventSource('/api/notifications/stream');
+
+      eventSource.onmessage = (event) => {
+        if (!event.data) return;
+        try {
+          const data = JSON.parse(event.data);
+          setUnreadCount(prev => prev + 1);
+
+          // Audio chime
+          try {
+            const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+            if (AudioContext) {
+              const ctx = new AudioContext();
+              const osc = ctx.createOscillator();
+              const gain = ctx.createGain();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+              osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+              gain.gain.setValueAtTime(0.3, ctx.currentTime);
+              gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+              osc.connect(gain);
+              gain.connect(ctx.destination);
+              osc.start();
+              osc.stop(ctx.currentTime + 0.35);
+            }
+          } catch (e) {}
+
+          // Native OS Desktop Notification
+          if ('Notification' in window && Notification.permission === 'granted') {
+            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+              navigator.serviceWorker.ready.then(reg => {
+                reg.showNotification(data.title || '🔔 Amira Live Alert', {
+                  body: data.body || 'New operational activity received.',
+                  icon: '/icon.png',
+                  badge: '/icon.png',
+                  tag: `amira-${Date.now()}`
+                });
+              }).catch(() => {
+                new Notification(data.title || '🔔 Amira Live Alert', {
+                  body: data.body || 'New operational activity received.',
+                  icon: '/icon.png'
+                });
+              });
+            } else {
+              new Notification(data.title || '🔔 Amira Live Alert', {
+                body: data.body || 'New operational activity received.',
+                icon: '/icon.png'
+              });
+            }
+          }
+        } catch (err) {
+          // Heartbeat comment ignore
+        }
+      };
+    } catch (err) {
+      console.warn('SSE connection error:', err);
+    }
+
+    return () => {
+      if (eventSource) eventSource.close();
+    };
+  }, []);
+
   // Real-time unread badge
   useEffect(() => {
     if (!user?.workspaceId) return;
@@ -92,7 +161,9 @@ export function Topbar({ toggleMobileMenu }: { toggleMobileMenu?: () => void }) 
         schema: 'public',
         table: 'notifications',
         filter: `workspace_id=eq.${user.workspaceId}`,
-      }, () => setUnreadCount(prev => prev + 1))
+      }, (payload: any) => {
+        setUnreadCount(prev => prev + 1);
+      })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [user?.workspaceId]);
@@ -185,6 +256,37 @@ export function Topbar({ toggleMobileMenu }: { toggleMobileMenu?: () => void }) 
         </div>
 
         <div className={styles.actions}>
+          {/* Live Data vs Demo Data Switch */}
+          <button
+            type="button"
+            onClick={toggleDemoMode}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              padding: '0.4rem 0.8rem',
+              borderRadius: '8px',
+              border: isDemoMode ? '1px solid #f59e0b' : '1px solid #10b981',
+              backgroundColor: isDemoMode ? '#fffbeb' : '#ecfdf5',
+              color: isDemoMode ? '#b45309' : '#047857',
+              fontSize: '12px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+              transition: 'all 0.15s ease'
+            }}
+            title="Click to toggle between real live workspace data and populated demo data"
+          >
+            <span style={{
+              width: '7px',
+              height: '7px',
+              borderRadius: '50%',
+              backgroundColor: isDemoMode ? '#f59e0b' : '#10b981',
+              boxShadow: isDemoMode ? '0 0 6px #f59e0b' : '0 0 6px #10b981'
+            }} />
+            <span>{isDemoMode ? 'Demo Data' : 'Live Data'}</span>
+          </button>
+
           {/* Notification Bell */}
           <button
             className={styles.iconBtn}

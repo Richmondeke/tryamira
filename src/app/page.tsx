@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Script from "next/script";
 import styles from "./page.module.css";
 import GlowIcon from "@/components/GlowIcon";
 import ScrollReveal from "@/components/ScrollReveal";
@@ -97,12 +98,32 @@ export default function LandingPage() {
   const [activeStep, setActiveStep] = useState(0);
   const [orbitZoomScale, setOrbitZoomScale] = useState(1);
   const [multilingualTickerIdx, setMultilingualTickerIdx] = useState(0);
+  const tickerSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setMultilingualTickerIdx(prev => (prev + 1) % AMIRA_VERTICAL_TICKER_GREETINGS.length);
-    }, 2200);
-    return () => clearInterval(timer);
+    let timer: ReturnType<typeof setInterval> | null = null;
+    const el = tickerSectionRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          // Reset to "Hey Amira" (English) every time it scrolls into view
+          setMultilingualTickerIdx(0);
+          timer = setInterval(() => {
+            setMultilingualTickerIdx(prev => (prev + 1) % AMIRA_VERTICAL_TICKER_GREETINGS.length);
+          }, 2200);
+        } else {
+          if (timer) { clearInterval(timer); timer = null; }
+        }
+      },
+      { threshold: 0.3 }
+    );
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      if (timer) clearInterval(timer);
+    };
   }, []);
 
   useEffect(() => {
@@ -361,9 +382,10 @@ export default function LandingPage() {
               <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.85)', lineHeight: 1.7, marginTop: '1rem', maxWidth: '720px', margin: '1rem auto 0 auto' }}>
                 As your business grows, customer support becomes harder to scale — and hiring more people isn't always the answer.
               </p>
-              <div style={{ marginTop: '1.5rem', marginBottom: '2.5rem' }}>
+              <div style={{ marginTop: '1.5rem', marginBottom: '2.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
+                <img src="/amira-head.png" alt="Amira AI" style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }} />
                 <span style={{ fontSize: '20px', fontWeight: 800, color: '#10b981', backgroundColor: 'rgba(255,255,255,0.95)', padding: '0.55rem 1.75rem', borderRadius: '99px', boxShadow: '0 4px 16px rgba(0,0,0,0.15)', display: 'inline-block' }}>
-                  Amira is.
+                  Amira responds 24/7
                 </span>
               </div>
             </div>
@@ -467,14 +489,14 @@ export default function LandingPage() {
             {/* Tilted Cutoff Amira Head Watermark in Top Right Corner */}
             <div style={{
               position: 'absolute',
-              top: '-40px',
-              right: '-40px',
-              width: '280px',
-              height: '280px',
+              top: '-70px',
+              right: '-70px',
+              width: '260px',
+              height: '260px',
               pointerEvents: 'none',
               zIndex: 1,
-              opacity: 0.35,
-              transform: 'rotate(15deg) scale(1.15)',
+              opacity: 0.18,
+              transform: 'rotate(15deg) scale(1.1)',
               transformOrigin: 'top right'
             }}>
               <img 
@@ -485,7 +507,7 @@ export default function LandingPage() {
             </div>
             
             {/* Left Column: Title, Subtitle & 6 Cards Grid */}
-            <div style={{ paddingBottom: '3rem', paddingRight: '1rem' }}>
+            <div style={{ paddingBottom: '3rem', paddingRight: '1rem', position: 'relative', zIndex: 3 }}>
               <div style={{ marginBottom: '2rem' }}>
                 <span className={styles.eyebrow} style={{ color: '#10b981', fontWeight: 800 }}>CORE CAPABILITIES</span>
                 <h2 className={styles.sectionTitle} style={{ textAlign: 'left', marginTop: '0.5rem', color: '#ffffff' }}>One AI agent. A whole lot of support.</h2>
@@ -584,7 +606,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── SECTION 4 — MULTI-CHANNEL ─────────────────────────────────────────── */}
-      <section className={styles.section} id="multichannel" style={{ background: '#ffffff', padding: '5rem 0 3rem 0' }}>
+      <section className={styles.section} id="multichannel" style={{ background: '#ffffff', padding: '5rem 1.5rem 3rem 1.5rem' }}>
         <div className={styles.inner} style={{ maxWidth: '1080px', textAlign: 'center' }}>
           <div className={styles.sectionHeader} style={{ marginBottom: '2rem' }}>
             <span className={styles.eyebrow} style={{ color: '#10b981', fontWeight: 800 }}>MULTI-CHANNEL COVERAGE</span>
@@ -598,7 +620,7 @@ export default function LandingPage() {
 
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+            gridTemplateColumns: 'repeat(3, 1fr)',
             gap: '1.15rem',
             justifyContent: 'center',
             maxWidth: '720px',
@@ -631,7 +653,7 @@ export default function LandingPage() {
           </div>
 
           {/* Amirafans Graphic with Vertical Ticker Confined to Center Gap (Fade Mask Top/Bottom, Solid Black Text, NO Pill) */}
-          <div style={{ position: 'relative', width: '100%', margin: '0 auto', textAlign: 'center' }}>
+          <div ref={tickerSectionRef} style={{ position: 'relative', width: '100%', margin: '0 auto', textAlign: 'center' }}>
             {/* Keyframe for vertical slide & fade in/out */}
             <style>{`
               @keyframes verticalTickerSlideUp {
@@ -848,7 +870,68 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── SECTION 5 — INTEGRATIONS ──────────────────────────────────────────── */}
+      {/* ── SECTION 6 — HUMAN-LIKE CONVERSATIONS ───────────────────────────── */}
+      <section className={styles.section} style={{ background: '#ffffff' }}>
+        <div className={styles.inner} style={{ maxWidth: '960px', textAlign: 'center' }}>
+
+          {/* Single Merged Container with #1b5a92 Background (No Left/Right/Bottom Padding for Image) */}
+          <div style={{
+            background: '#1b5a92 url(/amira-background.png) center/cover no-repeat',
+            borderRadius: '24px',
+            paddingTop: '3.5rem',
+            boxShadow: '0 20px 60px rgba(27, 90, 146, 0.3)',
+            maxWidth: '960px',
+            margin: '0 auto',
+            overflow: 'hidden'
+          }}>
+            <div style={{ padding: '0 2.5rem', marginBottom: '2.5rem' }}>
+              <span className={styles.eyebrow} style={{ color: '#10b981', fontWeight: 800 }}>CONVERSATIONAL INTELLIGENCE</span>
+              <h2 className={styles.sectionTitle} style={{ color: '#ffffff', marginTop: '0.5rem' }}>
+                AI that actually feels conversational.
+              </h2>
+              <p className={styles.sectionSub} style={{ color: 'rgba(255, 255, 255, 0.85)', margin: '0.75rem auto 2.5rem auto', maxWidth: '720px' }}>
+                Customers shouldn't feel like they're talking to a machine. Amira is designed to understand conversations, respond naturally, and keep interactions moving toward a resolution.
+              </p>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+              {[
+                { icon: "phone-outline", title: "Listen" },
+                { icon: "compass-outline", title: "Understand" },
+                { icon: "message-circle-outline", title: "Respond" },
+                { icon: "checkmark-circle-outline", title: "Resolve" }
+              ].map((item, idx) => (
+                <div key={item.title} className={styles.hoverCard} style={{
+                  backgroundColor: '#ffffff', borderRadius: '14px', padding: '1.25rem',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.06)', textAlign: 'center',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem'
+                }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: '#10b98115', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <GlowIcon name={item.icon} size={20} color="#10b981" />
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '11px', fontWeight: 800, color: '#1b5a92', display: 'block', marginBottom: '0.15rem' }}>PHASE 0{idx + 1}</span>
+                    <p style={{ fontSize: '17px', fontWeight: 800, color: '#0f172a', margin: 0 }}>{item.title}</p>
+                  </div>
+                </div>
+              ))}
+              </div>
+            </div>
+
+            {/* Aira Convo Showcase Image (Flush to left, right & bottom edges) */}
+            <div style={{ width: '100%', margin: 0, padding: 0, lineHeight: 0 }}>
+              <ScrollReveal direction="up" distance={90} duration={1.0}>
+                <img 
+                  src="/amira-convo.png" 
+                  alt="AI that actually feels conversational - Amira Convo" 
+                  style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'contain' }} 
+                />
+              </ScrollReveal>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── SECTION — INTEGRATIONS ──────────────────────────────────────────── */}
       <section className={styles.section} id="integrations" style={{ background: "#ffffff", color: "var(--text-primary)", padding: "5rem 1.5rem" }}>
         <div className={styles.inner} style={{ maxWidth: '960px' }}>
           
@@ -945,67 +1028,6 @@ export default function LandingPage() {
             </div>
           </div>
 
-        </div>
-      </section>
-
-      {/* ── SECTION 6 — HUMAN-LIKE CONVERSATIONS ───────────────────────────── */}
-      <section className={styles.section} style={{ background: '#ffffff' }}>
-        <div className={styles.inner} style={{ maxWidth: '960px', textAlign: 'center' }}>
-
-          {/* Single Merged Container with #1b5a92 Background (No Left/Right/Bottom Padding for Image) */}
-          <div style={{
-            background: '#1b5a92 url(/amira-background.png) center/cover no-repeat',
-            borderRadius: '24px',
-            paddingTop: '3.5rem',
-            boxShadow: '0 20px 60px rgba(27, 90, 146, 0.3)',
-            maxWidth: '960px',
-            margin: '0 auto',
-            overflow: 'hidden'
-          }}>
-            <div style={{ padding: '0 2.5rem', marginBottom: '2.5rem' }}>
-              <span className={styles.eyebrow} style={{ color: '#10b981', fontWeight: 800 }}>CONVERSATIONAL INTELLIGENCE</span>
-              <h2 className={styles.sectionTitle} style={{ color: '#ffffff', marginTop: '0.5rem' }}>
-                AI that actually feels conversational.
-              </h2>
-              <p className={styles.sectionSub} style={{ color: 'rgba(255, 255, 255, 0.85)', margin: '0.75rem auto 2.5rem auto', maxWidth: '720px' }}>
-                Customers shouldn't feel like they're talking to a machine. Amira is designed to understand conversations, respond naturally, and keep interactions moving toward a resolution.
-              </p>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
-              {[
-                { icon: "phone-outline", title: "Listen" },
-                { icon: "compass-outline", title: "Understand" },
-                { icon: "message-circle-outline", title: "Respond" },
-                { icon: "checkmark-circle-outline", title: "Resolve" }
-              ].map((item, idx) => (
-                <div key={item.title} className={styles.hoverCard} style={{
-                  backgroundColor: '#ffffff', borderRadius: '14px', padding: '1.25rem',
-                  boxShadow: '0 4px 16px rgba(0,0,0,0.06)', textAlign: 'center',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem'
-                }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: '#10b98115', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <GlowIcon name={item.icon} size={20} color="#10b981" />
-                  </div>
-                  <div>
-                    <span style={{ fontSize: '11px', fontWeight: 800, color: '#1b5a92', display: 'block', marginBottom: '0.15rem' }}>PHASE 0{idx + 1}</span>
-                    <p style={{ fontSize: '17px', fontWeight: 800, color: '#0f172a', margin: 0 }}>{item.title}</p>
-                  </div>
-                </div>
-              ))}
-              </div>
-            </div>
-
-            {/* Aira Convo Showcase Image (Flush to left, right & bottom edges) */}
-            <div style={{ width: '100%', margin: 0, padding: 0, lineHeight: 0 }}>
-              <ScrollReveal direction="up" distance={90} duration={1.0}>
-                <img 
-                  src="/amira-convo.png" 
-                  alt="AI that actually feels conversational - Amira Convo" 
-                  style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'contain' }} 
-                />
-              </ScrollReveal>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -1596,6 +1618,24 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* ── AMIRA AI WEBCHAT WIDGET (LANDING PAGE) ────────────────────── */}
+      <Script
+        id="amira-landing-webchat"
+        strategy="lazyOnload"
+        dangerouslySetInnerHTML={{
+          __html: `
+            window.AmiraConfig = {
+              agentName: "Amira",
+              primaryColor: "#1b5a92",
+              position: "bottom-right",
+              welcomeMessage: "Hi there! 👋 I'm Amira, your AI Operator for Work. Ask me anything about our platform, voice agents, or workflows!",
+              theme: "light"
+            };
+          `
+        }}
+      />
+      <Script src="/widget.js" strategy="lazyOnload" />
     </div>
   );
 }

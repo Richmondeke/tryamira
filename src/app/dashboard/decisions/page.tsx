@@ -2,6 +2,9 @@
 
 import { useState } from 'react';
 import { useUserProfile } from '@/contexts/UserProfileContext';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { StatusBadge } from '@/components/ui/StatusBadge';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 function AmiraSparkle({ size = 16 }: { size?: number }) {
   return (
@@ -73,10 +76,13 @@ export default function DecisionsPage() {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('amira_user_decisions');
       if (stored) {
-        try { return JSON.parse(stored); } catch {}
+        try { 
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        } catch {}
       }
     }
-    return [];
+    return DECISIONS;
   });
   const [activeAskId, setActiveAskId] = useState<string | null>(null);
   const [askQuery, setAskQuery] = useState('');
@@ -107,36 +113,39 @@ export default function DecisionsPage() {
   };
 
   return (
-    <div style={{ maxWidth: '980px', margin: '0 auto', fontFamily: "'Satoshi', sans-serif" }}>
+    <div style={{ maxWidth: '1080px', margin: '0 auto', fontFamily: "'Satoshi', sans-serif" }}>
 
       {/* Header */}
-      <div style={{ marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.35rem' }}>
-          <span style={{ fontSize: '24px' }}>⚡</span>
-          <h1 style={{ fontSize: '26px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-            Your Decisions
-          </h1>
-          <span style={{ fontSize: '11px', fontWeight: 700, backgroundColor: '#1b5a92', color: '#fff', padding: '2px 8px', borderRadius: '99px' }}>
-            {decisions.length} pending
-          </span>
-        </div>
-        <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-          Amira surfaces only the decisions requiring your judgment. Every item includes context, risk assessment, and AI recommendations.
-        </p>
-      </div>
+      <PageHeader
+        title="Your Decisions & Approvals"
+        subtitle="Amira surfaces only high-leverage items requiring human executive judgment, accompanied by AI risk assessments and context recommendations."
+        badge={{ text: `${decisions.length} Pending`, variant: decisions.length > 0 ? 'amber' : 'green' }}
+        actions={
+          <button
+            type="button"
+            onClick={() => updateDecisions(DECISIONS)}
+            style={{
+              padding: '0.55rem 1rem',
+              borderRadius: '10px',
+              backgroundColor: 'var(--bg-card)',
+              color: 'var(--text-secondary)',
+              border: '1px solid var(--border-subtle)',
+              fontSize: '12px',
+              fontWeight: 650,
+              cursor: 'pointer'
+            }}
+          >
+            ↻ Reset Sample Queue
+          </button>
+        }
+      />
 
       {decisions.length === 0 ? (
-        <div style={{
-          backgroundColor: '#ffffff',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: '16px',
-          padding: '4rem 2rem',
-          textAlign: 'center',
-        }}>
-          <div style={{ fontSize: '32px', marginBottom: '0.75rem' }}>✨</div>
-          <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>No pending decisions</h3>
-          <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: '0.35rem' }}>Amira is handling routine operations in the background.</p>
-        </div>
+        <EmptyState
+          title="All Caught Up!"
+          description="You have cleared all pending executive decisions and contracts. Amira will notify you when new approvals arrive."
+          action={{ label: 'Reload Sample Queue', onClick: () => updateDecisions(DECISIONS) }}
+        />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {decisions.map(dec => (

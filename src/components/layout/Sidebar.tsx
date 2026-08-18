@@ -37,9 +37,15 @@ const V3_NAV_CATEGORIES = [
     ]
   },
   {
+    name: 'Executive & Intel',
+    items: [
+      { name: 'Industry Watch', href: '/dashboard/v3/industry-watch', iconName: 'globe-outline', badge: '🔒 Admin' },
+      { name: 'Amira Outreach', href: '/dashboard/v3/outreach', iconName: 'phone-outgoing-outline', badge: '🔒 Admin' },
+    ]
+  },
+  {
     name: 'Call Operations',
     items: [
-      { name: 'Amira Outreach', href: '/dashboard/v3/outreach', iconName: 'phone-outgoing-outline', badge: '🔒 Admin' },
       { name: 'Phone Numbers', href: '/dashboard/v3/phone', iconName: 'phone-outline' },
       { name: 'Calls & Transcripts', href: '/dashboard/v3/calls', iconName: 'phone-incoming-outline' },
       { name: 'Campaign Auto-Dialer', href: '/dashboard/leads', iconName: 'users-outline' },
@@ -354,7 +360,7 @@ export function Sidebar({ closeMobileMenu }: { closeMobileMenu?: () => void }) {
         padding: '0 1.25rem',
         borderBottom: '1px solid rgba(255, 255, 255, 0.06)'
       }}>
-        <Link href="/dashboard" onClick={() => closeMobileMenu?.()} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', textDecoration: 'none' }}>
+        <Link href="/dashboard/v3" onClick={() => closeMobileMenu?.()} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', textDecoration: 'none' }}>
           <img src="/amira-logo.svg" alt="Amira" style={{ height: '24px', width: 'auto' }} />
         </Link>
       </div>

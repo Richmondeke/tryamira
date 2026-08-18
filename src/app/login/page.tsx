@@ -32,6 +32,12 @@ export default function LoginPage() {
     setToast(null);
 
     const formData = new FormData(e.currentTarget);
+    const email = formData.get('email') as string;
+    if (email && typeof window !== 'undefined') {
+      document.cookie = `amira_user_email=${encodeURIComponent(email)}; path=/; max-age=2592000`;
+      localStorage.setItem('amira_demo_mode', 'false');
+    }
+
     const result = await login(formData);
 
     if (result?.error) {
@@ -41,7 +47,7 @@ export default function LoginPage() {
       setToast({ message: 'Login successful!', type: 'success' });
       // Small delay to show the toast
       setTimeout(() => {
-        router.push('/dashboard');
+        router.push('/dashboard/v3');
       }, 1000);
     }
   };
@@ -73,7 +79,7 @@ export default function LoginPage() {
       document.cookie = 'amira_demo_user=true; path=/; max-age=2592000';
     }
     setTimeout(() => {
-      router.push('/dashboard');
+      router.push('/dashboard/v3');
     }, 600);
   };
 

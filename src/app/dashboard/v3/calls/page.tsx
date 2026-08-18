@@ -5,6 +5,8 @@ import Link from 'next/link';
 
 import { useDemoMode } from '@/contexts/DemoModeContext';
 import { getVapiCalls } from '@/app/actions/vapi';
+import { VoiceAvatar } from '@/components/ui/VoiceAvatar';
+import InteractiveWaveform from '@/components/ui/InteractiveWaveform';
 
 interface CallRecord {
   id: string;
@@ -215,10 +217,14 @@ export default function V3CallsPage() {
               });
             }
 
-            // Use actual Vapi customer name — no overrides
-            const customerName = item.customer?.name || item.customer?.number || 'Unknown Caller';
-
-            const recUrl = item.recordingUrl || item.stereoRecordingUrl || item.artifact?.recordingUrl || '';
+            // Extract any and all audio recording formats from Vapi (R2, S3, Vapi Storage, Stereo/Mono)
+            const recUrl = item.recordingUrl ||
+                           item.stereoRecordingUrl ||
+                           item.artifact?.recordingUrl ||
+                           item.artifact?.stereoRecordingUrl ||
+                           item.artifact?.recording?.mono?.combinedUrl ||
+                           item.artifact?.recording?.stereoUrl ||
+                           item.artifact?.recording?.mono?.assistantUrl || '';
 
             return {
               id: item.id || `live-${idx}`,
@@ -314,55 +320,85 @@ export default function V3CallsPage() {
       const speakFallback = () => {
         if (typeof window !== 'undefined' && window.speechSynthesis) {
           window.speechSynthesis.cancel();
-          const dialogueText = (selectedCall?.transcript || [])
-            .filter(t => t.text && !t.text.startsWith('No transcript available'))
-            .map(t => `${t.speaker}: ${t.text}`)
-            .join('. ');
+          const validTurns = (selectedCall?.transcript || [])
+            .filter(t => t.text && !t.text.startsWith('No transcript available'));
 
-          const textToSpeak = dialogueText.length > 5 ? dialogueText : `Call audio recording stream for ${selectedCall?.customerName || 'Customer'}.`;
-          const utterance = new SpeechSynthesisUtterance(textToSpeak);
-          const rateVal = parseFloat(audioPlaybackSpeed.replace('x', ''));
-          utterance.rate = isNaN(rateVal) ? 1.0 : rateVal;
-          utterance.onend = () => setIsPlayingAudio(false);
-          utterance.onerror = () => setIsPlayingAudio(false);
-          window.speechSynthesis.speak(utterance);
-        } else {
-          // Web Audio API tone synthesizer fallback
-          try {
-            const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(440, ctx.currentTime);
-            gain.gain.setValueAtTime(0.1, ctx.currentTime);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start();
-            osc.stop(ctx.currentTime + 3);
-            setTimeout(() => setIsPlayingAudio(false), 3000);
-          } catch (e) {
-            setIsPlayingAudio(false);
+          if (validTurns.length > 0) {
+            let turnIndex = 0;
+            const playNextTurn = () => {
+              if (turnIndex >= validTurns.length) {
+                setIsPlayingAudio(false);
+                return;
+              }
+              const turn = validTurns[turnIndex];
+              const isAgent = turn.speaker === 'Agent';
+              const utterance = new SpeechSynthesisUtterance(turn.text);
+              const rateVal = parseFloat(audioPlaybackSpeed.replace('x', ''));
+              utterance.rate = isNaN(rateVal) ? 1.0 : rateVal;
+              utterance.pitch = isAgent ? 1.15 : 0.95; // Distinct pitch between agent and customer
+
+              utterance.onend = () => {
+                turnIndex++;
+                playNextTurn();
+              };
+              utterance.onerror = () => {
+                turnIndex++;
+                playNextTurn();
+              };
+              window.speechSynthesis.speak(utterance);
+            };
+            playNextTurn();
+          } else {
+            const textToSpeak = `Audio recording stream for ${selectedCall?.customerName || 'Customer'}.`;
+            const utterance = new SpeechSynthesisUtterance(textToSpeak);
+            utterance.onend = () => setIsPlayingAudio(false);
+            window.speechSynthesis.speak(utterance);
           }
+        } else {
+          setIsPlayingAudio(false);
         }
       };
 
-      const validUrl = selectedCall?.recordingUrl && 
-                       !selectedCall.recordingUrl.includes('storage.vapi.ai') && 
-                       selectedCall.recordingUrl.startsWith('http');
+      let audioFileUrl = selectedCall?.recordingUrl;
 
-      if (validUrl) {
-        const audio = new Audio(selectedCall.recordingUrl);
+      // If no remote recordingUrl, map to high-quality local MP3 voice recordings in /public/audio/voices/
+      if (!audioFileUrl || !audioFileUrl.startsWith('http') || audioFileUrl.endsWith('.mock')) {
+        const agentLower = (selectedCall?.agent || '').toLowerCase();
+        if (agentLower.includes('rachel') || agentLower.includes('sales')) {
+          audioFileUrl = '/audio/voices/rachel.mp3';
+        } else if (agentLower.includes('josh') || agentLower.includes('appointment')) {
+          audioFileUrl = '/audio/voices/josh.mp3';
+        } else if (agentLower.includes('genie') || agentLower.includes('support')) {
+          audioFileUrl = '/audio/voices/charlotte.mp3';
+        } else if (agentLower.includes('onboarding') || agentLower.includes('elli')) {
+          audioFileUrl = '/audio/voices/elli.mp3';
+        } else if (agentLower.includes('david') || agentLower.includes('adam')) {
+          audioFileUrl = '/audio/voices/adam.mp3';
+        } else {
+          audioFileUrl = '/audio/voices/rachel.mp3';
+        }
+      }
+
+      if (audioFileUrl) {
+        const audio = new Audio(audioFileUrl);
         const rateVal = parseFloat(audioPlaybackSpeed.replace('x', ''));
         audio.playbackRate = isNaN(rateVal) ? 1.0 : rateVal;
+        audio.volume = 1.0;
         activeAudioRef.current = audio;
-        audio.play().catch(() => {
+
+        audio.play().then(() => {
+          // Audio started playing successfully
+        }).catch((playErr) => {
+          console.warn('Audio play error, falling back to speech synthesis:', playErr);
           activeAudioRef.current = null;
           speakFallback();
         });
+
         audio.onended = () => {
           setIsPlayingAudio(false);
           activeAudioRef.current = null;
         };
+
         audio.onerror = () => {
           activeAudioRef.current = null;
           speakFallback();
@@ -370,6 +406,13 @@ export default function V3CallsPage() {
       } else {
         speakFallback();
       }
+    }
+  };
+
+  const handleSeek = (seekSeconds: number) => {
+    setPlaybackSeconds(seekSeconds);
+    if (activeAudioRef.current) {
+      activeAudioRef.current.currentTime = seekSeconds;
     }
   };
 
@@ -522,21 +565,30 @@ export default function V3CallsPage() {
           </p>
         </div>
       ) : (
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(320px, 380px) 1fr', gap: '1.5rem', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(320px, 390px) 1fr', gap: '1.5rem', alignItems: 'start' }}>
         
         {/* LEFT COLUMN: CALL ROSTER LIST */}
         <div style={{
-          backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '16px',
-          padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.85rem'
+          backgroundColor: 'var(--bg-card)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: '16px',
+          padding: '1.25rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.85rem',
+          maxHeight: 'calc(100vh - 120px)',
+          position: 'sticky',
+          top: '1rem',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.02)'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
             <h3 style={{ fontSize: '14px', fontWeight: 650, color: 'var(--text-primary)', margin: 0 }}>
               Recent Activity ({filteredCalls.length})
             </h3>
             <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Phone Logs</span>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', overflowY: 'auto', paddingRight: '4px', flex: 1, minHeight: 0 }}>
             {filteredCalls.map(c => {
               const isSelected = c.id === selectedCall?.id;
               return (
@@ -551,9 +603,12 @@ export default function V3CallsPage() {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span style={{ fontSize: '16px' }}>{c.flag}</span>
-                      <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>{c.num}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                      <VoiceAvatar type="customer" name={c.customerName} size={28} />
+                      <div>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>{c.customerName}</div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{c.flag} {c.num}</div>
+                      </div>
                     </div>
                     <span style={{ fontSize: '10.5px', fontWeight: 600, color: '#10b981' }}>{c.status}</span>
                   </div>
@@ -597,19 +652,22 @@ export default function V3CallsPage() {
           
           {/* Call Header Overview Card */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '1.25rem' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <span style={{ fontSize: '22px' }}>{selectedCall.flag}</span>
-                <h2 style={{ fontSize: '18px', fontWeight: 650, color: 'var(--text-primary)', margin: 0 }}>
-                  {selectedCall.customerName} ({selectedCall.num})
-                </h2>
-                <span style={{ fontSize: '10.5px', fontWeight: 600, padding: '2px 8px', borderRadius: '4px', backgroundColor: '#10b98115', color: '#10b981' }}>
-                  {selectedCall.status}
-                </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+              <VoiceAvatar type="customer" name={selectedCall.customerName} size={44} />
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <span style={{ fontSize: '18px' }}>{selectedCall.flag}</span>
+                  <h2 style={{ fontSize: '18px', fontWeight: 650, color: 'var(--text-primary)', margin: 0 }}>
+                    {selectedCall.customerName} ({selectedCall.num})
+                  </h2>
+                  <span style={{ fontSize: '10.5px', fontWeight: 600, padding: '2px 8px', borderRadius: '4px', backgroundColor: '#10b98115', color: '#10b981' }}>
+                    {selectedCall.status}
+                  </span>
+                </div>
+                <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', margin: '0.2rem 0 0 0' }}>
+                  {selectedCall.location} • Agent: <strong>{selectedCall.agent}</strong> ({selectedCall.engine})
+                </p>
               </div>
-              <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', margin: '0.3rem 0 0 0' }}>
-                {selectedCall.location} • Agent: <strong>{selectedCall.agent}</strong> ({selectedCall.engine})
-              </p>
             </div>
 
             <div style={{ textAlign: 'right' }}>
@@ -642,11 +700,23 @@ export default function V3CallsPage() {
                 </button>
 
                 <div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                    Call Audio Recording Stream
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>{selectedCall.recordingUrl && selectedCall.recordingUrl.startsWith('http') ? '🎙️ Live Telecom Call Recording' : '⚡ AI Voice Engine Audio Stream'}</span>
+                    <span style={{
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      backgroundColor: selectedCall.recordingUrl && selectedCall.recordingUrl.startsWith('http') ? '#10b98115' : '#1b5a9215',
+                      color: selectedCall.recordingUrl && selectedCall.recordingUrl.startsWith('http') ? '#059669' : '#1b5a92'
+                    }}>
+                      {selectedCall.recordingUrl && selectedCall.recordingUrl.startsWith('http') ? 'Vapi Cloud Audio' : 'Voice Library'}
+                    </span>
                   </div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-                    HD Audio Recording • {selectedCall.cost} total API cost
+                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                    {selectedCall.recordingUrl && selectedCall.recordingUrl.startsWith('http')
+                      ? `Lossless Recording Stream • ${selectedCall.cost} API cost`
+                      : `Voice Synthesis Preview (${selectedCall.agent}) • ${selectedCall.outcome}`}
                   </div>
                 </div>
               </div>
@@ -677,35 +747,17 @@ export default function V3CallsPage() {
               </div>
             </div>
 
-            {/* Animated Waveform Visualizer Scrubber */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.25rem' }}>
-              <span style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
-                {`00:${String(Math.min(playbackSeconds, 59)).padStart(2, '0')}`}
-              </span>
-
-              <div style={{ flex: 1, height: '28px', display: 'flex', alignItems: 'center', gap: '3px', cursor: 'pointer' }}>
-                {Array.from({ length: 48 }).map((_, i) => {
-                  const barProgress = Math.min(48, Math.floor((playbackSeconds % 20) * 2.4));
-                  const isActive = isPlayingAudio && i <= barProgress;
-                  const heightPct = Math.max(20, Math.min(100, Math.sin(i * 0.4 + (isPlayingAudio ? playbackSeconds * 0.5 : 0)) * 45 + 55));
-                  return (
-                    <div
-                      key={i}
-                      style={{
-                        flex: 1,
-                        height: `${heightPct}%`,
-                        backgroundColor: isActive ? '#10b981' : (isPlayingAudio ? '#1b5a9280' : 'var(--border-subtle)'),
-                        borderRadius: '99px',
-                        transition: 'all 0.15s ease'
-                      }}
-                    />
-                  );
-                })}
-              </div>
-
-              <span style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                {selectedCall.dur}
-              </span>
+            {/* Interactive Amplitude Waveform Scrubber (BBC audiowaveform style) */}
+            <div style={{ marginTop: '0.4rem', padding: '0.25rem 0' }}>
+              <InteractiveWaveform
+                durationSeconds={selectedCall.durSeconds || 120}
+                currentSeconds={playbackSeconds}
+                isPlaying={isPlayingAudio}
+                onSeek={handleSeek}
+                sentiment={selectedCall.sentiment}
+                transcript={selectedCall.transcript}
+                height={52}
+              />
             </div>
           </div>
 
@@ -769,14 +821,11 @@ export default function V3CallsPage() {
                       maxWidth: '85%'
                     }}
                   >
-                    <div style={{
-                      width: '32px', height: '32px', borderRadius: '50%',
-                      backgroundColor: isAgent ? '#1b5a92' : '#10b981',
-                      color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '13px', fontWeight: 700, flexShrink: 0
-                    }}>
-                      {isAgent ? '🤖' : '👤'}
-                    </div>
+                    <VoiceAvatar
+                      type={isAgent ? 'agent' : 'customer'}
+                      name={isAgent ? selectedCall.agent : selectedCall.customerName}
+                      size={34}
+                    />
 
                     <div style={{
                       padding: '0.85rem 1.1rem', borderRadius: '14px',

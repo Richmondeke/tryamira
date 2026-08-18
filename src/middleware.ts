@@ -9,7 +9,7 @@ export async function middleware(request: NextRequest) {
   const isAppSubdomain = hostname.startsWith('app.heyamira.com') || hostname.startsWith('app.localhost');
 
   if (isAppSubdomain && url.pathname === '/') {
-    url.pathname = '/dashboard';
+    url.pathname = '/dashboard/v3';
     return NextResponse.redirect(url);
   }
 
