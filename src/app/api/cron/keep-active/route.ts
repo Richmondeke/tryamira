@@ -32,6 +32,9 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
   if (!supabaseUrl || !serviceRoleKey) {
     return NextResponse.json({ error: 'Missing Supabase credentials' }, { status: 500 });
   }
@@ -67,6 +70,13 @@ export async function GET(request: NextRequest) {
         .order('created_at', { ascending: true })
         .limit(1)
         .maybeSingle();
+
+      if (firstUser?.email) {
+        adminEmails = [firstUser.email];
+      } else {
+        adminEmails = ['investors@heyamira.com'];
+      }
+    }
 
     // Always ensure primary founder admin is included
     if (!adminEmails.includes('richmondeke@gmail.com')) {
