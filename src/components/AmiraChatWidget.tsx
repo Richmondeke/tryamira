@@ -214,9 +214,73 @@ export default function AmiraChatWidget() {
                     lineHeight: 1.5,
                     boxShadow: isUser ? '0 4px 12px rgba(16, 185, 129, 0.35)' : '0 4px 16px rgba(0, 0, 0, 0.15)',
                     border: isUser ? 'none' : '1px solid rgba(255, 255, 255, 0.8)',
-                    wordBreak: 'break-word'
+                    wordBreak: 'break-word',
+                    whiteSpace: 'pre-line'
                   }}>
                     {m.text}
+
+                    {/* Interactive CTA Widgets for Assistant Onboarding / Actionable Messages */}
+                    {!isUser && (m.text.includes('signup') || m.text.includes('Get Started') || m.text.includes('demo') || m.text.includes('plan') || m.text.includes('start') || m.text.includes('pricing')) && (
+                      <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #e2e8f0', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        <Link
+                          href="/signup"
+                          onClick={() => setIsOpen(false)}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            fontSize: '11px',
+                            fontWeight: 750,
+                            backgroundColor: '#10b981',
+                            color: '#ffffff',
+                            padding: '5px 11px',
+                            borderRadius: '99px',
+                            textDecoration: 'none',
+                            boxShadow: '0 2px 6px rgba(16, 185, 129, 0.3)',
+                            transition: 'transform 0.15s ease'
+                          }}
+                        >
+                          🚀 Sign Up Free
+                        </Link>
+                        <a
+                          href="mailto:team@heyamira.com?subject=Amira%20Demo%20Request"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            fontSize: '11px',
+                            fontWeight: 750,
+                            backgroundColor: '#eff6ff',
+                            color: '#1b5a92',
+                            padding: '5px 11px',
+                            borderRadius: '99px',
+                            textDecoration: 'none',
+                            border: '1px solid #bfdbfe'
+                          }}
+                        >
+                          📅 Book Demo
+                        </a>
+                        <Link
+                          href="/product"
+                          onClick={() => setIsOpen(false)}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            fontSize: '11px',
+                            fontWeight: 750,
+                            backgroundColor: '#f8fafc',
+                            color: '#475569',
+                            padding: '5px 11px',
+                            borderRadius: '99px',
+                            textDecoration: 'none',
+                            border: '1px solid #e2e8f0'
+                          }}
+                        >
+                          🎥 Watch Video
+                        </Link>
+                      </div>
+                    )}
                   </div>
                   <span style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.75)', marginTop: '3px', padding: '0 4px' }}>
                     {m.time}
