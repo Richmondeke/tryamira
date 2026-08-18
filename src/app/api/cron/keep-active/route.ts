@@ -251,26 +251,30 @@ export async function GET(request: NextRequest) {
     // 1. Try Resend (Fastest & Most Reliable for Next.js)
     if (resendApiKey && !emailSent) {
       try {
-        const resendRes = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${resendApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            from: process.env.EMAIL_FROM || 'Amira Intelligence <onboarding@resend.dev>',
-            to: adminEmails,
-            subject: `📊 Amira Daily Report [${reportDate}]: +${newSignups24h || 0} Signups, +${newLeads24h || 0} Leads`,
-            html: emailHtml,
-          }),
-        });
+        for (const recipient of adminEmails) {
+          const resendRes = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${resendApiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              from: process.env.EMAIL_FROM || 'Amira Intelligence <onboarding@resend.dev>',
+              to: [recipient],
+              subject: `📊 Amira Daily Report [${reportDate}]: +${newSignups24h || 0} Signups, +${newLeads24h || 0} Leads`,
+              html: emailHtml,
+            }),
+          });
 
-        if (resendRes.ok) {
-          emailSent = true;
-          deliveryMethod = 'resend';
-        } else {
-          deliveryError = await resendRes.text();
-          console.warn('[keep-active] Resend error:', deliveryError);
+          if (resendRes.ok) {
+            emailSent = true;
+            deliveryMethod = 'resend';
+            deliveryError = null;
+          } else {
+            const errText = await resendRes.text();
+            if (!emailSent) deliveryError = errText;
+            console.warn(`[keep-active] Resend notice for ${recipient}:`, errText);
+          }
         }
       } catch (rErr: any) {
         deliveryError = rErr?.message || String(rErr);
