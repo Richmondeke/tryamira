@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://gijtnmzylulvcjsaohag.supabase.co';
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdpanRubXp5bHVsdmNqc2FvaGFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyNTY3NjgsImV4cCI6MjA5NzgzMjc2OH0.hqsS461yZXIiktzlF5tUKPWgiEHujuVtmsH1p8gEO4A';
-const VAPI_KEY = process.env.VAPI_PRIVATE_API_KEY || '8c2bb74f-8251-42f7-ae7a-3e6fb2d0703a';
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://your-project.supabase.co';
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'your-anon-key';
+const VAPI_KEY = process.env.VAPI_PRIVATE_API_KEY || 'your-vapi-key';
 
 async function runEndToEndFlow() {
   console.log('----------------------------------------------------');
@@ -13,7 +13,7 @@ async function runEndToEndFlow() {
   console.log('📌 STEP 1: User Signup & Workspace Authentication');
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const testEmail = `qa-candidate-${Date.now()}@heyamira.com`;
-  const testPassword = 'SecureQAPassword2026!';
+  const testPassword = process.env.TEST_QA_PASSWORD || `TempAuth_${Date.now()}!aZ`;
 
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email: testEmail,
