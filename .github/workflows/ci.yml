@@ -74,10 +74,10 @@ jobs:
     needs: [lint, typecheck, test]
     env:
       NEXT_PUBLIC_APP_URL: https://heyamira.com
-      NEXT_PUBLIC_SUPABASE_URL: https://gijtnmzylulvcjsaohag.supabase.co
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdpanRubXp5bHVsdmNqc2FvaGFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyNTY3NjgsImV4cCI6MjA5NzgzMjc2OH0.hqsS461yZXIiktzlF5tUKPWgiEHujuVtmsH1p8gEO4A
-      NEXT_PUBLIC_VAPI_PUBLIC_KEY: 65903b62-2469-41eb-ba8e-264a5114416b
-      NEXT_PUBLIC_VAPI_ASSISTANT_ID: ae0f0250-c62c-4c65-916e-85af7d7288b7
+      NEXT_PUBLIC_SUPABASE_URL: https://placeholder-project.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy-build-token.mock
+      NEXT_PUBLIC_VAPI_PUBLIC_KEY: 00000000-0000-0000-0000-000000000000
+      NEXT_PUBLIC_VAPI_ASSISTANT_ID: 00000000-0000-0000-0000-000000000000
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4

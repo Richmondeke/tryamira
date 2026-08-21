@@ -114,20 +114,29 @@ Amira enforces 100% runnable tests, static type safety, and linting on every com
 | Variable Name | Required | Description |
 | :--- | :---: | :--- |
 | `NEXT_PUBLIC_APP_URL` | Yes | Base URL of the deployment (e.g. `https://heyamira.com`) |
+| `NODE_ENV` | No | Application environment (`development`, `production`, `test`) |
+| `LOG_LEVEL` | No | Structured logging threshold (`debug`, `info`, `warn`, `error`) |
 | `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase PostgreSQL project instance URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase public anonymous API key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Yes | Supabase privileged service role secret key |
 | `NEXT_PUBLIC_VAPI_PUBLIC_KEY` | Yes | Vapi AI client-side WebRTC public token |
 | `NEXT_PUBLIC_VAPI_ASSISTANT_ID` | Yes | Default Vapi AI Assistant ID |
+| `NEXT_PUBLIC_VAPI_PHONE_NUMBER_ID` | No | Vapi dedicated telephony phone number ID |
 | `VAPI_PRIVATE_API_KEY` | Yes | Vapi AI backend management private API key |
-| `COMPOSIO_API_KEY` | Yes | Composio OAuth & Tool integration platform key |
+| `ELEVENLABS_API_KEY` | Yes | ElevenLabs voice synthesis private API key |
+| `NEXT_PUBLIC_ELEVENLABS_API_KEY` | No | Client-side voice generation key |
+| `COMPOSIO_API_KEY` | Yes | Composio OAuth & Tool integration platform key (1,000+ apps) |
 | `GEMINI_API_KEY` | Yes | Google Gemini AI LLM API Key (Flash 2.5) |
 | `RESEND_API_KEY` | Yes | Resend transactional email API key |
 | `EMAIL_FROM` | No | Default email sender header (default: `Amira Intelligence <onboarding@resend.dev>`) |
+| `SENDGRID_API_KEY` | No | Secondary transactional email fallback key |
 | `APIFY_API_KEY` | Yes | Apify actor execution API key |
 | `APIFY_ACTOR_ID` | Yes | Apify Leads Finder Actor ID (`IoSHqwTR9YGhzccez`) |
 | `APIFY_ACTOR_NAME` | Yes | Apify Actor Name (`codecrafter~leads-finder`) |
 | `KORAPAY_SECRET_KEY` | Yes | Korapay payment gateway secret key |
+| `FLUTTERWAVE_CLIENT_ID` | No | Flutterwave OAuth client ID |
+| `FLUTTERWAVE_CLIENT_SECRET` | No | Flutterwave OAuth client secret |
+| `FLUTTERWAVE_ENCRYPTION_KEY` | No | Flutterwave card encryption key |
 | `FLUTTERWAVE_SECRET_KEY` | Yes | Flutterwave API secret key |
 | `FLUTTERWAVE_SECRET_HASH` | Yes | Flutterwave webhook HMAC signature hash |
 | `CRON_SECRET` | Yes | Secret bearer token guarding cron routes (`/api/cron/*`) |
