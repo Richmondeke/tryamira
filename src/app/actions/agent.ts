@@ -5,13 +5,34 @@ import { v4 as uuidv4 } from 'uuid';
 import { getComposioStatus, executeComposioAction } from '@/app/actions/integrations';
 import { sanitizeUIText } from '@/utils/sanitizer';
 
+export interface WorkspaceMemberRecord {
+  workspace_id: string;
+  user_id: string;
+  role: string;
+}
+
+export interface WorkspaceRecord {
+  id: string;
+  name: string;
+  created_at?: string;
+}
+
+export interface AgentCustomConfig {
+  firstMessage?: string;
+  systemPrompt?: string;
+  voiceId?: string;
+  voiceProvider?: string;
+  language?: string;
+  [key: string]: unknown;
+}
+
 async function getOrCreateWorkspace(supabase: any, userId: string): Promise<string> {
   const { data: memberData } = await supabase
     .from('workspace_members')
     .select('workspace_id')
     .eq('user_id', userId)
     .limit(1)
-    .maybeSingle();
+    .maybeSingle() as { data: WorkspaceMemberRecord | null; error: unknown };
 
   if (memberData?.workspace_id) {
     return memberData.workspace_id;
@@ -21,14 +42,14 @@ async function getOrCreateWorkspace(supabase: any, userId: string): Promise<stri
     .from('workspaces')
     .insert({ name: 'My Workspace' })
     .select('id')
-    .single();
+    .single() as { data: WorkspaceRecord | null; error: { message: string } | null };
 
   if (workspaceError || !newWorkspace) {
     const { data: anyWs } = await supabase
       .from('workspaces')
       .select('id')
       .limit(1)
-      .maybeSingle();
+      .maybeSingle() as { data: WorkspaceRecord | null };
 
     if (anyWs?.id) {
       await supabase

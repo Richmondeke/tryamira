@@ -10,6 +10,33 @@ import { inviteTeamMember, getTeamMembers } from '@/app/actions/team';
 import { createKorapayCheckout, getBillingData, createPlanCheckout, createTopupCheckout } from '@/app/actions/billing';
 import { createVapiSipTrunk } from '@/app/actions/vapi';
 import { useLocalPricing } from '@/hooks/useLocalPricing';
+import { logger } from '@/lib/logger';
+
+export interface InvoiceItem {
+  id: string;
+  date: string;
+  amount: string;
+  status: string;
+  plan?: string;
+  pdfUrl?: string;
+}
+
+export interface TeamMemberItem {
+  id: string | number;
+  name?: string;
+  email: string;
+  role: string;
+  initials?: string;
+  status?: string;
+  invitedAt?: string;
+}
+
+export interface RegisteredTrunkItem {
+  id: string;
+  number: string;
+  sipUri: string;
+  status: string;
+}
 
 function LocalPriceInline({ usd }: { usd: number }) {
   const { price, isLoading } = useLocalPricing(usd);
@@ -28,7 +55,7 @@ function AccountSettingsInner() {
   const [billingTier, setBillingTier] = useState<'starter' | 'pro' | 'team' | 'enterprise'>('starter');
   const [targetUpgradeTier, setTargetUpgradeTier] = useState<'pro' | 'team' | 'enterprise'>('pro');
   const [callCredits, setCallCredits] = useState<number>(0);
-  const [invoices, setInvoices] = useState<any[]>([]);
+  const [invoices, setInvoices] = useState<InvoiceItem[]>([]);
   const [userId, setUserId] = useState<string>('');
   const [userEmail, setUserEmail] = useState<string>('');
   const [billingLoaded, setBillingLoaded] = useState(false);
@@ -53,7 +80,7 @@ function AccountSettingsInner() {
   const [activeSettingsTab, setActiveSettingsTab] = useState('general');
   const [workspaceName, setWorkspaceName] = useState('Acme Real Estate');
   const [timezone, setTimezone] = useState('Pacific Time (PT)');
-  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [teamMembers, setTeamMembers] = useState<TeamMemberItem[]>([]);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('Admin');
 
@@ -64,7 +91,7 @@ function AccountSettingsInner() {
   const [sipPass, setSipPass] = useState('');
   const [sipGateways, setSipGateways] = useState('');
   const [isRegisteringSip, setIsRegisteringSip] = useState(false);
-  const [registeredTrunks, setRegisteredTrunks] = useState<any[]>([
+  const [registeredTrunks, setRegisteredTrunks] = useState<RegisteredTrunkItem[]>([
     { id: "trunk-mtn-234", number: "+234 803 000 0192", sipUri: "sip:sip.mtn.com.ng:5060", status: "Active (MTN West Africa)" }
   ]);
 
@@ -100,7 +127,7 @@ function AccountSettingsInner() {
       }
       setToast(`Notification preference updated.`);
     } catch (e) {
-      // silently fail – preference is updated in UI regardless
+      logger.warn('Failed to persist notification preferences to Supabase', { key, updated }, e);
     } finally {
       setNotifSaving(false);
     }
