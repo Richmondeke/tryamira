@@ -14,32 +14,32 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@composio/core": "^0.10.0",
-    "@supabase/ssr": "^0.10.3",
+    "@composio/core": "^0.16.0",
+    "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.106.2",
-    "@vapi-ai/web": "^2.5.2",
-    "lucide-react": "^1.17.0",
-    "next": "16.2.6",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "react-joyride": "^3.1.0",
-    "uuid": "^14.0.0"
+    "@vapi-ai/web": "^2.6.3",
+    "lucide-react": "^1.31.0",
+    "next": "16.3.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-joyride": "^3.2.0",
+    "uuid": "^14.0.1"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.2.0",
-    "@types/node": "^20",
+    "@types/node": "^26",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/uuid": "^10.0.0",
-    "@vitejs/plugin-react": "^4.3.4",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.6",
-    "jsdom": "^26.0.0",
-    "puppeteer": "^25.7.0",
-    "supabase": "^2.107.0",
-    "typescript": "^5",
-    "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.0.7"
+    "@types/uuid": "^11.0.0",
+    "@vitejs/plugin-react": "^6.0.5",
+    "eslint": "^10",
+    "eslint-config-next": "16.3.1",
+    "jsdom": "^30.0.1",
+    "puppeteer": "^25.8.0",
+    "supabase": "^2.114.0",
+    "typescript": "^7",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.10"
   }
 }
