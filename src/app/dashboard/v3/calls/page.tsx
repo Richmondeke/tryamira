@@ -230,7 +230,7 @@ export default function V3CallsPage() {
               id: item.id || `live-${idx}`,
               flag: '🌐',
               num: item.customer?.number || item.phoneNumber?.number || item.phoneNumber || 'Unknown Number',
-              customerName,
+              customerName: item.customer?.name || (item as any).customerName || 'Inbound Caller',
               location: 'Global Phone Route',
               agent: item.assistant?.name || 'Amira Agent',
               engine: item.assistant?.voice?.provider ? `Amira ${item.assistant.voice.provider}` : 'Amira Voice Engine',

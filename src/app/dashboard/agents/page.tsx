@@ -364,7 +364,6 @@ export default function VoiceAgentsStudioPage() {
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          backgroundColor: '#fdfdfd',
           backgroundColor: 'var(--bg-subtle)',
           backgroundSize: '20px 20px',
           position: 'relative',

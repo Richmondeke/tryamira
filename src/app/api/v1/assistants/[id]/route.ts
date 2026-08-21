@@ -5,13 +5,13 @@ function getVapiApiKey(): string {
 }
 
 // GET /api/v1/assistants/[id] — Fetch Assistant Details
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authHeader = req.headers.get('authorization');
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return NextResponse.json({ success: false, error: 'Unauthorized. Missing or invalid Authorization header.' }, { status: 401 });
   }
 
-  const { id } = params;
+  const { id } = await params;
   const apiKey = getVapiApiKey();
   if (!apiKey) {
     return NextResponse.json({ success: false, error: 'Amira Telephony Key not configured.' }, { status: 500 });
@@ -39,13 +39,13 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 // PATCH /api/v1/assistants/[id] — Update Assistant Parameters
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authHeader = req.headers.get('authorization');
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return NextResponse.json({ success: false, error: 'Unauthorized. Missing or invalid Authorization header.' }, { status: 401 });
   }
 
-  const { id } = params;
+  const { id } = await params;
   const apiKey = getVapiApiKey();
   if (!apiKey) {
     return NextResponse.json({ success: false, error: 'Amira Telephony Key not configured.' }, { status: 500 });
@@ -107,13 +107,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 }
 
 // DELETE /api/v1/assistants/[id] — Delete Assistant
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authHeader = req.headers.get('authorization');
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return NextResponse.json({ success: false, error: 'Unauthorized. Missing or invalid Authorization header.' }, { status: 401 });
   }
 
-  const { id } = params;
+  const { id } = await params;
   const apiKey = getVapiApiKey();
   if (!apiKey) {
     return NextResponse.json({ success: false, error: 'Amira Telephony Key not configured.' }, { status: 500 });

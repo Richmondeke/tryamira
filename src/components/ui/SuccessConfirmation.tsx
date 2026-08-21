@@ -126,7 +126,6 @@ export default function SuccessConfirmation({
           style={{
             width: '100%',
             padding: '0.65rem 1rem',
-            backgroundColor: 'var(--stripe-purple)',
             backgroundColor: '#1b5a92',
             color: '#fff',
             border: 'none',

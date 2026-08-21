@@ -2476,12 +2476,11 @@ function AgentContent() {
           /* Premium welcome box when zero agents exist */
           <div style={{ 
             padding: '2.5rem 2rem', 
-            backgroundColor: '#ffffff', 
+            backgroundColor: 'var(--bg-subtle)', 
             border: '1px solid var(--stripe-border)', 
             borderRadius: '12px', 
             textAlign: 'center', 
             boxShadow: 'var(--stripe-shadow-ambient)',
-            backgroundColor: 'var(--bg-subtle)',
             borderWidth: '1.5px'
           }}>
             <span style={{ fontSize: '32px', display: 'block', marginBottom: '0.75rem' }}>🤖</span>

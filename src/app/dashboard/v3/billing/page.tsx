@@ -74,7 +74,7 @@ export default function V3BillingPage() {
           border: '1.5px solid rgba(16, 185, 129, 0.5)',
           display: 'flex',
           alignItems: 'center',
-          justify: 'space-between',
+          justifyContent: 'space-between',
           flexWrap: 'wrap',
           gap: '1.5rem',
           position: 'relative',
