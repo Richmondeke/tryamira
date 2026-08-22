@@ -81,9 +81,12 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Always ensure primary founder admin is included
+    // Always ensure primary founder admin aliases are included
     if (!adminEmails.includes('richmondeke@gmail.com')) {
       adminEmails.unshift('richmondeke@gmail.com');
+    }
+    if (!adminEmails.includes('ekerichmond@gmail.com')) {
+      adminEmails.push('ekerichmond@gmail.com');
     }
     // ── 1. GATHER PLATFORM METRICS FROM SUPABASE (ACTIVE READ QUERIES) ──────────
 
