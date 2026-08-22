@@ -10,6 +10,8 @@ export interface VoiceOption {
   previewUrl: string;
 }
 
+export type VoiceModel = VoiceOption;
+
 export const namesList = [
   'Rachel', 'Josh', 'Kemi', 'Chinedu', 'Nova', 'Alloy', 'Fin', 'Bella', 'Thomas', 'Serena',
   'Mwangi', 'Ambrose', 'Chioma', 'Amina', 'Marcus', 'Sarah', 'George', 'Charlotte', 'Liam', 'Olivia',
