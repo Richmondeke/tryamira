@@ -202,20 +202,6 @@ export async function GET(request: NextRequest) {
         </div>
       </div>
 
-      <!-- Infrastructure & Supabase Keep-Alive Health -->
-      <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 14px; padding: 18px 20px; margin-bottom: 28px;">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-          <strong style="color: #166534; font-size: 14px; font-weight: 800; letter-spacing: -0.01em;">🛡️ Infrastructure Status</strong>
-          <span style="background-color: #10b981; color: #ffffff; font-size: 10.5px; font-weight: 900; padding: 3px 9px; border-radius: 99px; letter-spacing: 0.04em;">100% OPERATIONAL</span>
-        </div>
-        <ul style="margin: 0; padding-left: 18px; font-size: 13px; color: #15803d; line-height: 1.7; font-weight: 600;">
-          <li>Supabase Database: <strong>Active & Keep-Alive Verified</strong></li>
-          <li>Vapi Voice Telephony: <strong>Sub-500ms Turn-Taking Ready</strong></li>
-          <li>Composio Tool MCP: <strong>1,000+ Integrations Connected</strong></li>
-          <li>Korapay & Flutterwave: <strong>Payment Rails Active</strong></li>
-        </ul>
-      </div>
-
       <!-- CTA Button -->
       <div style="text-align: center; margin: 30px 0 10px 0;">
         <a href="https://heyamira.com/dashboard/v3" style="display: inline-block; background-color: #1b5a92; color: #ffffff; font-size: 14.5px; font-weight: 800; padding: 14px 32px; border-radius: 99px; text-decoration: none; box-shadow: 0 4px 16px rgba(27,90,146,0.35); letter-spacing: -0.01em;">
