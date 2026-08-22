@@ -32,11 +32,19 @@ export default function LoginPage() {
     setToast(null);
 
     const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
+    const email = ((formData.get('email') as string) || '').trim().toLowerCase();
+    const password = (formData.get('password') as string) || '';
+
     if (email && typeof window !== 'undefined') {
       document.cookie = `amira_user_email=${encodeURIComponent(email)}; path=/; max-age=2592000`;
       localStorage.setItem('amira_demo_mode', 'false');
     }
+
+    // Client-side authentication to sync browser auth state immediately
+    try {
+      const supabase = createClient();
+      await supabase.auth.signInWithPassword({ email, password });
+    } catch {}
 
     const result = await login(formData);
 
@@ -44,11 +52,10 @@ export default function LoginPage() {
       setToast({ message: result.error, type: 'error' });
       setLoading(false);
     } else {
-      setToast({ message: 'Login successful!', type: 'success' });
-      // Small delay to show the toast
+      setToast({ message: 'Login successful! Redirecting...', type: 'success' });
       setTimeout(() => {
         router.push('/dashboard/v3');
-      }, 1000);
+      }, 500);
     }
   };
 

@@ -22,7 +22,9 @@ export default function SignupPage() {
     setToast(null);
 
     const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
+    const email = ((formData.get('email') as string) || '').trim().toLowerCase();
+    const password = (formData.get('password') as string) || '';
+
     if (email && typeof window !== 'undefined') {
       document.cookie = `amira_user_email=${encodeURIComponent(email)}; path=/; max-age=2592000`;
       localStorage.setItem('amira_demo_mode', 'false');
@@ -33,17 +35,17 @@ export default function SignupPage() {
     if (result?.error) {
       setToast({ message: result.error, type: 'error' });
       setLoading(false);
-    } else if (result?.needsEmailConfirmation) {
-      setToast({ message: result.message || 'Please check your email to verify your account.', type: 'success' });
-      setTimeout(() => {
-        router.push(`/login?message=${encodeURIComponent(result.message || 'Please check your email to verify your account.')}`);
-      }, 3000);
     } else {
-      setToast({ message: 'Account created successfully!', type: 'success' });
-      // Small delay to show the toast
+      // Client-side authentication to sync browser auth state immediately
+      try {
+        const supabase = createClient();
+        await supabase.auth.signInWithPassword({ email, password });
+      } catch {}
+
+      setToast({ message: 'Account ready! Redirecting to dashboard...', type: 'success' });
       setTimeout(() => {
         router.push('/dashboard/v3');
-      }, 1000);
+      }, 600);
     }
   };
 
