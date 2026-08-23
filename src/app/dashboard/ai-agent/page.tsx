@@ -13,11 +13,15 @@ import Vapi from '@vapi-ai/web';
 import { useDemoMode } from '@/contexts/DemoModeContext';
 import { templatesData } from '@/data/agentTemplates';
 import { generate100Voices } from '@/lib/voices';
+import { WebsiteCrawlerModal } from '@/components/agent-builder/WebsiteCrawlerModal';
+import { useUserProfile } from '@/contexts/UserProfileContext';
 
 const initialVoicesList = generate100Voices();
 
 function AgentContent() {
   const { isDemoMode } = useDemoMode();
+  const { profile } = useUserProfile();
+  const vapiAssistantId = profile?.vapi_assistant_id;
   const searchParams = useSearchParams();
   const router = useRouter();
   const templateId = searchParams.get('template');
@@ -86,6 +90,7 @@ function AgentContent() {
   const [isTrainingKb, setIsTrainingKb] = useState(false);
   const [kbProgress, setKbProgress] = useState(0);
   const [trainedDocs, setTrainedDocs] = useState<Array<{ title: string; content: string }>>([]);
+  const [showCrawlerModal, setShowCrawlerModal] = useState(false);
 
   // Integration Connection simulation state
   const [connectedIntegrations, setConnectedIntegrations] = useState<Record<string, boolean>>({});
@@ -1591,15 +1596,26 @@ function AgentContent() {
                 </div>
                 
                 {!showKbInput && !isTrainingKb && (
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setShowKbInput(true)}
-                    style={{ borderColor: '#4caf50', color: '#4caf50', fontSize: '11px', padding: '0.35rem 0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
-                  >
-                    ➕ Train New Document
-                  </Button>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => setShowCrawlerModal(true)}
+                      style={{ borderColor: '#10b981', color: '#10b981', fontSize: '11px', padding: '0.35rem 0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      🌐 Train from Website URL (Apify)
+                    </Button>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => setShowKbInput(true)}
+                      style={{ borderColor: '#4caf50', color: '#4caf50', fontSize: '11px', padding: '0.35rem 0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      ➕ Train New Document
+                    </Button>
+                  </div>
                 )}
               </div>
 
@@ -2505,6 +2521,26 @@ function AgentContent() {
         </div>
       </div>
       
+      {/* Website Content Crawler Modal (Apify RAG Ingestion) */}
+      <WebsiteCrawlerModal
+        isOpen={showCrawlerModal}
+        onClose={() => setShowCrawlerModal(false)}
+        assistantId={vapiAssistantId}
+        onSuccess={(result, domain) => {
+          setTrainedDocs(prev => [
+            ...prev,
+            {
+              title: `${domain}_Website_Knowledge.md`,
+              content: `Crawled ${result.pagesCrawled} pages from https://${domain} via Apify Content Crawler.`,
+            },
+          ]);
+          setToast({
+            message: `🎉 Ingested ${result.pagesCrawled} pages from ${domain} into AI knowledge base!`,
+            type: 'success',
+          });
+        }}
+      />
+
       {/* Persistent global audio node for stable previews */}
       <audio id="voice-preview-player" style={{ display: 'none' }} />
     </div>
