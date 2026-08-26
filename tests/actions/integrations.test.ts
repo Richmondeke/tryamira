@@ -27,13 +27,24 @@ describe('src/app/actions/integrations.ts', () => {
     vi.clearAllMocks();
   });
 
-  it('returns fallback mock integrations when COMPOSIO_API_KEY is not set', async () => {
+  it('returns curated Sales, CRM & Lead Management integrations when fallback is active', async () => {
     delete process.env.COMPOSIO_API_KEY;
     const res = await getComposioApps();
     expect(res.success).toBe(true);
     expect(Array.isArray(res.data)).toBe(true);
-    expect(res.data.length).toBeGreaterThanOrEqual(10);
-    expect(res.data.some((app: any) => app.id === 'gmail')).toBe(true);
+    
+    // Asserts sales & CRM tools are included
+    expect(res.data.some((app: any) => app.id === 'hubspot')).toBe(true);
+    expect(res.data.some((app: any) => app.id === 'salesforce')).toBe(true);
+    expect(res.data.some((app: any) => app.id === 'apollo')).toBe(true);
+    expect(res.data.some((app: any) => app.id === 'googlesheets')).toBe(true);
+    expect(res.data.some((app: any) => app.id === 'calendly')).toBe(true);
+    expect(res.data.some((app: any) => app.id === 'zendesk')).toBe(true);
+
+    // Asserts dev noise is excluded
+    expect(res.data.some((app: any) => app.id === 'github')).toBe(false);
+    expect(res.data.some((app: any) => app.id === 'docker')).toBe(false);
+    expect(res.data.some((app: any) => app.id === 'kubernetes')).toBe(false);
   });
 
   it('returns structured connection status for active integrations', async () => {

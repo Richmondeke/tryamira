@@ -74,7 +74,7 @@ export default function V3IntegrationsPage() {
   };
 
   // Categories
-  const categories = ['All', 'CRMs & Sales', 'Productivity', 'Communication', 'Dev & Data', 'Customer Support'];
+  const categories = ['All', 'CRMs & Pipeline', 'Lead Sourcing & Nurturing', 'Databases & Sheets', 'Scheduling & Meetings', 'Customer Relationship & Support'];
 
   // Filter apps
   const filteredApps = apps.filter(app => {
@@ -87,16 +87,16 @@ export default function V3IntegrationsPage() {
     if (filterStatus === 'available') matchesStatus = !isConnected;
 
     let matchesCategory = true;
-    if (selectedCategory === 'CRMs & Sales') {
-      matchesCategory = ['hubspot', 'salesforce', 'zohocrm', 'pipedrive', 'stripe', 'quickbooks'].some(k => app.id.includes(k));
-    } else if (selectedCategory === 'Productivity') {
-      matchesCategory = ['notion', 'googlesheets', 'calendly', 'googlecalendar', 'asana', 'clickup', 'trello', 'airtable'].some(k => app.id.includes(k));
-    } else if (selectedCategory === 'Communication') {
-      matchesCategory = ['slack', 'gmail', 'zoom', 'whatsapp', 'intercom', 'mailchimp'].some(k => app.id.includes(k));
-    } else if (selectedCategory === 'Dev & Data') {
-      matchesCategory = ['github', 'linear', 'jira'].some(k => app.id.includes(k));
-    } else if (selectedCategory === 'Customer Support') {
-      matchesCategory = ['zendesk', 'intercom', 'freshdesk'].some(k => app.id.includes(k));
+    if (selectedCategory === 'CRMs & Pipeline') {
+      matchesCategory = ['hubspot', 'salesforce', 'zohocrm', 'pipedrive', 'activecampaign', 'close', 'copper'].some(k => app.id.includes(k) || (app.name && app.name.toLowerCase().includes(k)));
+    } else if (selectedCategory === 'Lead Sourcing & Nurturing') {
+      matchesCategory = ['apollo', 'linkedin', 'lemlist', 'mailchimp', 'sendgrid', 'twilio', 'whatsapp', 'instantly', 'outreach'].some(k => app.id.includes(k) || (app.name && app.name.toLowerCase().includes(k)));
+    } else if (selectedCategory === 'Databases & Sheets') {
+      matchesCategory = ['googlesheets', 'airtable', 'notion', 'googlecontacts', 'supabase', 'coda'].some(k => app.id.includes(k) || (app.name && app.name.toLowerCase().includes(k)));
+    } else if (selectedCategory === 'Scheduling & Meetings') {
+      matchesCategory = ['calendly', 'googlecalendar', 'gmail', 'outlook', 'zoom', 'slack', 'calcom'].some(k => app.id.includes(k) || (app.name && app.name.toLowerCase().includes(k)));
+    } else if (selectedCategory === 'Customer Relationship & Support') {
+      matchesCategory = ['zendesk', 'intercom', 'freshdesk', 'front', 'helpscout', 'stripe', 'quickbooks', 'docusign'].some(k => app.id.includes(k) || (app.name && app.name.toLowerCase().includes(k)));
     }
 
     return matchesSearch && matchesStatus && matchesCategory;

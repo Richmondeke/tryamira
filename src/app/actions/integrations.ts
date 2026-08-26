@@ -16,31 +16,64 @@ async function getUserWorkspaceId(supabase: any, userId: string): Promise<string
 
 
 const MOCK_INTEGRATIONS = [
-  { id: 'hubspot', name: 'HubSpot', desc: 'Sync CRM leads, contact pipelines, and customer lists.', icon: '🟠', type: 'oauth' },
-  { id: 'gmail', name: 'Gmail', desc: 'Send emails and trigger notification updates.', icon: '📧', type: 'oauth' },
-  { id: 'googlecalendar', name: 'Google Calendar', desc: 'Book appointments, discover slots, and sync schedules.', icon: '📅', type: 'oauth' },
-  { id: 'salesforce', name: 'Salesforce', desc: 'Bidirectional sync for Enterprise Salesforce CRM records.', icon: '☁️', type: 'oauth' },
-  { id: 'slack', name: 'Slack', desc: 'Send direct notifications to team Slack channels.', icon: '💬', type: 'oauth' },
-  { id: 'stripe', name: 'Stripe', desc: 'Charge payments and view billing transactions.', icon: '💳', type: 'oauth' },
-  { id: 'zendesk', name: 'Zendesk', desc: 'Create support tickets and check escalation queues.', icon: '🎧', type: 'oauth' },
-  { id: 'notion', name: 'Notion', desc: 'Read and sync database workspace items.', icon: '📝', type: 'oauth' },
-  { id: 'github', name: 'GitHub', desc: 'Create issues, review commits, and track code changes.', icon: '🐙', type: 'oauth' },
-  { id: 'trello', name: 'Trello', desc: 'Manage project cards and kanban lists.', icon: '📋', type: 'oauth' },
-  { id: 'jira', name: 'Jira', desc: 'Sync issue queues and development tickets.', icon: '🎯', type: 'oauth' },
-  { id: 'asana', name: 'Asana', desc: 'Schedule tasks and verify team milestones.', icon: '💮', type: 'oauth' },
-  { id: 'googledrive', name: 'Google Drive', desc: 'Access team files, brochures, and asset folders.', icon: '📁', type: 'oauth' },
-  { id: 'shopify', name: 'Shopify', desc: 'Sync customer shopping carts, catalogs, and orders.', icon: '🛍️', type: 'oauth' },
-  { id: 'discord', name: 'Discord', desc: 'Send alerts and chat logs directly to Discord.', icon: '🎮', type: 'oauth' },
-  { id: 'zoom', name: 'Zoom', desc: 'Generate video meet links and calendar schedules.', icon: '📹', type: 'oauth' },
-  { id: 'twilio', name: 'Twilio', desc: 'Trigger SMS messages and phone outbound alerts.', icon: '📱', type: 'oauth' },
-  { id: 'mailchimp', name: 'Mailchimp', desc: 'Sync email subscribers to newsletter lists.', icon: '✉️', type: 'oauth' },
-  { id: 'msteams', name: 'Microsoft Teams', desc: 'Send alerts and chat summaries to MS Teams.', icon: '👥', type: 'oauth' },
-  { id: 'airtable', name: 'Airtable', desc: 'Organize relational data sheets and leads.', icon: '📊', type: 'oauth' },
-  { id: 'intercom', name: 'Intercom', desc: 'Trigger dynamic chat support escalation.', icon: '💬', type: 'oauth' },
-  { id: 'quickbooks', name: 'QuickBooks', desc: 'Sync business invoices, ledgers, and expenses.', icon: '💰', type: 'oauth' },
-  { id: 'googlecontacts', name: 'Google Contacts', desc: 'Import contacts and phone lists.', icon: '👤', type: 'oauth' },
-  { id: 'clickup', name: 'ClickUp', desc: 'Track tasks, workspaces, and team goals.', icon: '🔝', type: 'oauth' }
+  // ── 1. CRMs & Pipeline Management ──
+  { id: 'hubspot', name: 'HubSpot', desc: 'Sync CRM leads, contact pipelines, and customer lists.', icon: '🟠', type: 'oauth', category: 'crm' },
+  { id: 'salesforce', name: 'Salesforce', desc: 'Bidirectional sync for Enterprise Salesforce CRM records.', icon: '☁️', type: 'oauth', category: 'crm' },
+  { id: 'zohocrm', name: 'Zoho CRM', desc: 'Manage sales pipelines, accounts, and deal conversions.', icon: '💼', type: 'oauth', category: 'crm' },
+  { id: 'pipedrive', name: 'Pipedrive', desc: 'Automate sales stages, activities, and won deals.', icon: '🟢', type: 'oauth', category: 'crm' },
+  { id: 'activecampaign', name: 'ActiveCampaign', desc: 'CRM automation, lead tagging, and pipeline scoring.', icon: '⚡', type: 'oauth', category: 'crm' },
+
+  // ── 2. Lead Qualification & Nurturing ──
+  { id: 'apollo', name: 'Apollo.io', desc: 'Enrich lead contacts, company data, and buyer intent.', icon: '🚀', type: 'oauth', category: 'lead_gen' },
+  { id: 'linkedin', name: 'LinkedIn', desc: 'Engage B2B decision makers and prospect accounts.', icon: '💼', type: 'oauth', category: 'lead_gen' },
+  { id: 'lemlist', name: 'Lemlist', desc: 'Execute personalized multi-channel cold outreach.', icon: '🔥', type: 'oauth', category: 'nurturing' },
+  { id: 'mailchimp', name: 'Mailchimp', desc: 'Sync qualified subscribers into automated email funnels.', icon: '✉️', type: 'oauth', category: 'nurturing' },
+  { id: 'sendgrid', name: 'SendGrid', desc: 'Send automated email sequences and deal confirmations.', icon: '📬', type: 'oauth', category: 'nurturing' },
+  { id: 'twilio', name: 'Twilio', desc: 'Dispatch instant SMS lead alerts and appointment reminders.', icon: '📱', type: 'oauth', category: 'nurturing' },
+  { id: 'whatsapp', name: 'WhatsApp', desc: 'Inbound chat qualification and conversational sales triage.', icon: '💬', type: 'oauth', category: 'nurturing' },
+
+  // ── 3. Lead Databases & Spreadsheets ──
+  { id: 'googlesheets', name: 'Google Sheets', desc: 'Log real-time lead rows, call transcripts, and qualification scores.', icon: '📊', type: 'oauth', category: 'database' },
+  { id: 'airtable', name: 'Airtable', desc: 'Relational database for customer CRM tables and deal tracking.', icon: '📈', type: 'oauth', category: 'database' },
+  { id: 'notion', name: 'Notion', desc: 'Sync customer briefs, deal wikis, and sales knowledge bases.', icon: '📝', type: 'oauth', category: 'database' },
+  { id: 'googlecontacts', name: 'Google Contacts', desc: 'Synchronize verified phone numbers and client contacts.', icon: '👤', type: 'oauth', category: 'database' },
+
+  // ── 4. Scheduling & Sales Closers ──
+  { id: 'calendly', name: 'Calendly', desc: 'Book executive demo meetings and discover open closer slots.', icon: '📅', type: 'oauth', category: 'scheduling' },
+  { id: 'googlecalendar', name: 'Google Calendar', desc: 'Schedule appointments, check availability, and sync bookings.', icon: '🗓️', type: 'oauth', category: 'scheduling' },
+  { id: 'gmail', name: 'Gmail', desc: 'Send sales proposals, follow-ups, and meeting invites.', icon: '📧', type: 'oauth', category: 'communication' },
+  { id: 'outlook', name: 'Microsoft Outlook', desc: 'Sync enterprise sales emails, calendars, and contacts.', icon: '📨', type: 'oauth', category: 'communication' },
+  { id: 'zoom', name: 'Zoom', desc: 'Auto-generate video conference links for booked demos.', icon: '📹', type: 'oauth', category: 'scheduling' },
+  { id: 'slack', name: 'Slack', desc: 'Broadcast instant lead conversion alerts to sales channels.', icon: '💬', type: 'oauth', category: 'communication' },
+
+  // ── 5. Customer Relationship & Ticketing ──
+  { id: 'zendesk', name: 'Zendesk', desc: 'Customer support tickets, SLAs, and retention escalations.', icon: '🎧', type: 'oauth', category: 'support' },
+  { id: 'intercom', name: 'Intercom', desc: 'Live chat lead qualification and dynamic customer triage.', icon: '💬', type: 'oauth', category: 'support' },
+  { id: 'freshdesk', name: 'Freshdesk', desc: 'Helpdesk ticketing and VIP customer relationship queues.', icon: '🎫', type: 'oauth', category: 'support' },
+
+  // ── 6. Invoicing & Deal Closing ──
+  { id: 'stripe', name: 'Stripe', desc: 'Generate payment links and close paid subscriptions.', icon: '💳', type: 'oauth', category: 'payments' },
+  { id: 'quickbooks', name: 'QuickBooks', desc: 'Create sales invoices, estimates, and customer billing ledgers.', icon: '💰', type: 'oauth', category: 'payments' },
+  { id: 'docusign', name: 'DocuSign', desc: 'Send sales agreements and contracts for digital signatures.', icon: '✍️', type: 'oauth', category: 'payments' }
 ];
+
+// Curated keywords & slugs for Sales, CRM, Lead Gen, Database & Customer Relationship teams
+const SALES_CRM_KEYWORDS = [
+  'crm', 'lead', 'sales', 'contact', 'customer', 'pipeline', 'deal', 'prospect', 'enrich',
+  'email', 'mail', 'calendar', 'schedule', 'booking', 'appointment', 'meeting',
+  'sheet', 'database', 'table', 'form', 'survey',
+  'ticket', 'support', 'helpdesk', 'chat', 'message', 'sms', 'phone', 'telephony',
+  'invoice', 'billing', 'payment', 'signature', 'contract', 'proposal'
+];
+
+const SALES_CRM_SLUGS = new Set([
+  'hubspot', 'salesforce', 'zohocrm', 'pipedrive', 'close', 'copper', 'activecampaign',
+  'apollo', 'linkedin', 'salesloft', 'outreach', 'lemlist', 'instantly', 'hunter', 'clearbit', 'lusha', 'zoominfo',
+  'googlesheets', 'airtable', 'notion', 'googlecontacts', 'supabase', 'baserow', 'coda',
+  'calendly', 'googlecalendar', 'calcom', 'gmail', 'outlook', 'zoom', 'slack', 'msteams', 'whatsapp', 'twilio', 'resend', 'sendgrid', 'mailchimp', 'brevo', 'customerio',
+  'zendesk', 'intercom', 'freshdesk', 'front', 'helpscout', 'gorgias', 'crisp',
+  'stripe', 'quickbooks', 'docusign', 'pandadoc', 'xero', 'shopify'
+]);
 
 // ─── INTERNAL FETCHER (not exported — used by cached wrapper below) ─────────
 async function _fetchComposioApps() {
@@ -63,7 +96,7 @@ async function _fetchComposioApps() {
     let allApps: any[] = [];
     let cursor: string | null = null;
     let page = 1;
-    const MAX_PAGES = 11; // v3 returns up to 1043 apps across 11 pages
+    const MAX_PAGES = 11;
 
     do {
       const url: string = cursor
@@ -80,21 +113,38 @@ async function _fetchComposioApps() {
       cursor = json.next_cursor || null;
       page++;
 
-      
-      // Stop if no more pages
       if (!cursor || page > MAX_PAGES) break;
     } while (true);
 
-    const apps = allApps.map((app: any) => ({
-      id: app.slug || app.name?.toLowerCase().replace(/\s+/g, '-'),
-      name: app.name || app.displayName,
-      desc: app.meta?.description || `Connect Amira with your ${app.name} account to execute real-time actions.`,
-      icon: app.meta?.logo || app.logo || '🧩',
-      toolsCount: app.meta?.tools_count || 0,
-      type: 'oauth'
-    })).filter((a: any) => a.id && a.name && !a.id.toLowerCase().includes('composio') && !a.name.toLowerCase().includes('composio'));
+    // Filter strictly for Sales, CRM, Lead Qualification, Nurturing & Database tools
+    const apps = allApps
+      .map((app: any) => ({
+        id: app.slug || app.name?.toLowerCase().replace(/\s+/g, '-'),
+        name: app.name || app.displayName,
+        desc: app.meta?.description || `Connect Amira with your ${app.name} account to automate sales & customer workflows.`,
+        icon: app.meta?.logo || app.logo || '🧩',
+        toolsCount: app.meta?.tools_count || 0,
+        type: 'oauth'
+      }))
+      .filter((a: any) => {
+        if (!a.id || !a.name) return false;
+        const cleanId = a.id.toLowerCase();
+        const cleanName = a.name.toLowerCase();
+        const cleanDesc = (a.desc || '').toLowerCase();
 
-    console.log(`✅ Composio v3: loaded ${apps.length} live integrations`);
+        // Exclude generic developer/cloud infrastructure noise
+        if (['github', 'gitlab', 'docker', 'kubernetes', 'terraform', 'aws', 'bash', 'codeinterpreter', 'npm', 'pypi', 'composer', 'jenkins'].some(dev => cleanId.includes(dev))) {
+          return false;
+        }
+
+        // Match against Sales/CRM slug whitelist or keywords
+        const matchesSlug = SALES_CRM_SLUGS.has(cleanId) || Array.from(SALES_CRM_SLUGS).some(s => cleanId.includes(s));
+        const matchesKeyword = SALES_CRM_KEYWORDS.some(kw => cleanName.includes(kw) || cleanDesc.includes(kw) || cleanId.includes(kw));
+
+        return matchesSlug || matchesKeyword;
+      });
+
+    console.log(`✅ Composio v3 (Sales & CRM Focused): loaded ${apps.length} curated integrations`);
     return { success: true, data: apps.length > 0 ? apps : MOCK_INTEGRATIONS };
   } catch (err: any) {
     console.error('Composio v3 fetch error, falling back to mock list:', err?.message || err);
