@@ -12,7 +12,9 @@
       "backgroundColor": "#061b31"
     },
     "owner": "guavaearth",
+    "jsEngine": "jsc",
     "ios": {
+      "jsEngine": "jsc",
       "supportsTablet": true,
       "bundleIdentifier": "com.amira.apple",
       "infoPlist": {
