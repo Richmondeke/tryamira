@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "Amira",
+    "slug": "amira",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#061b31"
+    },
+    "owner": "guavaearth",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.amira.apple",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSMicrophoneUsageDescription": "Amira requires microphone access to enable real-time voice calls with your AI agents.",
+        "NSSpeechRecognitionUsageDescription": "Amira uses speech recognition for live speech transcription and voice commands.",
+        "NSCameraUsageDescription": "Amira uses the camera for workspace QR code pairing.",
+        "UIBackgroundModes": [
+          "audio"
+        ]
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "b7b38080-ebe9-4cf6-9c80-378a372ad8e7"
+      }
+    }
+  }
+}
