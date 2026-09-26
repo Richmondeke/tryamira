@@ -29,6 +29,10 @@ export default function V3WorkflowsPage() {
   const [actionType, setActionType] = useState('auto_reply');
   const [targetTool, setTargetTool] = useState('hubspot');
   const [dripDays, setDripDays] = useState(3);
+  // Best-Case & Worst-Case Scenario Resilience State
+  const [fallbackAction, setFallbackAction] = useState<'sms_whatsapp_booking' | 'human_escalation' | 'retry_backoff' | 'none'>('sms_whatsapp_booking');
+  const [businessHoursOnly, setBusinessHoursOnly] = useState(true);
+  const [rateLimitGuard, setRateLimitGuard] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -89,6 +93,9 @@ export default function V3WorkflowsPage() {
       actionType,
       targetTool: actionType === 'composio_tool' ? targetTool : undefined,
       dripDays: actionType === 'drip_campaign' ? dripDays : undefined,
+      fallbackAction,
+      businessHoursOnly,
+      rateLimitGuard,
       status: 'active'
     });
 
@@ -109,6 +116,9 @@ export default function V3WorkflowsPage() {
     setActionType('auto_reply');
     setTargetTool('hubspot');
     setDripDays(3);
+    setFallbackAction('sms_whatsapp_booking');
+    setBusinessHoursOnly(true);
+    setRateLimitGuard(true);
   }
 
   function getTriggerLabel(t: string) {
@@ -219,6 +229,12 @@ export default function V3WorkflowsPage() {
                   <div>📚 <strong>Knowledge Base:</strong> {wf.useKnowledgeBase ? 'Enabled (PDF / FAQ active)' : 'Disabled'}</div>
                   <div>🎯 <strong>Intent Filter:</strong> {wf.intentCondition.toUpperCase()}</div>
                   <div>⚡ <strong>Action:</strong> {getActionLabel(wf.actionType)}</div>
+                  {wf.fallbackAction && wf.fallbackAction !== 'none' && (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.25rem', padding: '3px 8px', borderRadius: '6px', backgroundColor: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', fontSize: '11px', fontWeight: 700 }}>
+                      <span>🛡️ Fallback:</span>
+                      <span>{wf.fallbackAction === 'sms_whatsapp_booking' ? 'Auto-SMS / WhatsApp on Unanswered' : wf.fallbackAction === 'human_escalation' ? 'Human Slack Escalation' : 'Retry 3x Exponential Backoff'}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -428,6 +444,52 @@ export default function V3WorkflowsPage() {
                       </select>
                     </div>
                   )}
+
+                  {/* BEST & WORST CASE FAILURE HANDLING */}
+                  <div style={{ marginTop: '0.5rem', backgroundColor: '#f8fafc', padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ fontSize: '15px' }}>🛡️</span>
+                      <span style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a' }}>Worst-Case Scenarios & Automated Fallbacks</span>
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748b', display: 'block', marginBottom: '0.35rem' }}>
+                        IF PRIMARY ACTION FAILS OR CUSTOMER IS UNREACHABLE:
+                      </label>
+                      <select
+                        value={fallbackAction}
+                        onChange={e => setFallbackAction(e.target.value as any)}
+                        style={{ width: '100%', padding: '0.65rem', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '12.5px', backgroundColor: '#ffffff' }}
+                      >
+                        <option value="sms_whatsapp_booking">📱 Phone Busy / Voicemail → Send WhatsApp & Self-Booking Link</option>
+                        <option value="human_escalation">🚨 Negative Sentiment / Escalation → Alert Human Agent on Slack</option>
+                        <option value="retry_backoff">🔄 Tool / CRM Timeout → Retry 3x with Exponential Backoff</option>
+                        <option value="none">⛔ No Fallback (Silently finish)</option>
+                      </select>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', borderTop: '1px solid #e2e8f0', paddingTop: '0.75rem' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '12px', color: '#334155', cursor: 'pointer' }}>
+                        <input
+                          type="checkbox"
+                          checked={businessHoursOnly}
+                          onChange={e => setBusinessHoursOnly(e.target.checked)}
+                          style={{ accentColor: '#10b981' }}
+                        />
+                        <span><strong>Business Hours Guard:</strong> Never call outside 9 AM–6 PM local time (queue overnight triggers).</span>
+                      </label>
+
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '12px', color: '#334155', cursor: 'pointer' }}>
+                        <input
+                          type="checkbox"
+                          checked={rateLimitGuard}
+                          onChange={e => setRateLimitGuard(e.target.checked)}
+                          style={{ accentColor: '#10b981' }}
+                        />
+                        <span><strong>Anti-Spam Guard:</strong> Max 1 outbound outreach per contact every 24 hours (prevents loops).</span>
+                      </label>
+                    </div>
+                  </div>
 
                   <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem' }}>
                     <button type="button" onClick={() => setStep(2)} style={{ flex: 1, padding: '0.75rem', borderRadius: '10px', border: '1px solid #cbd5e1', backgroundColor: '#fff', color: '#475569', fontWeight: 700, cursor: 'pointer' }}>

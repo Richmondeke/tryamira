@@ -12,12 +12,7 @@ function AmiraSparkle({ size = 16 }: { size?: number }) {
   );
 }
 
-const KNOWLEDGE_DOCS = [
-  { id: 'doc-1', name: 'Enterprise Sales Playbook 2026.pdf', type: 'PDF File', size: '1.2 MB', source: 'Notion Sync', updated: '2 hours ago' },
-  { id: 'doc-2', name: 'Customer Support Escalation Policy.docx', type: 'Document', size: '450 KB', source: 'Google Drive', updated: '1 day ago' },
-  { id: 'doc-3', name: 'Legal Terms & SLA Agreements.url', type: 'Web URL', size: '120 KB', source: 'Web Scraper', updated: '3 days ago' },
-  { id: 'doc-4', name: 'Product Architecture & API Spec.md', type: 'Text Note', size: '680 KB', source: 'GitHub Repos', updated: '5 days ago' },
-];
+const KNOWLEDGE_DOCS: Array<{ id: string; name: string; type: string; size: string; source: string; updated: string }> = [];
 
 export default function KnowledgePage() {
   const [query, setQuery] = useState('');
@@ -183,8 +178,17 @@ export default function KnowledgePage() {
           Indexed Documents ({docs.length})
         </h3>
         
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-          {docs.map(doc => (
+        {docs.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: 'var(--text-secondary)' }}>
+            <span style={{ fontSize: '36px', display: 'block', marginBottom: '0.65rem' }}>📂</span>
+            <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.35rem' }}>No Knowledge Base Documents Yet</div>
+            <p style={{ fontSize: '13px', margin: 0, maxWidth: '440px', marginInline: 'auto', lineHeight: 1.5 }}>
+              Upload your company documents, policies, or sync your website so your AI Voice Agents can retrieve answers in real time.
+            </p>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+            {docs.map(doc => (
             <div key={doc.id} style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '0.85rem 1.1rem', borderRadius: '10px', backgroundColor: 'var(--bg-subtle, #f8f9fc)',
@@ -211,7 +215,8 @@ export default function KnowledgePage() {
             </div>
           ))}
         </div>
-      </div>
+      )}
+    </div>
 
     </div>
   );

@@ -4,11 +4,13 @@ function getVapiApiKey(): string {
   return process.env.VAPI_PRIVATE_API_KEY || '';
 }
 
+import { validateApiToken } from '@/lib/api-auth';
+
 // GET /api/v1/calls — Fetch Call Logs
 export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get('authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return NextResponse.json({ success: false, error: 'Unauthorized. Missing or invalid Authorization header.' }, { status: 401 });
+  const auth = validateApiToken(req);
+  if (!auth.valid) {
+    return NextResponse.json({ success: false, error: auth.error }, { status: 401 });
   }
 
   const { searchParams } = new URL(req.url);
@@ -47,9 +49,9 @@ export async function GET(req: NextRequest) {
 
 // POST /api/v1/calls — Dispatch Outbound Phone Call
 export async function POST(req: NextRequest) {
-  const authHeader = req.headers.get('authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return NextResponse.json({ success: false, error: 'Unauthorized. Missing or invalid Authorization header.' }, { status: 401 });
+  const auth = validateApiToken(req);
+  if (!auth.valid) {
+    return NextResponse.json({ success: false, error: auth.error }, { status: 401 });
   }
 
   const apiKey = getVapiApiKey();

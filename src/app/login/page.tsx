@@ -19,6 +19,10 @@ export default function LoginPage() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
+      // Immediately scrub sensitive credentials from address bar if present
+      if (params.has('password') || params.has('email')) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
       const msg = params.get('message');
       if (msg) {
         setToast({ message: decodeURIComponent(msg), type: 'success' });
@@ -105,7 +109,7 @@ export default function LoginPage() {
         <p className={styles.subtitle}>Sign in to your Amira agent dashboard</p>
       </div>
 
-      <form onSubmit={handleSubmit} className={styles.form}>
+      <form onSubmit={handleSubmit} method="POST" action="#" className={styles.form}>
         <Input label="Email" name="email" type="email" placeholder="you@example.com" required />
         <Input label="Password" name="password" type="password" placeholder="••••••••" required />
         <Button type="submit" fullWidth size="lg" disabled={loading}>

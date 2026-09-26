@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AuthLayout } from '@/components/layout/AuthLayout';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -15,6 +15,15 @@ export default function SignupPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has('password') || params.has('email')) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -96,7 +105,7 @@ export default function SignupPage() {
         <p className={styles.subtitle}>Free forever. Upgrade when you&apos;re ready.</p>
       </div>
 
-      <form onSubmit={handleSubmit} className={styles.form}>
+      <form onSubmit={handleSubmit} method="POST" action="#" className={styles.form}>
         <div style={{ display: 'flex', gap: '1rem' }}>
           <Input label="First Name" name="firstName" placeholder="Ashley" required />
           <Input label="Last Name" name="lastName" placeholder="Okoye" required />

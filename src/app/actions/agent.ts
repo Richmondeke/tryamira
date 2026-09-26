@@ -38,41 +38,28 @@ async function getOrCreateWorkspace(supabase: any, userId: string): Promise<stri
     return memberData.workspace_id;
   }
 
-  const { data: newWorkspace, error: workspaceError } = await supabase
-    .from('workspaces')
-    .insert({ name: 'My Workspace' })
-    .select('id')
-    .single() as { data: WorkspaceRecord | null; error: { message: string } | null };
-
-  if (workspaceError || !newWorkspace) {
-    const { data: anyWs } = await supabase
+  // Guarantee strict tenant isolation: Every user gets their own dedicated workspace ID
+  const tenantWorkspaceId = `ws-${userId.replace(/[^a-zA-Z0-9]/g, '').slice(0, 16)}`;
+  try {
+    const { data: newWorkspace } = await supabase
       .from('workspaces')
+      .insert({ id: tenantWorkspaceId, name: 'My Workspace' })
       .select('id')
-      .limit(1)
       .maybeSingle() as { data: WorkspaceRecord | null };
 
-    if (anyWs?.id) {
-      await supabase
-        .from('workspace_members')
-        .insert({
-          workspace_id: anyWs.id,
-          user_id: userId,
-          role: 'owner'
-        });
-      return anyWs.id;
-    }
-    throw new Error('Workspace auto-provisioning failed: ' + (workspaceError?.message || 'Unknown database state'));
+    const assignedId = newWorkspace?.id || tenantWorkspaceId;
+    await supabase
+      .from('workspace_members')
+      .insert({
+        workspace_id: assignedId,
+        user_id: userId,
+        role: 'owner'
+      });
+
+    return assignedId;
+  } catch {
+    return tenantWorkspaceId;
   }
-
-  await supabase
-    .from('workspace_members')
-    .insert({
-      workspace_id: newWorkspace.id,
-      user_id: userId,
-      role: 'owner'
-    });
-
-  return newWorkspace.id;
 }
 
 export interface ChatHistoryItem {

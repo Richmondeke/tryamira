@@ -256,36 +256,30 @@ export function Topbar({ toggleMobileMenu }: { toggleMobileMenu?: () => void }) 
         </div>
 
         <div className={styles.actions}>
-          {/* Live Data vs Demo Data Switch */}
-          <button
-            type="button"
-            onClick={toggleDemoMode}
+          {/* Status Indicator */}
+          <div
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '0.45rem',
               padding: '0.4rem 0.8rem',
               borderRadius: '8px',
-              border: isDemoMode ? '1px solid #f59e0b' : '1px solid #10b981',
-              backgroundColor: isDemoMode ? '#fffbeb' : '#ecfdf5',
-              color: isDemoMode ? '#b45309' : '#047857',
+              border: '1px solid #10b98130',
+              backgroundColor: '#ecfdf5',
+              color: '#047857',
               fontSize: '12px',
               fontWeight: 700,
-              cursor: 'pointer',
-              boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
-              transition: 'all 0.15s ease'
             }}
-            title="Click to toggle between real live workspace data and populated demo data"
           >
             <span style={{
               width: '7px',
               height: '7px',
               borderRadius: '50%',
-              backgroundColor: isDemoMode ? '#f59e0b' : '#10b981',
-              boxShadow: isDemoMode ? '0 0 6px #f59e0b' : '0 0 6px #10b981'
+              backgroundColor: '#10b981',
+              boxShadow: '0 0 6px #10b981'
             }} />
-            <span>{isDemoMode ? 'Demo Data' : 'Live Data'}</span>
-          </button>
+            <span>Live Production</span>
+          </div>
 
           {/* Notification Bell */}
           <button

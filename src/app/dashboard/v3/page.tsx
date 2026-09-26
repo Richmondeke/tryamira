@@ -147,35 +147,30 @@ export default function V3DashboardPage() {
         {/* Header Right Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
           
-          {/* Live vs Demo Mode Toggle */}
-          <button
-            type="button"
-            onClick={toggleDemoMode}
+          {/* Live Production Status Badge */}
+          <div
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '0.45rem',
               padding: '0.45rem 0.85rem',
               borderRadius: '10px',
-              border: isDemoMode ? '1px solid #f59e0b' : '1px solid #10b981',
-              backgroundColor: isDemoMode ? '#fffbeb' : '#ecfdf5',
-              color: isDemoMode ? '#b45309' : '#047857',
+              border: '1px solid #10b98130',
+              backgroundColor: '#ecfdf5',
+              color: '#047857',
               fontSize: '12px',
               fontWeight: 700,
-              cursor: 'pointer',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
             }}
-            title="Click to toggle between real workspace data and populated demo data"
           >
             <span style={{
               width: '7px',
               height: '7px',
               borderRadius: '50%',
-              backgroundColor: isDemoMode ? '#f59e0b' : '#10b981',
-              boxShadow: isDemoMode ? '0 0 6px #f59e0b' : '0 0 6px #10b981'
+              backgroundColor: '#10b981',
+              boxShadow: '0 0 6px #10b981'
             }} />
-            <span>{isDemoMode ? 'Demo Data' : 'Live Data'}</span>
-          </button>
+            <span>Live Production</span>
+          </div>
           
           {/* Global Selector */}
           <div style={{ position: 'relative' }}>

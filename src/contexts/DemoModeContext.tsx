@@ -25,40 +25,17 @@ export function DemoModeProvider({
   children: React.ReactNode;
   isAdminUser?: boolean;
 }) {
-  // Default Demo Mode to FALSE so signed-in users see LIVE data immediately
-  const [isDemoMode, setIsDemoMode] = useState<boolean>(false);
-  const [mounted, setMounted] = useState(false);
+  // Permanently set to false — Demo Mode is removed for live production
+  const isDemoMode = false;
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(DEMO_MODE_KEY);
-      // If user explicitly chose demo mode in current session, respect it; otherwise always default to Live Mode (false)
-      if (stored === 'true') {
-        setIsDemoMode(true);
-      } else {
-        setIsDemoMode(false);
-        localStorage.setItem(DEMO_MODE_KEY, 'false');
-      }
-      setMounted(true);
+      localStorage.setItem(DEMO_MODE_KEY, 'false');
     }
   }, []);
 
-  const toggleDemoMode = () => {
-    setIsDemoMode(prev => {
-      const next = !prev;
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(DEMO_MODE_KEY, String(next));
-      }
-      return next;
-    });
-  };
-
-  const setDemoMode = (val: boolean) => {
-    setIsDemoMode(val);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(DEMO_MODE_KEY, String(val));
-    }
-  };
+  const toggleDemoMode = () => {};
+  const setDemoMode = (_val: boolean) => {};
 
   return (
     <DemoModeContext.Provider value={{ isDemoMode, toggleDemoMode, setDemoMode, isAdmin: isAdminUser }}>

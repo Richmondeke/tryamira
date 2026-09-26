@@ -14,6 +14,10 @@ export interface WorkflowRecipe {
   actionType: string; // 'auto_reply' | 'vapi_call' | 'composio_tool' | 'drip_campaign'
   targetTool?: string; // 'hubspot' | 'linear' | 'slack' | 'stripe'
   dripDays?: number;
+  // Best-Case & Worst-Case Scenario Handling
+  fallbackAction?: 'sms_whatsapp_booking' | 'human_escalation' | 'retry_backoff' | 'none';
+  businessHoursOnly?: boolean;
+  rateLimitGuard?: boolean;
   status: 'active' | 'paused';
   createdAt: string;
 }

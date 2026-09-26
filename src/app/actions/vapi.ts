@@ -110,9 +110,26 @@ export async function getVapiCalls(targetAssistantId?: string) {
   }
 
   try {
+    let workspaceId: string | null = null;
+    let userAssistantId: string | null = null;
+    let isAdmin = false;
+
+    try {
+      const supabase = await createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        workspaceId = await getWorkspaceId(supabase, user.id);
+        const { data: prof } = await supabase.from('profiles').select('vapi_assistant_id, role').eq('id', user.id).maybeSingle();
+        userAssistantId = prof?.vapi_assistant_id || null;
+        isAdmin = Boolean(prof?.role === 'admin' || user.email === 'richmondeke@gmail.com' || (user.email && user.email.includes('guavaearth')));
+      }
+    } catch {}
+
     const url = targetAssistantId
       ? `https://api.vapi.ai/call?assistantId=${encodeURIComponent(targetAssistantId)}`
-      : 'https://api.vapi.ai/call';
+      : (userAssistantId && !isAdmin
+          ? `https://api.vapi.ai/call?assistantId=${encodeURIComponent(userAssistantId)}`
+          : 'https://api.vapi.ai/call');
 
     const res = await fetch(url, {
       method: 'GET',
@@ -133,7 +150,19 @@ export async function getVapiCalls(targetAssistantId?: string) {
       return callsList.filter((c: any) => c.assistantId === targetAssistantId);
     }
 
-    return callsList;
+    // Admin can see master logs; new users get their strictly isolated tenant call logs
+    if (isAdmin) {
+      return callsList;
+    }
+
+    if (workspaceId || userAssistantId) {
+      return callsList.filter((c: any) => 
+        (userAssistantId && c.assistantId === userAssistantId) ||
+        (workspaceId && c.metadata?.workspace_id === workspaceId)
+      );
+    }
+
+    return [];
   } catch (err) {
     console.error('Error fetching Vapi calls:', err);
     return [];
@@ -211,6 +240,33 @@ export async function getVapiAssistants() {
   }
 
   try {
+    let workspaceId: string | null = null;
+    let userAssistantId: string | null = null;
+    let allowedAssistantIds: string[] = [];
+    let isAdmin = false;
+
+    try {
+      const supabase = await createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        workspaceId = await getWorkspaceId(supabase, user.id);
+        const { data: prof } = await supabase.from('profiles').select('vapi_assistant_id, role').eq('id', user.id).maybeSingle();
+        userAssistantId = prof?.vapi_assistant_id || null;
+        isAdmin = Boolean(prof?.role === 'admin' || user.email === 'richmondeke@gmail.com' || (user.email && user.email.includes('guavaearth')));
+
+        if (!isAdmin) {
+          const { data: wsAgents } = await supabase.from('workspace_agents').select('id').eq('workspace_id', workspaceId);
+          allowedAssistantIds = (wsAgents || []).map((a: any) => a.id);
+          if (userAssistantId) allowedAssistantIds.push(userAssistantId);
+
+          if (allowedAssistantIds.length === 0) {
+            // New user with no custom agents created yet -> clean slate!
+            return [];
+          }
+        }
+      }
+    } catch {}
+
     const res = await fetch('https://api.vapi.ai/assistant', {
       method: 'GET',
       headers: {
@@ -224,7 +280,13 @@ export async function getVapiAssistants() {
     }
 
     const data = await res.json();
-    return Array.isArray(data) ? data : data.results || [];
+    const allAssistants = Array.isArray(data) ? data : data.results || [];
+
+    if (isAdmin) {
+      return allAssistants;
+    }
+
+    return allAssistants.filter((a: any) => allowedAssistantIds.includes(a.id));
   } catch (err) {
     console.error('Error fetching Vapi assistants:', err);
     return [];

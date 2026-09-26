@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useDemoMode } from '@/contexts/DemoModeContext';
 import GlowIcon from '@/components/GlowIcon';
 
@@ -69,6 +70,24 @@ export default function V3SettingsPage() {
             Manage API credentials for <code>https://api.heyamira.com/v1</code>. Use secret keys to authenticate REST requests for voice agents, call dispatching, and knowledge base uploads.
           </p>
         </div>
+        <Link
+          href="/dashboard/v3/settings/docs"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.65rem 1.25rem',
+            borderRadius: '10px',
+            backgroundColor: '#1b5a92',
+            color: '#ffffff',
+            textDecoration: 'none',
+            fontSize: '13.5px',
+            fontWeight: 750,
+            boxShadow: '0 4px 12px rgba(27, 90, 146, 0.25)'
+          }}
+        >
+          <span>📖 View API Documentation</span>
+        </Link>
       </div>
 
       {/* New API Key Generator Card */}
