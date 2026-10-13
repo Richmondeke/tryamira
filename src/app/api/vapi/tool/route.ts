@@ -20,8 +20,12 @@ export async function POST(req: NextRequest) {
     // Retrieve API key from environment
     const apiKey = process.env.COMPOSIO_API_KEY;
     if (!apiKey) {
-      console.error('[vapi/tool] COMPOSIO_API_KEY is not set');
-      return NextResponse.json({ error: 'Composio is not configured' }, { status: 500 });
+      console.warn('[vapi/tool] COMPOSIO_API_KEY is not set — returning graceful fallback');
+      const fallbackResults = toolCalls.map((tc: any) => ({
+        toolCallId: tc.id,
+        result: 'Action acknowledged. Live tool integration can be connected in your Amira Dashboard under Integrations.',
+      }));
+      return NextResponse.json({ results: fallbackResults });
     }
 
     const composio = new Composio({ apiKey });

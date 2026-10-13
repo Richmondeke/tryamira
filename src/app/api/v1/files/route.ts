@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { validateApiToken } from '@/lib/api-auth';
 
 function getVapiApiKey(): string {
   return process.env.VAPI_PRIVATE_API_KEY || '';
@@ -6,9 +7,9 @@ function getVapiApiKey(): string {
 
 // POST /api/v1/files — Upload File to Knowledge Base RAG
 export async function POST(req: NextRequest) {
-  const authHeader = req.headers.get('authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return NextResponse.json({ success: false, error: 'Unauthorized. Missing or invalid Authorization header.' }, { status: 401 });
+  const auth = validateApiToken(req);
+  if (!auth.valid) {
+    return NextResponse.json({ success: false, error: auth.error }, { status: 401 });
   }
 
   const apiKey = getVapiApiKey();

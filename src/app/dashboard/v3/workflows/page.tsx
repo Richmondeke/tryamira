@@ -50,11 +50,10 @@ export default function V3WorkflowsPage() {
       if (wfRes.success && wfRes.data) {
         setWorkflows(wfRes.data);
       }
-      if (agRes && Array.isArray(agRes)) {
-        setAgents(agRes);
-        if (agRes.length > 0) {
-          setSelectedAgentId(agRes[0].id);
-        }
+      const agentsList = Array.isArray(agRes) ? agRes : (agRes?.data || []);
+      if (Array.isArray(agentsList) && agentsList.length > 0) {
+        setAgents(agentsList);
+        setSelectedAgentId(agentsList[0].id || agentsList[0].name);
       }
     } catch (err) {
       console.error('Failed to load workflows:', err);

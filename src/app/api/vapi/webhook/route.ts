@@ -13,10 +13,12 @@ export async function POST(req: NextRequest) {
 
     if (!message) return NextResponse.json({ ok: true });
 
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const supabase = (supabaseUrl && supabaseKey)
+      ? createClient(supabaseUrl, supabaseKey)
+      : null;
+
     const { type, call } = message;
 
     if (!call) return NextResponse.json({ ok: true });
@@ -24,8 +26,8 @@ export async function POST(req: NextRequest) {
     // Resolve workspace_id from the assistant metadata or fallback to orgId
     const workspaceId = call?.metadata?.workspace_id || call?.orgId || null;
 
-    // Store call record in Supabase for analytics
-    if (type === 'end-of-call-report') {
+    // Store call record in Supabase for analytics if configured
+    if (supabase && type === 'end-of-call-report') {
       // Upsert the call into vapi_calls table for per-workspace scoping
       await supabase.from('vapi_calls').upsert({
         id: call.id,
@@ -66,7 +68,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    if (type === 'call-started') {
+    if (supabase && type === 'call-started') {
       if (workspaceId) {
         await supabase.from('notifications').insert({
           workspace_id: workspaceId,

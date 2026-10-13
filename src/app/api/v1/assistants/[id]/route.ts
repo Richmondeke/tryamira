@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { validateApiToken } from '@/lib/api-auth';
 
 function getVapiApiKey(): string {
   return process.env.VAPI_PRIVATE_API_KEY || '';
@@ -6,9 +7,9 @@ function getVapiApiKey(): string {
 
 // GET /api/v1/assistants/[id] — Fetch Assistant Details
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const authHeader = req.headers.get('authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return NextResponse.json({ success: false, error: 'Unauthorized. Missing or invalid Authorization header.' }, { status: 401 });
+  const auth = validateApiToken(req);
+  if (!auth.valid) {
+    return NextResponse.json({ success: false, error: auth.error }, { status: 401 });
   }
 
   const { id } = await params;
@@ -40,9 +41,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
 // PATCH /api/v1/assistants/[id] — Update Assistant Parameters
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const authHeader = req.headers.get('authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return NextResponse.json({ success: false, error: 'Unauthorized. Missing or invalid Authorization header.' }, { status: 401 });
+  const auth = validateApiToken(req);
+  if (!auth.valid) {
+    return NextResponse.json({ success: false, error: auth.error }, { status: 401 });
   }
 
   const { id } = await params;
@@ -108,9 +109,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
 // DELETE /api/v1/assistants/[id] — Delete Assistant
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const authHeader = req.headers.get('authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return NextResponse.json({ success: false, error: 'Unauthorized. Missing or invalid Authorization header.' }, { status: 401 });
+  const auth = validateApiToken(req);
+  if (!auth.valid) {
+    return NextResponse.json({ success: false, error: auth.error }, { status: 401 });
   }
 
   const { id } = await params;

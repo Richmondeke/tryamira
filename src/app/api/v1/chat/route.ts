@@ -127,8 +127,8 @@ KEY PRODUCT KNOWLEDGE:
         reply = `Our pricing is simple and high-margin: Pro Plan is 49 USD/mo (₦45,000) with 5 agents and 0.16 USD/min wallet; Team is 149 USD/mo (₦135,000) with 15 agents and 0.14 USD/min; and Enterprise is 499 USD/mo with unlimited concurrency and 0.11 USD/min rate.`;
       }
       // How to Create an Agent / Dashboard
-      else if (lower.includes('create agent') || lower.includes('dashboard') || lower.includes('setup') || lower.includes('build agent') || lower.includes('custom agent')) {
-        reply = `You can create custom AI voice agents directly in your dashboard at /dashboard/v3/agents! You can customize their prompt directives, select neural voices (Cartesia, ElevenLabs, Deepgram), upload knowledge docs, and configure inbound/outbound phone lines.`;
+      else if ((lower.includes('agent') && (lower.includes('create') || lower.includes('build') || lower.includes('make') || lower.includes('add') || lower.includes('new') || lower.includes('setup'))) || lower.includes('dashboard') || lower.includes('setup') || lower.includes('build agent') || lower.includes('custom agent')) {
+        reply = `You can create custom AI voice agents directly in your dashboard at /dashboard/v3/agents! You can customize their instructions, select natural voices from the Amira Voice Engine, upload knowledge docs, and configure inbound/outbound phone lines.`;
       }
       // Speed-to-lead / Lead Form Calling
       else if (lower.includes('form') || lower.includes('lead') || lower.includes('speed to lead') || lower.includes('inbound')) {
@@ -136,7 +136,7 @@ KEY PRODUCT KNOWLEDGE:
       }
       // Integrations
       else if (lower.includes('hubspot') || lower.includes('salesforce') || lower.includes('crm') || lower.includes('integrate') || lower.includes('slack') || lower.includes('notion') || lower.includes('zapier')) {
-        reply = `Amira connects seamlessly with 1,000+ business tools including HubSpot, Salesforce, Slack, Notion, Google Drive, and Supabase via Composio tool integrations to sync call recordings, summaries, and lead tags automatically.`;
+        reply = `Amira connects seamlessly with 1,000+ business tools including HubSpot, Salesforce, Slack, Notion, Google Drive, and Supabase to sync call recordings, summaries, and lead tags automatically.`;
       }
       // Pitch Deck & Investors
       else if (lower.includes('invest') || lower.includes('deck') || lower.includes('pitch') || lower.includes('dealroom') || lower.includes('diligence')) {

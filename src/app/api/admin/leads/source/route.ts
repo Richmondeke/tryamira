@@ -55,7 +55,7 @@ const CURATED_HIGH_INTENT_LEADS: SourcedLead[] = [
     linkedin: 'https://linkedin.com/in/marcus-vance-ops',
     score: 98,
     status: 'qualified',
-    source: 'Apify Leads Finder',
+    source: 'Amira Lead Engine',
     amira_pitch_angle: 'Replace manual receptionist call queues with sub-500ms Voice AI for 24/7 patient booking and inquiry resolution.',
     call_volume_risk: 'EXTREME',
     hiring_signals: ['Hiring 4 Medical Receptionists', 'High Missed Consultation Volume'],
@@ -78,7 +78,7 @@ const CURATED_HIGH_INTENT_LEADS: SourcedLead[] = [
     linkedin: 'https://linkedin.com/in/sarah-sterling-cx',
     score: 96,
     status: 'qualified',
-    source: 'Apify Leads Finder',
+    source: 'Amira Lead Engine',
     amira_pitch_angle: 'Deploy 24/7 omni-channel voice & chat agent to handle order tracking, returns, and VIP inquiries during high peak traffic.',
     call_volume_risk: 'HIGH',
     hiring_signals: ['Hiring Seasonal Support Agents', 'High Weekend Inquiry Spikes'],
@@ -101,7 +101,7 @@ const CURATED_HIGH_INTENT_LEADS: SourcedLead[] = [
     linkedin: 'https://linkedin.com/in/david-oconnor-realty',
     score: 97,
     status: 'new',
-    source: 'Apify Leads Finder',
+    source: 'Amira Lead Engine',
     amira_pitch_angle: 'Instant speed-to-lead under 15 seconds for Zillow/website inquiries with automated qualification and agent calendar booking.',
     call_volume_risk: 'EXTREME',
     hiring_signals: ['Active Zillow Premier Agent', 'Hiring Inside Sales Agents (ISA)'],
@@ -124,7 +124,7 @@ const CURATED_HIGH_INTENT_LEADS: SourcedLead[] = [
     linkedin: 'https://linkedin.com/in/fatima-almansoor-growth',
     score: 94,
     status: 'new',
-    source: 'Apify Leads Finder',
+    source: 'Amira Lead Engine',
     amira_pitch_angle: 'Replace human appointment setters with intelligent conversational AI to qualify inbound enterprise consulting inquiries.',
     call_volume_risk: 'HIGH',
     hiring_signals: ['Hiring Remote Appointment Setters', 'High Ticket Closer Wanted'],
@@ -147,7 +147,7 @@ const CURATED_HIGH_INTENT_LEADS: SourcedLead[] = [
     linkedin: 'https://linkedin.com/in/chinedu-eze-logistics',
     score: 95,
     status: 'qualified',
-    source: 'Apify Leads Finder',
+    source: 'Amira Lead Engine',
     amira_pitch_angle: 'Automate driver check-ins, delivery status calls, and customer tracking queries with zero hold time.',
     call_volume_risk: 'EXTREME',
     hiring_signals: ['High Inbound Dispatch Call Volume', '24/7 Call Center Operation'],
@@ -170,7 +170,7 @@ const CURATED_HIGH_INTENT_LEADS: SourcedLead[] = [
     linkedin: 'https://linkedin.com/in/jennifer-walsh-esq',
     score: 99,
     status: 'new',
-    source: 'Apify Leads Finder',
+    source: 'Amira Lead Engine',
     amira_pitch_angle: 'Never miss an emergency intake call: 24/7 legal triage AI qualifies claimant cases and transfers urgent matters instantly.',
     call_volume_risk: 'EXTREME',
     hiring_signals: ['High Cost-Per-Click Intake', 'Hiring Intake Specialists'],
@@ -323,7 +323,7 @@ export async function POST(request: NextRequest) {
                     company_linkedin: item.company_linkedin,
                     score: analysis.score,
                     status: 'new' as const,
-                    source: 'Apify Leads Finder (IoSHqwTR9YGhzccez)',
+                    source: 'Amira Lead Sourcing Engine',
                     amira_pitch_angle: analysis.pitch,
                     call_volume_risk: analysis.risk,
                     created_at: new Date().toISOString()
@@ -335,10 +335,10 @@ export async function POST(request: NextRequest) {
         }
       }
     } catch (apifyErr) {
-      console.warn('[source-leads] Apify API dispatch note:', apifyErr);
+      console.warn('[source-leads] Lead API dispatch note:', apifyErr);
     }
 
-    // Combine with verified curated high-intent leads if Apify is still processing
+    // Combine with verified curated high-intent leads if live fetch is still processing
     const combinedLeads: SourcedLead[] = apifyLeads.length > 0 
       ? apifyLeads 
       : CURATED_HIGH_INTENT_LEADS;
@@ -346,8 +346,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       timestamp: new Date().toISOString(),
-      apifyActor: 'code_crafter/leads-finder',
-      actorId,
+      sourceEngine: 'Amira Autonomous Lead Finder',
       runId: apifyRunId,
       runStatus: apifyStatus,
       totalSourced: combinedLeads.length,
@@ -364,7 +363,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('[source-leads] Error in lead sourcing route:', error);
     return NextResponse.json({
-      error: 'Failed to source leads from Apify',
+      error: 'Failed to source leads',
       details: error.message
     }, { status: 500 });
   }
@@ -373,7 +372,7 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   return NextResponse.json({
     success: true,
-    message: 'Amira Apify Lead Sourcing Pipeline ready',
+    message: 'Amira Autonomous Lead Sourcing Pipeline ready',
     actorId: 'IoSHqwTR9YGhzccez',
     actorName: 'code_crafter/leads-finder',
     availableNiches: [

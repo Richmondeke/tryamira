@@ -707,7 +707,7 @@ export default function V3CallsPage() {
                       backgroundColor: selectedCall.recordingUrl && selectedCall.recordingUrl.startsWith('http') ? '#10b98115' : '#1b5a9215',
                       color: selectedCall.recordingUrl && selectedCall.recordingUrl.startsWith('http') ? '#059669' : '#1b5a92'
                     }}>
-                      {selectedCall.recordingUrl && selectedCall.recordingUrl.startsWith('http') ? 'Vapi Cloud Audio' : 'Voice Library'}
+                      {selectedCall.recordingUrl && selectedCall.recordingUrl.startsWith('http') ? 'Amira HD Audio' : 'Voice Library'}
                     </span>
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>

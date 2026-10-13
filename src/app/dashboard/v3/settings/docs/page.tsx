@@ -51,7 +51,7 @@ print(response.json())`,
       "id": "asst_991823a01f",
       "name": "Sarah - Inbound Closer",
       "firstMessage": "Hi, thanks for calling! How can I help you today?",
-      "voice": { "provider": "11labs", "voiceId": "21m00Tcm4TlvDq8ikWAM" },
+      "voice": { "provider": "amira_voice", "voiceId": "Rachel" },
       "createdAt": "2026-09-01T10:00:00Z"
     }
   ]
@@ -62,7 +62,7 @@ print(response.json())`,
     method: 'POST',
     path: '/api/v1/assistants',
     title: 'Create AI Voice Agent',
-    description: 'Instantly provision a new autonomous AI voice agent with custom system prompts, ElevenLabs voice cloning, and multilingual models.',
+    description: 'Instantly provision a new autonomous AI voice agent with custom system prompts, natural voice synthesis, and multilingual models.',
     curl: `curl -X POST "https://heyamira.com/api/v1/assistants" \\
   -H "Authorization: Bearer amira_live_sec_your_secret_key" \\
   -H "Content-Type: application/json" \\
@@ -70,8 +70,8 @@ print(response.json())`,
     "name": "Apex Support Agent",
     "firstMessage": "Hello! I am Amira AI. How may I direct your call?",
     "systemPrompt": "You are a professional customer support specialist for Apex Medspas. Qualify inbound leads and book consultation calls.",
-    "voiceId": "21m00Tcm4TlvDq8ikWAM",
-    "voiceProvider": "11labs",
+    "voiceId": "Rachel",
+    "voiceProvider": "amira_voice",
     "language": "en"
   }'`,
     javascript: `const response = await fetch("https://heyamira.com/api/v1/assistants", {
@@ -84,9 +84,9 @@ print(response.json())`,
     name: "Apex Support Agent",
     firstMessage: "Hello! I am Amira AI. How may I direct your call?",
     systemPrompt: "You are a customer support agent. Qualify inbound leads.",
-    voiceId: "21m00Tcm4TlvDq8ikWAM",
-    voiceProvider: "11labs",
-    language: "en"
+    voiceId: "Rachel",
+    voiceProvider: "amira_voice",
+    language": "en"
   })
 });
 const data = await response.json();
@@ -102,8 +102,8 @@ payload = {
     "name": "Apex Support Agent",
     "firstMessage": "Hello! I am Amira AI. How may I direct your call?",
     "systemPrompt": "You are a customer support agent. Qualify inbound leads.",
-    "voiceId": "21m00Tcm4TlvDq8ikWAM",
-    "voiceProvider": "11labs",
+    "voiceId": "Rachel",
+    "voiceProvider": "amira_voice",
     "language": "en"
 }
 response = requests.post(url, json=payload, headers=headers)

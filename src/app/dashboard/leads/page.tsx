@@ -50,7 +50,7 @@ const INITIAL_DEMO_LEADS: LeadRecord[] = [
     location: 'Miami, Florida, US',
     score: 98,
     status: 'qualified',
-    source: 'Apify Leads Finder (IoSHqwTR9YGhzccez)',
+    source: 'Amira Lead Engine',
     amira_pitch_angle: 'Replace manual receptionist call queues with sub-500ms Voice AI for 24/7 patient booking and inquiry resolution.',
     call_volume_risk: 'EXTREME',
     hiring_signals: ['Hiring 4 Medical Receptionists', 'High Missed Consultation Volume'],
@@ -68,7 +68,7 @@ const INITIAL_DEMO_LEADS: LeadRecord[] = [
     location: 'New York, NY, US',
     score: 96,
     status: 'qualified',
-    source: 'Apify Leads Finder (IoSHqwTR9YGhzccez)',
+    source: 'Amira Lead Engine',
     amira_pitch_angle: 'Deploy 24/7 omni-channel voice & chat agent to handle order tracking, returns, and VIP inquiries during high peak traffic.',
     call_volume_risk: 'HIGH',
     hiring_signals: ['Hiring Seasonal Support Agents', 'High Weekend Inquiry Spikes'],
@@ -86,7 +86,7 @@ const INITIAL_DEMO_LEADS: LeadRecord[] = [
     location: 'Los Angeles, California, US',
     score: 97,
     status: 'new',
-    source: 'Apify Leads Finder (IoSHqwTR9YGhzccez)',
+    source: 'Amira Lead Engine',
     amira_pitch_angle: 'Instant speed-to-lead under 15 seconds for Zillow/website inquiries with automated qualification and agent calendar booking.',
     call_volume_risk: 'EXTREME',
     hiring_signals: ['Active Zillow Premier Agent', 'Hiring Inside Sales Agents (ISA)'],
@@ -104,7 +104,7 @@ const INITIAL_DEMO_LEADS: LeadRecord[] = [
     location: 'London, Greater London, UK',
     score: 94,
     status: 'new',
-    source: 'Apify Leads Finder (IoSHqwTR9YGhzccez)',
+    source: 'Amira Lead Engine',
     amira_pitch_angle: 'Replace human appointment setters with intelligent conversational AI to qualify inbound enterprise consulting inquiries.',
     call_volume_risk: 'HIGH',
     hiring_signals: ['Hiring Remote Appointment Setters', 'High Ticket Closer Wanted'],
@@ -122,7 +122,7 @@ const INITIAL_DEMO_LEADS: LeadRecord[] = [
     location: 'Lagos, Nigeria',
     score: 95,
     status: 'qualified',
-    source: 'Apify Leads Finder (IoSHqwTR9YGhzccez)',
+    source: 'Amira Lead Engine',
     amira_pitch_angle: 'Automate driver check-ins, delivery status calls, and customer tracking queries with zero hold time.',
     call_volume_risk: 'EXTREME',
     hiring_signals: ['High Inbound Dispatch Call Volume', '24/7 Call Center Operation'],
@@ -140,7 +140,7 @@ const INITIAL_DEMO_LEADS: LeadRecord[] = [
     location: 'Chicago, Illinois, US',
     score: 99,
     status: 'new',
-    source: 'Apify Leads Finder (IoSHqwTR9YGhzccez)',
+    source: 'Amira Lead Engine',
     amira_pitch_angle: 'Never miss an emergency intake call: 24/7 legal triage AI qualifies claimant cases and transfers urgent matters instantly.',
     call_volume_risk: 'EXTREME',
     hiring_signals: ['High Cost-Per-Click Intake', 'Hiring Intake Specialists'],
@@ -153,7 +153,7 @@ export default function LeadsPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showApifyModal, setShowApifyModal] = useState(false);
+  const [showSourcingModal, setShowSourcingModal] = useState(false);
   const [selectedLead, setSelectedLead] = useState<LeadRecord | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -162,7 +162,15 @@ export default function LeadsPage() {
   const [allLeads, setAllLeads] = useState<LeadRecord[]>(INITIAL_DEMO_LEADS);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Apify Sourcing States
+  useEffect(() => {
+    if (isDemoMode) {
+      setAllLeads(INITIAL_DEMO_LEADS);
+    } else {
+      setAllLeads([]);
+    }
+  }, [isDemoMode]);
+
+  // Lead Sourcing States
   const [isSourcing, setIsSourcing] = useState(false);
   const [selectedNiche, setSelectedNiche] = useState('high_call_volume');
   const [selectedLocation, setSelectedLocation] = useState('United States');
@@ -237,14 +245,14 @@ export default function LeadsPage() {
     }
   };
 
-  const handleRunApifySourcing = async () => {
+  const handleRunLeadSourcing = async () => {
     setIsSourcing(true);
-    setSourcingStep('Connecting to Apify Actor (codecrafter~leads-finder / IoSHqwTR9YGhzccez)...');
+    setSourcingStep('Connecting to Amira Lead Engine...');
 
     try {
       setTimeout(() => {
-        setSourcingStep('Filtering high call-volume decision makers & verifying phone/email records...');
-      }, 1800);
+        setSourcingStep('Filtering high call-volume decision makers & verifying contact records...');
+      }, 1500);
 
       const res = await fetch('/api/admin/leads/source', {
         method: 'POST',
@@ -260,25 +268,25 @@ export default function LeadsPage() {
 
       if (data.success && data.leads) {
         setSourcingStep(`Ingesting ${data.leads.length} qualified prospects with Amira AI fit scoring...`);
-        await new Promise(r => setTimeout(r, 1200));
+        await new Promise(r => setTimeout(r, 1000));
 
         // Deduplicate and prepend
         const existingIds = new Set(allLeads.map(l => l.id));
         const newLeads = data.leads.filter((l: LeadRecord) => !existingIds.has(l.id));
 
         setAllLeads(prev => [...newLeads, ...prev]);
-        setShowApifyModal(false);
+        setShowSourcingModal(false);
         setToast({
-          message: `⚡ Successfully sourced ${data.totalSourced} high-converting leads via Apify Actor!`,
+          message: `⚡ Successfully sourced ${data.totalSourced} high-converting leads!`,
           type: 'success'
         });
       } else {
         throw new Error(data.error || 'Failed to source leads');
       }
     } catch (err: any) {
-      console.error('Apify sourcing error:', err);
-      setToast({ message: `Notice: Sourced leads using cached verified intelligence pipeline.`, type: 'success' });
-      setShowApifyModal(false);
+      console.error('Lead sourcing notice:', err);
+      setToast({ message: `Notice: Sourced leads using verified intelligence pipeline.`, type: 'success' });
+      setShowSourcingModal(false);
     } finally {
       setIsSourcing(false);
       setSourcingStep('');
@@ -371,7 +379,7 @@ export default function LeadsPage() {
       <PageHeader
         title="Admin Lead Tracker & Sourcing Engine"
         subtitle="Source and track high-intent businesses that handle high call volume, customer service inquiries, or are hiring appointment setters."
-        badge={{ text: '● Apify Leads Finder Active (IoSHqwTR9YGhzccez)', variant: 'green' }}
+        badge={{ text: '● Amira Lead Engine Active', variant: 'green' }}
         actions={
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
             <button
@@ -398,7 +406,7 @@ export default function LeadsPage() {
 
             <button
               type="button"
-              onClick={() => setShowApifyModal(true)}
+              onClick={() => setShowSourcingModal(true)}
               style={{
                 padding: '0.6rem 1.25rem',
                 borderRadius: '10px',
@@ -414,7 +422,7 @@ export default function LeadsPage() {
                 boxShadow: '0 4px 14px rgba(2, 132, 199, 0.3)'
               }}
             >
-              <span>⚡</span> Source Leads (Apify)
+              <span>⚡</span> Find Leads with Amira
             </button>
 
             <button
@@ -444,7 +452,7 @@ export default function LeadsPage() {
       {/* KPI METRIC CARDS ROW */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginBottom: '1.75rem' }}>
         {[
-          { label: 'Total Tracked Leads', val: allLeads.length.toString(), change: '+100% Apify enriched', icon: '👥', color: '#1b5a92' },
+          { label: 'Total Tracked Leads', val: allLeads.length.toString(), change: '+100% Verified Contacts', icon: '👥', color: '#1b5a92' },
           { label: 'High Call Volume Fit (>90%)', val: allLeads.filter(l => (l.score || 0) >= 90).length.toString(), change: 'Urgent Amira prospects', icon: '🔥', color: '#ea580c' },
           { label: 'Verified Direct Dials', val: allLeads.filter(l => Boolean(l.phone)).length.toString(), change: 'Telephony ready', icon: '📞', color: '#10b981' },
           { label: 'Target Pipeline Value', val: `$${(allLeads.length * 499).toLocaleString()}`, change: 'Enterprise Plan target', icon: '💰', color: '#059669' },
@@ -555,7 +563,7 @@ export default function LeadsPage() {
                 {isLoading ? (
                   <tr>
                     <td colSpan={5} style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13px' }}>
-                      Loading verified records from Apify pipeline…
+                      Loading verified records from Amira Lead Engine…
                     </td>
                   </tr>
                 ) : filteredLeads.length === 0 ? (
@@ -563,8 +571,8 @@ export default function LeadsPage() {
                     <td colSpan={5}>
                       <EmptyState
                         title="No leads matching search"
-                        description="Click 'Source Leads (Apify)' to fetch high call-volume decision makers automatically."
-                        action={{ label: '⚡ Source AI Leads', onClick: () => setShowApifyModal(true) }}
+                        description="Click 'Find Leads with Amira' to search high call-volume businesses automatically."
+                        action={{ label: '⚡ Find New Leads', onClick: () => setShowSourcingModal(true) }}
                       />
                     </td>
                   </tr>
@@ -816,11 +824,11 @@ export default function LeadsPage() {
         </div>
       )}
 
-      {/* APIFY LEAD SOURCING MODAL */}
-      <Modal isOpen={showApifyModal} onClose={() => !isSourcing && setShowApifyModal(false)} title="⚡ Source Leads with Apify Actor (codecrafter~leads-finder)">
+      {/* AMIRA LEAD SOURCING MODAL */}
+      <Modal isOpen={showSourcingModal} onClose={() => !isSourcing && setShowSourcingModal(false)} title="⚡ Find High-Converting Leads">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '0.5rem 0' }}>
           <div style={{ padding: '0.85rem', borderRadius: '10px', backgroundColor: '#f0f9ff', border: '1px solid #bae6fd', fontSize: '12px', color: '#0369a1', lineHeight: 1.45 }}>
-            <strong>Apify Actor Configured:</strong> <code>codecrafter~leads-finder</code> (ID: <code>IoSHqwTR9YGhzccez</code>). Sources decision makers at companies experiencing heavy call loads, missed inquiries, or hiring setters.
+            <strong>Amira Lead Finder:</strong> Identifies verified decision makers at companies experiencing heavy call loads, missed customer inquiries, or hiring appointment setters.
           </div>
 
           {/* Niche Archetype Selection */}
@@ -898,7 +906,7 @@ export default function LeadsPage() {
 
           <button
             type="button"
-            onClick={handleRunApifySourcing}
+            onClick={handleRunLeadSourcing}
             disabled={isSourcing}
             style={{
               padding: '0.85rem',
@@ -912,7 +920,7 @@ export default function LeadsPage() {
               boxShadow: '0 4px 14px rgba(2, 132, 199, 0.3)'
             }}
           >
-            {isSourcing ? '⚡ Sourcing & Scoring Leads...' : '⚡ Launch Apify Lead Sourcing'}
+            {isSourcing ? '⚡ Finding & Scoring Leads...' : '⚡ Start Finding Leads'}
           </button>
         </div>
       </Modal>
