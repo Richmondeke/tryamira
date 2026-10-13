@@ -535,14 +535,14 @@ export default function V3BillingPage() {
               </div>
             </div>
 
-            {/* Korapay PCI-DSS Compliance & Hosted Payment Methods */}
+            {/* Certified Secure Payment Methods */}
             <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1rem', marginBottom: '1.25rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
                 <span style={{ fontSize: '16px' }}>🔒</span>
                 <span style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a' }}>PCI-DSS Level 1 Certified Checkout</span>
               </div>
               <p style={{ fontSize: '12px', color: '#64748b', margin: '0 0 0.75rem 0', lineHeight: 1.5 }}>
-                Your transaction is processed directly through <strong>Korapay</strong>. Amira does not collect, handle, or store credit card credentials on our servers.
+                Your payment is processed through our secure, certified checkout system. Amira does not collect, handle, or store credit card details on our servers.
               </p>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '11px', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', backgroundColor: '#e2e8f0', color: '#334155' }}>💳 Mastercard</span>
@@ -595,7 +595,7 @@ export default function V3BillingPage() {
                 textAlign: 'center'
               }}
             >
-              {isProcessing ? 'Connecting to Korapay...' : `Proceed to Secure Korapay Checkout →`}
+              {isProcessing ? 'Connecting to Secure Checkout...' : `Proceed to Secure Checkout →`}
             </button>
           </div>
         </div>

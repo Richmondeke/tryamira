@@ -19,7 +19,7 @@ function getIntegrationLogoUrl(slugOrName: string): string {
 
 export default function V3IntegrationsPage() {
   const [apps, setApps] = useState<any[]>([]);
-  const [activeApps, setActiveApps] = useState<string[]>(['hubspot', 'salesforce', 'zohocrm', 'slack', 'googlesheets', 'notion', 'calendly', 'gmail']);
+  const [activeApps, setActiveApps] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -38,8 +38,13 @@ export default function V3IntegrationsPage() {
           setApps(appsRes.data);
         }
 
-        if ((statusRes as any)?.activeApps) {
-          setActiveApps((statusRes as any).activeApps);
+        if (statusRes?.activeApps) {
+          setActiveApps(statusRes.activeApps);
+        } else if (Array.isArray(statusRes?.data)) {
+          const activeList = statusRes.data
+            .filter((item: any) => item.status === 'active')
+            .map((item: any) => item.provider.toLowerCase());
+          setActiveApps(activeList);
         }
       } catch (err) {
         console.error('Failed to load workspace integrations:', err);

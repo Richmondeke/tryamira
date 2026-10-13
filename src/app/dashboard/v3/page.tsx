@@ -486,7 +486,7 @@ export default function V3DashboardPage() {
                   <div>
                     <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 500 }}>Voice Engine</div>
                     <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                      {agent.voice?.provider || 'ElevenLabs'} ({agent.voice?.voiceId || 'Rachel'})
+                      Amira Voice ({agent.voice?.voiceId || 'Rachel'})
                     </div>
                   </div>
 
@@ -704,13 +704,13 @@ export default function V3DashboardPage() {
           {/* Grid of Apps with Real Logos & Active Connection Badges */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '0.75rem' }}>
             {[
-              { name: 'HubSpot', slug: 'hubspot', status: 'Active' },
-              { name: 'Salesforce', slug: 'salesforce', status: 'Active' },
-              { name: 'Zoho CRM', slug: 'zohocrm', status: 'Active' },
-              { name: 'Slack', slug: 'slack', status: 'Active' },
-              { name: 'Google Sheets', slug: 'googlesheets', status: 'Active' },
-              { name: 'Notion', slug: 'notion', status: 'Active' },
-              { name: 'Calendly', slug: 'calendly', status: 'Active' },
+              { name: 'HubSpot', slug: 'hubspot', status: isDemoMode ? 'Active' : 'Available' },
+              { name: 'Salesforce', slug: 'salesforce', status: isDemoMode ? 'Active' : 'Available' },
+              { name: 'Zoho CRM', slug: 'zohocrm', status: isDemoMode ? 'Active' : 'Available' },
+              { name: 'Slack', slug: 'slack', status: isDemoMode ? 'Active' : 'Available' },
+              { name: 'Google Sheets', slug: 'googlesheets', status: isDemoMode ? 'Active' : 'Available' },
+              { name: 'Notion', slug: 'notion', status: isDemoMode ? 'Active' : 'Available' },
+              { name: 'Calendly', slug: 'calendly', status: isDemoMode ? 'Active' : 'Available' },
               { name: '100+ More', slug: 'github', status: 'Explore' },
             ].map(app => (
               <Link

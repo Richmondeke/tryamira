@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { 
   getComposioApps, 
@@ -11,6 +12,7 @@ import {
 import { LiveVoiceTester } from '@/components/voice/LiveVoiceTester';
 
 interface AgentConfig {
+  id?: string;
   name: string;
   role: string;
   phone: string;
@@ -158,44 +160,60 @@ function getToolLogoUrl(slugOrName: string): string {
 }
 
 import { useDemoMode } from '@/contexts/DemoModeContext';
-import { getAgents, updateAgent } from '@/app/actions/agent';
+import { getAgents, updateAgent, createAgent } from '@/app/actions/agent';
 
 export default function V3AgentsPage() {
   const { isDemoMode } = useDemoMode();
   const [dbAgents, setDbAgents] = useState<Record<string, AgentConfig>>({});
   const [selectedAgentKey, setSelectedAgentKey] = useState<string>('Sales Closer');
   const [agents, setAgents] = useState<Record<string, AgentConfig>>(DEFAULT_AGENTS);
+  
+  // New Agent Modal State
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newAgentName, setNewAgentName] = useState('');
+  const [newAgentRole, setNewAgentRole] = useState('');
+  const [newAgentVoice, setNewAgentVoice] = useState('21m00Tcm4TlvDq8ikWAM (Rachel - Warm & Executive)');
+  const [isCreatingAgent, setIsCreatingAgent] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!isDemoMode) {
-      getAgents().then(data => {
-        if (data && Array.isArray(data) && data.length > 0) {
+      getAgents().then(res => {
+        const list = Array.isArray(res) ? res : (res?.data || []);
+        if (list.length > 0) {
           const mapped: Record<string, AgentConfig> = {};
-          data.forEach((ag: any) => {
-            mapped[ag.name || ag.title] = {
+          list.forEach((ag: any) => {
+            const agentKey = ag.name || ag.title || 'Custom Agent';
+            const agentCfg = ag.config || {};
+            mapped[agentKey] = {
+              id: ag.id,
               name: ag.name || ag.title || 'Custom Agent',
-              role: ag.role || ag.description || 'Voice Assistant',
-              phone: ag.phone || '🇺🇸 +1 (415) 555-0198',
-              status: ag.status || '🟢 Live',
+              role: agentCfg.role || ag.role || ag.description || 'Voice Assistant',
+              phone: agentCfg.phone || ag.phone || 'Line Pending',
+              status: agentCfg.status || ag.status || '🟢 Live',
               voiceProvider: 'Amira Voice Engine',
-              voiceModel: 'amira_global_multilingual_v2',
-              voiceId: ag.voice_id || 'Rachel (Warm & Executive)',
-              stability: 0.5,
-              similarityBoost: 0.75,
-              styleExaggeration: 0.0,
-              speakerBoost: true,
-              audioOutputFormat: 'pcm_16000 (HD Audio)',
-              llmModel: ag.model || 'gpt-4o',
-              temperature: 0.3,
-              firstMessage: ag.greeting || ag.firstMessage || 'Hello! How can I assist you today?',
-              systemPrompt: ag.prompt || ag.systemPrompt || 'You are an autonomous AI voice worker.',
-              endCallPhrases: 'goodbye, talk to you soon',
-              maxDuration: 15,
-              silenceTimeout: 400,
-              interruptionSensitivity: 'High (400ms)',
-              backgroundSound: 'None',
-              enabledToolIds: ag.tools || ['hubspot', 'gmail'],
-              webhookUrl: ag.webhook_url || 'https://api.tryamira.com/v1/webhooks'
+              voiceModel: agentCfg.voiceModel || 'amira_global_multilingual_v2',
+              voiceId: agentCfg.voiceId || ag.voice_id || 'Rachel (Warm & Executive)',
+              stability: agentCfg.stability ?? 0.5,
+              similarityBoost: agentCfg.similarityBoost ?? 0.75,
+              styleExaggeration: agentCfg.styleExaggeration ?? 0.0,
+              speakerBoost: agentCfg.speakerBoost ?? true,
+              audioOutputFormat: agentCfg.audioOutputFormat || 'pcm_16000 (HD Audio)',
+              llmModel: agentCfg.llmModel || ag.model || 'gpt-4o',
+              temperature: agentCfg.temperature ?? 0.3,
+              firstMessage: agentCfg.firstMessage || ag.greeting || ag.firstMessage || 'Hello! How can I assist you today?',
+              systemPrompt: agentCfg.systemPrompt || ag.prompt || ag.systemPrompt || 'You are an autonomous AI voice worker.',
+              endCallPhrases: agentCfg.endCallPhrases || 'goodbye, talk to you soon',
+              maxDuration: agentCfg.maxDuration || 15,
+              silenceTimeout: agentCfg.silenceTimeout || 400,
+              interruptionSensitivity: agentCfg.interruptionSensitivity || 'High (400ms)',
+              backgroundSound: agentCfg.backgroundSound || 'None',
+              enabledToolIds: agentCfg.enabledToolIds || ag.tools || [],
+              webhookUrl: agentCfg.webhookUrl || ag.webhook_url || 'https://api.tryamira.com/v1/webhooks'
             };
           });
           setDbAgents(mapped);
@@ -227,36 +245,36 @@ export default function V3AgentsPage() {
 
   const VOICE_CATALOG = [
     // 🌍 African Regional Voices
-    { id: 'eleven_tunde', name: 'Tunde — Nigerian Executive & Sales Male', category: '🌍 African Regional Voices', provider: 'ElevenLabs', sampleUrl: '/audio/voices/tunde.mp3' },
-    { id: 'eleven_chidimma', name: 'Chidimma — West African Corporate Female', category: '🌍 African Regional Voices', provider: 'ElevenLabs', sampleUrl: '/audio/voices/chidimma.mp3' },
-    { id: 'eleven_kofi', name: 'Kofi — Ghanaian Enterprise Consultant Male', category: '🌍 African Regional Voices', provider: 'ElevenLabs', sampleUrl: '/audio/voices/kofi.mp3' },
-    { id: 'eleven_zuri', name: 'Zuri — East African (Swahili & English) Female', category: '🌍 African Regional Voices', provider: 'ElevenLabs', sampleUrl: '/audio/voices/zuri.mp3' },
-    { id: 'eleven_sipho', name: 'Sipho — South African Commercial Male', category: '🌍 African Regional Voices', provider: 'ElevenLabs', sampleUrl: '/audio/voices/sipho.mp3' },
-    { id: 'eleven_lesedi', name: 'Lesedi — South African Professional Female', category: '🌍 African Regional Voices', provider: 'ElevenLabs', sampleUrl: '/audio/voices/lesedi.mp3' },
-    { id: 'eleven_eze', name: 'Eze — West African Conversational Male', category: '🌍 African Regional Voices', provider: 'ElevenLabs', sampleUrl: '/audio/voices/eze.mp3' },
-    { id: 'eleven_amina', name: 'Amina — West African Friendly Support Female', category: '🌍 African Regional Voices', provider: 'ElevenLabs', sampleUrl: '/audio/voices/amina.mp3' },
-    { id: 'eleven_jabari', name: 'Jabari — African Outbound Prospecting Male', category: '🌍 African Regional Voices', provider: 'ElevenLabs', sampleUrl: '/audio/voices/jabari.mp3' },
-    { id: 'eleven_nia', name: 'Nia — African Brand Storyteller Female', category: '🌍 African Regional Voices', provider: 'ElevenLabs', sampleUrl: '/audio/voices/nia.mp3' },
+    { id: 'eleven_tunde', name: 'Tunde — West African Executive Male', category: '🌍 African Regional Voices', provider: 'Amira Voice', sampleUrl: '/audio/voices/tunde.mp3' },
+    { id: 'eleven_chidimma', name: 'Chidimma — West African Corporate Female', category: '🌍 African Regional Voices', provider: 'Amira Voice', sampleUrl: '/audio/voices/chidimma.mp3' },
+    { id: 'eleven_kofi', name: 'Kofi — Ghanaian Enterprise Consultant Male', category: '🌍 African Regional Voices', provider: 'Amira Voice', sampleUrl: '/audio/voices/kofi.mp3' },
+    { id: 'eleven_zuri', name: 'Zuri — East African (Swahili & English) Female', category: '🌍 African Regional Voices', provider: 'Amira Voice', sampleUrl: '/audio/voices/zuri.mp3' },
+    { id: 'eleven_sipho', name: 'Sipho — South African Commercial Male', category: '🌍 African Regional Voices', provider: 'Amira Voice', sampleUrl: '/audio/voices/sipho.mp3' },
+    { id: 'eleven_lesedi', name: 'Lesedi — South African Professional Female', category: '🌍 African Regional Voices', provider: 'Amira Voice', sampleUrl: '/audio/voices/lesedi.mp3' },
+    { id: 'eleven_eze', name: 'Eze — West African Conversational Male', category: '🌍 African Regional Voices', provider: 'Amira Voice', sampleUrl: '/audio/voices/eze.mp3' },
+    { id: 'eleven_amina', name: 'Amina — West African Friendly Support Female', category: '🌍 African Regional Voices', provider: 'Amira Voice', sampleUrl: '/audio/voices/amina.mp3' },
+    { id: 'eleven_jabari', name: 'Jabari — African Outbound Prospecting Male', category: '🌍 African Regional Voices', provider: 'Amira Voice', sampleUrl: '/audio/voices/jabari.mp3' },
+    { id: 'eleven_nia', name: 'Nia — African Brand Storyteller Female', category: '🌍 African Regional Voices', provider: 'Amira Voice', sampleUrl: '/audio/voices/nia.mp3' },
 
     // 🇺🇸 North American Voices
-    { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel — Warm & Executive Female', category: '🇺🇸 North American Voices', provider: 'ElevenLabs', sampleUrl: '/audio/voices/rachel.mp3' },
-    { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam — Authoritative Executive Male', category: '🇺🇸 North American Voices', provider: 'ElevenLabs', sampleUrl: '/audio/voices/adam.mp3' },
-    { id: 'TxGEqnHWrfWFTfGW9XjX', name: 'Josh — Energetic Outbound Sales Male', category: '🇺🇸 North American Voices', provider: 'ElevenLabs', sampleUrl: '/audio/voices/josh.mp3' },
-    { id: 'MF3mGyEYCl7XYWbV9V6O', name: 'Elli — Friendly Customer Support Female', category: '🇺🇸 North American Voices', provider: 'ElevenLabs', sampleUrl: '/audio/voices/elli.mp3' },
-    { id: 'TX3LPaxmHKxFdv7VOQHJ', name: 'Liam — Energetic American Male', category: '🇺🇸 North American Voices', provider: 'ElevenLabs', sampleUrl: '/audio/voices/liam.mp3' },
-    { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Sarah — Soft Professional Female', category: '🇺🇸 North American Voices', provider: 'ElevenLabs', sampleUrl: '/audio/voices/sarah.mp3' },
+    { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel — Warm & Professional Female', category: '🇺🇸 North American Voices', provider: 'Amira Voice', sampleUrl: '/audio/voices/rachel.mp3' },
+    { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam — Authoritative Executive Male', category: '🇺🇸 North American Voices', provider: 'Amira Voice', sampleUrl: '/audio/voices/adam.mp3' },
+    { id: 'TxGEqnHWrfWFTfGW9XjX', name: 'Josh — Energetic Outbound Sales Male', category: '🇺🇸 North American Voices', provider: 'Amira Voice', sampleUrl: '/audio/voices/josh.mp3' },
+    { id: 'MF3mGyEYCl7XYWbV9V6O', name: 'Elli — Friendly Customer Support Female', category: '🇺🇸 North American Voices', provider: 'Amira Voice', sampleUrl: '/audio/voices/elli.mp3' },
+    { id: 'TX3LPaxmHKxFdv7VOQHJ', name: 'Liam — Energetic American Male', category: '🇺🇸 North American Voices', provider: 'Amira Voice', sampleUrl: '/audio/voices/liam.mp3' },
+    { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Sarah — Soft Professional Female', category: '🇺🇸 North American Voices', provider: 'Amira Voice', sampleUrl: '/audio/voices/sarah.mp3' },
 
     // 🇬🇧 European & International Voices
-    { id: 'N2lD3BihCvhUxWvW037k', name: 'Callum — Enterprise Deal Closer Male', category: '🇬🇧 European & International Voices', provider: 'ElevenLabs', sampleUrl: '/audio/voices/callum.mp3' },
-    { id: 'XB0fDUnXU5powctDhCvo', name: 'Charlotte — International Executive Female', category: '🇬🇧 European & International Voices', provider: 'ElevenLabs', sampleUrl: '/audio/voices/charlotte.mp3' },
-    { id: 'JBFqnCBsd6RMkjVDRZzb', name: 'George — Sophisticated British Male', category: '🇬🇧 European & International Voices', provider: 'ElevenLabs', sampleUrl: '/audio/voices/george.mp3' },
-    { id: 'IKne3meq5aSn9XLyUdCD', name: 'Charlie — Casual Australian Male', category: '🇬🇧 European & International Voices', provider: 'ElevenLabs', sampleUrl: '/audio/voices/charlie.mp3' },
+    { id: 'N2lD3BihCvhUxWvW037k', name: 'Callum — Enterprise Deal Closer Male', category: '🇬🇧 British & International Voices', provider: 'Amira Voice', sampleUrl: '/audio/voices/callum.mp3' },
+    { id: 'XB0fDUnXU5powctDhCvo', name: 'Charlotte — International Executive Female', category: '🇬🇧 British & International Voices', provider: 'Amira Voice', sampleUrl: '/audio/voices/charlotte.mp3' },
+    { id: 'JBFqnCBsd6RMkjVDRZzb', name: 'George — Sophisticated British Male', category: '🇬🇧 British & International Voices', provider: 'Amira Voice', sampleUrl: '/audio/voices/george.mp3' },
+    { id: 'IKne3meq5aSn9XLyUdCD', name: 'Charlie — Casual Australian Male', category: '🇬🇧 British & International Voices', provider: 'Amira Voice', sampleUrl: '/audio/voices/charlie.mp3' },
 
-    // 🌐 OpenAI Realtime, Cartesia & PlayHT Engines
-    { id: 'openai_alloy', name: 'Alloy — Neutral Conversational (OpenAI Realtime)', category: '🌐 OpenAI Realtime & Cartesia Engines', provider: 'OpenAI', sampleUrl: '/audio/voices/river.mp3' },
-    { id: 'openai_nova', name: 'Nova — Warm Expressive Female (OpenAI Realtime)', category: '🌐 OpenAI Realtime & Cartesia Engines', provider: 'OpenAI', sampleUrl: '/audio/voices/bella.mp3' },
-    { id: 'cartesia_sonic', name: 'Sonic — Ultra Low Latency 120ms (Cartesia Engine)', category: '🌐 OpenAI Realtime & Cartesia Engines', provider: 'Cartesia', sampleUrl: '/audio/voices/eric.mp3' },
-    { id: 'playht_jennifer', name: 'Jennifer — Corporate Receptionist (PlayHT Engine)', category: '🌐 OpenAI Realtime & Cartesia Engines', provider: 'PlayHT', sampleUrl: '/audio/voices/jessica.mp3' }
+    // ⚡ Expressive Studio Voices
+    { id: 'openai_alloy', name: 'Alloy — Neutral & Friendly', category: '⚡ Expressive Studio Voices', provider: 'Amira Voice', sampleUrl: '/audio/voices/river.mp3' },
+    { id: 'openai_nova', name: 'Nova — Warm & Expressive Female', category: '⚡ Expressive Studio Voices', provider: 'Amira Voice', sampleUrl: '/audio/voices/bella.mp3' },
+    { id: 'cartesia_sonic', name: 'Sonic — Fast Conversational Voice', category: '⚡ Expressive Studio Voices', provider: 'Amira Voice', sampleUrl: '/audio/voices/eric.mp3' },
+    { id: 'playht_jennifer', name: 'Jennifer — Calm Receptionist Female', category: '⚡ Expressive Studio Voices', provider: 'Amira Voice', sampleUrl: '/audio/voices/jessica.mp3' }
   ];
 
   const handlePlayVoicePreview = () => {
@@ -353,11 +371,71 @@ export default function V3AgentsPage() {
   const handleSaveAgentConfig = async () => {
     setSaveSuccess(true);
     try {
-      await updateAgent(selectedAgentKey, currentConfig);
+      const agentId = (currentConfig as any).id || selectedAgentKey;
+      await updateAgent(agentId, currentConfig);
     } catch (err) {
       console.warn('Persist agent config fallback:', err);
     }
     setTimeout(() => setSaveSuccess(false), 3000);
+  };
+
+  const handleCreateAgentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAgentName.trim()) return;
+
+    setIsCreatingAgent(true);
+    try {
+      const config = {
+        name: newAgentName.trim(),
+        role: newAgentRole.trim() || 'Voice Assistant',
+        phone: 'Line Pending',
+        status: '🟢 Live',
+        voiceProvider: 'Amira Voice Engine',
+        voiceModel: 'amira_global_multilingual_v2',
+        voiceId: newAgentVoice,
+        stability: 0.50,
+        similarityBoost: 0.75,
+        styleExaggeration: 0.00,
+        speakerBoost: true,
+        audioOutputFormat: 'pcm_16000 (HD Audio)',
+        llmModel: 'gpt-4o',
+        temperature: 0.30,
+        firstMessage: `Hello! I am ${newAgentName.trim()}. How can I assist you today?`,
+        systemPrompt: `You are ${newAgentName.trim()}, an AI voice worker. Your role is: ${newAgentRole.trim() || 'assisting callers'}. Be friendly, concise, and helpful.`,
+        endCallPhrases: 'goodbye, talk to you soon, have a great day',
+        maxDuration: 15,
+        silenceTimeout: 400,
+        interruptionSensitivity: 'High (400ms)',
+        backgroundSound: 'None',
+        enabledToolIds: [],
+        webhookUrl: 'https://api.tryamira.com/v1/webhooks'
+      };
+
+      const res = await createAgent(newAgentName.trim(), config);
+      const newId = res?.data?.id || `ag-${Date.now()}`;
+      const newAgent: AgentConfig = {
+        ...config,
+        id: newId
+      };
+
+      setDbAgents(prev => ({
+        ...prev,
+        [newAgent.name]: newAgent
+      }));
+      setAgents(prev => ({
+        ...prev,
+        [newAgent.name]: newAgent
+      }));
+      setSelectedAgentKey(newAgent.name);
+      setShowCreateModal(false);
+      setNewAgentName('');
+      setNewAgentRole('');
+    } catch (err) {
+      console.error('Failed to create agent:', err);
+      alert('Could not create agent right now. Please try again.');
+    } finally {
+      setIsCreatingAgent(false);
+    }
   };
 
   const toggleAgentTool = (toolId: string) => {
@@ -503,35 +581,41 @@ export default function V3AgentsPage() {
             <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Amira Fleet</span>
           </div>
 
-          {Object.values(activeAgents).map(ag => {
-            const isSelected = selectedAgentKey === ag.name;
-            return (
-              <div
-                key={ag.name}
-                onClick={() => setSelectedAgentKey(ag.name)}
-                style={{
-                  padding: '0.85rem 1rem',
-                  borderRadius: '12px',
-                  cursor: 'pointer',
-                  backgroundColor: isSelected ? '#1b5a920f' : 'var(--bg-subtle)',
-                  border: isSelected ? '1px solid #1b5a9250' : '1px solid var(--border-subtle)',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
-                  <span style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-primary)' }}>{ag.name}</span>
-                  <span style={{ fontSize: '10px', fontWeight: 600 }}>{ag.status}</span>
+          {Object.keys(activeAgents).length === 0 ? (
+            <div style={{ padding: '1rem 0.5rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '12.5px' }}>
+              No voice agents created yet. Click below to create your first worker.
+            </div>
+          ) : (
+            Object.values(activeAgents).map(ag => {
+              const isSelected = selectedAgentKey === ag.name;
+              return (
+                <div
+                  key={ag.name}
+                  onClick={() => setSelectedAgentKey(ag.name)}
+                  style={{
+                    padding: '0.85rem 1rem',
+                    borderRadius: '12px',
+                    cursor: 'pointer',
+                    backgroundColor: isSelected ? '#1b5a920f' : 'var(--bg-subtle)',
+                    border: isSelected ? '1px solid #1b5a9250' : '1px solid var(--border-subtle)',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
+                    <span style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-primary)' }}>{ag.name}</span>
+                    <span style={{ fontSize: '10px', fontWeight: 600 }}>{ag.status}</span>
+                  </div>
+                  <div style={{ fontSize: '11.5px', color: 'var(--text-secondary)' }}>{ag.role}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.35rem', fontSize: '10.5px', color: '#1b5a92', fontWeight: 600 }}>
+                    <span>🎙️ {ag.voiceProvider} ({ag.voiceId.split(' ')[0]})</span>
+                  </div>
                 </div>
-                <div style={{ fontSize: '11.5px', color: 'var(--text-secondary)' }}>{ag.role}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.35rem', fontSize: '10.5px', color: '#1b5a92', fontWeight: 600 }}>
-                  <span>🎙️ {ag.voiceProvider} ({ag.voiceId.split(' ')[0]})</span>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
 
           <button
-            onClick={() => alert('Creating new Voice Agent instance...')}
+            onClick={() => setShowCreateModal(true)}
             style={{
               marginTop: '0.5rem', padding: '0.6rem', borderRadius: '10px', border: '1px dashed #1b5a9260',
               backgroundColor: 'transparent', color: '#1b5a92', fontSize: '12.5px', fontWeight: 600, cursor: 'pointer'
@@ -552,7 +636,7 @@ export default function V3AgentsPage() {
                   {currentConfig.name} Setup Flow
                 </h2>
                 <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  Assigned Phone Number: <strong>{currentConfig.phone}</strong>
+                  Assigned Phone Line: <strong>{currentConfig.phone}</strong>
                 </span>
               </div>
             </div>
@@ -560,11 +644,11 @@ export default function V3AgentsPage() {
             {/* TAB STEPPER NAVIGATION BAR (EXPLICIT ORDER) */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: 'var(--bg-subtle)', padding: '5px', borderRadius: '12px', border: '1px solid var(--border-subtle)', flexWrap: 'wrap' }}>
               {[
-                { id: 'llm', step: '1', label: 'Create Agent (Persona & LLM)' },
-                { id: 'voice', step: '2', label: 'Choose Voice' },
-                { id: 'telephony', step: '3', label: 'Connect Phone Number' },
-                { id: 'tools', step: '4', label: 'Connect Tools' },
-                { id: 'json', step: '5', label: 'API Payload' },
+                { id: 'llm', step: '1', label: '1. Personality & Instructions' },
+                { id: 'voice', step: '2', label: '2. Voice & Tone' },
+                { id: 'telephony', step: '3', label: '3. Phone Line' },
+                { id: 'tools', step: '4', label: '4. Connected Apps' },
+                { id: 'json', step: '5', label: '5. Technical Details' },
               ].map(tab => {
                 const isActive = activeTab === tab.id;
                 return (
@@ -1142,6 +1226,74 @@ export default function V3AgentsPage() {
 
           </div>
         </div>
+      )}
+
+      {/* ── CREATE NEW AGENT MODAL ────────────────────────────── */}
+      {mounted && showCreateModal && createPortal(
+        <div onClick={() => setShowCreateModal(false)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999, padding: '1rem', overflowY: 'auto' }}>
+          <div onClick={e => e.stopPropagation()} style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '18px', padding: '1.75rem', maxWidth: '480px', width: '100%', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.35)', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.85rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <span style={{ fontSize: '22px' }}>🎙️</span>
+                <div>
+                  <h3 style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>Create Voice Agent</h3>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Add an autonomous voice worker to your workspace</div>
+                </div>
+              </div>
+              <button onClick={() => setShowCreateModal(false)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '20px', cursor: 'pointer' }}>✕</button>
+            </div>
+
+            <form onSubmit={handleCreateAgentSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)' }}>Agent Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Sales Specialist, Support Representative"
+                  value={newAgentName}
+                  onChange={e => setNewAgentName(e.target.value)}
+                  required
+                  style={{ width: '100%', padding: '0.65rem', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-subtle)', color: 'var(--text-primary)', fontSize: '13px', marginTop: '0.25rem' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)' }}>Agent Role / Purpose</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Answers customer questions and schedules appointments"
+                  value={newAgentRole}
+                  onChange={e => setNewAgentRole(e.target.value)}
+                  required
+                  style={{ width: '100%', padding: '0.65rem', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-subtle)', color: 'var(--text-primary)', fontSize: '13px', marginTop: '0.25rem' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)' }}>Default Voice Persona</label>
+                <select
+                  value={newAgentVoice}
+                  onChange={e => setNewAgentVoice(e.target.value)}
+                  style={{ width: '100%', padding: '0.65rem', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-subtle)', color: 'var(--text-primary)', fontSize: '13px', marginTop: '0.25rem', cursor: 'pointer' }}
+                >
+                  <option value="21m00Tcm4TlvDq8ikWAM (Rachel - Warm & Executive)">Rachel — Warm & Professional Female</option>
+                  <option value="pNInz6obpgDQGcFmaJgB (Adam - Authoritative Executive)">Adam — Authoritative Executive Male</option>
+                  <option value="TxGEqnHWrfWFTfGW9XjX (Josh - Energetic Sales)">Josh — Energetic Sales Male</option>
+                  <option value="eleven_tunde (Tunde - West African Executive)">Tunde — West African Executive Male</option>
+                  <option value="eleven_chidimma (Chidimma - West African Corporate)">Chidimma — West African Corporate Female</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
+                <button type="button" onClick={() => setShowCreateModal(false)} style={{ padding: '0.55rem 1rem', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'transparent', color: 'var(--text-secondary)', fontSize: '12.5px', cursor: 'pointer' }}>Cancel</button>
+                <button type="submit" disabled={isCreatingAgent} style={{ padding: '0.55rem 1.25rem', borderRadius: '8px', border: 'none', backgroundColor: '#1b5a92', color: '#ffffff', fontSize: '12.5px', fontWeight: 700, cursor: isCreatingAgent ? 'not-allowed' : 'pointer', opacity: isCreatingAgent ? 0.7 : 1 }}>
+                  {isCreatingAgent ? 'Creating Agent...' : 'Create Agent'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
       )}
 
     </div>

@@ -437,7 +437,7 @@ function AgentContent() {
 
     // Real WebRTC flow
     if (!vapiInstance) {
-      setToast({ message: 'Vapi Web SDK is initializing, please try again.', type: 'error' });
+      setToast({ message: 'Amira Voice engine is initializing, please try again.', type: 'error' });
       return;
     }
 
@@ -710,7 +710,7 @@ function AgentContent() {
         setCustomVoice(newVoiceId);
         setIsCloning(false);
         setIsCloneSuccess(true);
-        setToast({ message: '🎉 Voice successfully cloned at ElevenLabs and ready to speak!', type: 'success' });
+        setToast({ message: '🎉 Voice successfully cloned and ready to speak!', type: 'success' });
       }, 300);
     } else {
       setIsCloning(false);
@@ -797,7 +797,7 @@ function AgentContent() {
         setShowKbInput(false);
         setKbTitle('');
         setKbContent('');
-        setToast({ message: `🎉 '${newDoc.title}' fully indexed in local pgvector & synced at the edge on Vapi!`, type: 'success' });
+        setToast({ message: `🎉 '${newDoc.title}' successfully added to your agent's knowledge!`, type: 'success' });
       }, 300);
     } else {
       setIsTrainingKb(false);
@@ -1182,7 +1182,7 @@ function AgentContent() {
                 <span style={{ fontSize: '24px' }}>🗣️</span>
                 <div>
                   <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--stripe-navy)' }}>
-                    {selectedTemplate.voice === 'josh' ? 'Josh (ElevenLabs)' : selectedTemplate.voice === 'rachel' ? 'Rachel (ElevenLabs)' : 'Nova (OpenAI)'}
+                    {selectedTemplate.voice === 'josh' ? 'Josh (Warm Male)' : selectedTemplate.voice === 'rachel' ? 'Rachel (Executive Female)' : 'Nova (Friendly)'}
                   </div>
                   <div style={{ fontSize: '12px', color: 'var(--stripe-muted)' }}>Professional, ultra-realistic voice model</div>
                 </div>
@@ -1398,11 +1398,9 @@ function AgentContent() {
                     onChange={(e) => { setFilterProvider(e.target.value); setVoicePage(1); }}
                     style={{ width: '100%', padding: '0.35rem 0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px', fontSize: '11px', color: 'var(--stripe-navy)', backgroundColor: '#fff', fontWeight: 500 }}
                   >
-                    <option value="All">All Providers</option>
-                    <option value="ElevenLabs">ElevenLabs</option>
-                    <option value="OpenAI">OpenAI</option>
-                    <option value="PlayHT">PlayHT</option>
-                    <option value="Cartesia">Cartesia</option>
+                    <option value="All">All Voice Types</option>
+                    <option value="Amira Natural">Amira Natural Voice</option>
+                    <option value="Amira Clear">Amira Clear HD</option>
                   </select>
                 </div>
 
@@ -1604,7 +1602,7 @@ function AgentContent() {
                       onClick={() => setShowCrawlerModal(true)}
                       style={{ borderColor: '#10b981', color: '#10b981', fontSize: '11px', padding: '0.35rem 0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
                     >
-                      🌐 Train from Website URL (Apify)
+                      🌐 Train from Website URL
                     </Button>
                     <Button 
                       type="button" 
@@ -1945,7 +1943,7 @@ function AgentContent() {
                   <div>
                     <span style={{ fontSize: '11px', color: 'var(--stripe-muted)' }}>Voice Profile</span>
                     <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--stripe-navy)' }}>
-                      {voices.find(v => v.id === customVoice)?.name || 'Rachel'} ({voices.find(v => v.id === customVoice)?.provider || 'ElevenLabs'})
+                      {voices.find(v => v.id === customVoice)?.name || 'Rachel'} (Amira Voice)
                     </div>
                   </div>
                   <div>
@@ -2531,7 +2529,7 @@ function AgentContent() {
             ...prev,
             {
               title: `${domain}_Website_Knowledge.md`,
-              content: `Crawled ${result.pagesCrawled} pages from https://${domain} via Apify Content Crawler.`,
+              content: `Crawled ${result.pagesCrawled} pages from https://${domain} via Website Reader.`,
             },
           ]);
           setToast({

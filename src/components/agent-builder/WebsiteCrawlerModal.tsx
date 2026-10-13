@@ -30,10 +30,10 @@ export function WebsiteCrawlerModal({
 
     setLoading(true);
     setError(null);
-    setCrawlProgress('Initializing Apify Website Content Crawler...');
+    setCrawlProgress('Reading website pages...');
 
-    const timer1 = setTimeout(() => setCrawlProgress('Extracting and cleaning website text to Markdown...'), 2500);
-    const timer2 = setTimeout(() => setCrawlProgress('Vectorizing embeddings and synchronizing with Vapi RAG...'), 5500);
+    const timer1 = setTimeout(() => setCrawlProgress('Extracting and organizing website text...'), 2500);
+    const timer2 = setTimeout(() => setCrawlProgress('Saving knowledge to your Amira agent...'), 5500);
 
     try {
       const res = await crawlAndTrainFromWebsite(url, maxPages, assistantId);

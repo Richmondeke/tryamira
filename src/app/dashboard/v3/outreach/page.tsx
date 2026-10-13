@@ -284,7 +284,7 @@ export default function AmiraOutreachTrackerPage() {
                   </span>
                 </div>
                 <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', margin: '0.15rem 0 0 0' }}>
-                  Strategy: <strong>{activeProspect.hookUsed}</strong> | Voice: <strong>[ElevenLabs] Rachel</strong>
+                  Strategy: <strong>{activeProspect.hookUsed}</strong> | Voice: <strong>Amira Voice (Rachel)</strong>
                 </p>
               </div>
             </div>

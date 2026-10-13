@@ -560,9 +560,6 @@ export default function V3CallsPage() {
               + Deploy Voice Agent
             </Link>
           </div>
-          <p style={{ fontSize: '11.5px', color: '#1b5a92', marginTop: '1rem', fontWeight: 600 }}>
-            💡 Tip: Click &quot;✨ Demo Mode: ON&quot; in the header to simulate sample call recordings and audio transcripts.
-          </p>
         </div>
       ) : (
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(320px, 390px) 1fr', gap: '1.5rem', alignItems: 'start' }}>

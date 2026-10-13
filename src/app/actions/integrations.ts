@@ -218,11 +218,16 @@ export async function getComposioStatus() {
     let items = json.items || [];
 
     const mapped = items.map((conn: any) => ({
-      provider: conn.toolkit?.slug || conn.appName?.toLowerCase(),
-      status: conn.status?.toLowerCase() === 'active' ? 'active' : 'inactive'
+      provider: (conn.appName || conn.appUniqueId || '').toLowerCase(),
+      status: conn.status === 'ACTIVE' ? 'active' : 'inactive',
+      connectedAt: conn.createdAt || new Date().toISOString()
     }));
 
-    return { success: true, data: mapped };
+    const activeApps = mapped
+      .filter((conn: any) => conn.status === 'active')
+      .map((conn: any) => conn.provider);
+
+    return { success: true, data: mapped, activeApps };
   } catch (err: any) {
     console.error('Error fetching integration status:', err?.message || err);
     return { success: false, error: err.message || 'Failed to fetch status' };

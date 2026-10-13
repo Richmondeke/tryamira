@@ -312,7 +312,7 @@ export default function CallLogsTable({ initialCalls }: { initialCalls: CallReco
             {initialCalls.length === 0 ? (
               <tr>
                 <td colSpan={6} style={{ padding: '3rem', textAlign: 'center', color: 'var(--stripe-muted)', fontSize: '13px' }}>
-                  No calls recorded yet. Make a call through your Vapi agent to see logs here.
+                  No calls recorded yet. Make a call through your Amira agent to see call history here.
                 </td>
               </tr>
             ) : (
@@ -613,28 +613,25 @@ export default function CallLogsTable({ initialCalls }: { initialCalls: CallReco
                       lineHeight: 1.55
                     }}>
                       <div style={{ fontWeight: 700, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px', color: '#b45309', marginBottom: '0.75rem' }}>
-                        ⚠️ Telephony Connection Handshake Failed
+                        ⚠️ Call Connection Issue
                       </div>
                       <p style={{ margin: '0 0 1rem 0' }}>
-                        Vapi reported an error establishing the phone trunk connection to the remote gateway. The handshake terminated prematurely:
+                        Amira could not establish a connection to this phone line:
                         <strong style={{ display: 'block', backgroundColor: '#fef3c7', border: '1px solid #fde68a', padding: '8px 12px', borderRadius: '6px', fontFamily: 'monospace', marginTop: '8px', wordBreak: 'break-all', fontSize: '11px', color: '#78350f' }}>
-                          {selectedCall.endedReason || 'Call.Start.Error Get Phone Number'}
+                          {selectedCall.endedReason || 'Call could not connect'}
                         </strong>
                       </p>
                       
-                      <div style={{ fontWeight: 700, color: '#b45309', marginBottom: '0.5rem' }}>Troubleshooting Nigerian +234 Local Numbers (MTN/Glo):</div>
+                      <div style={{ fontWeight: 700, color: '#b45309', marginBottom: '0.5rem' }}>Helpful Checks:</div>
                       <ul style={{ paddingLeft: '1.25rem', margin: '0 0 1rem 0', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <li>
-                          <strong>SIP Trunk Authentication:</strong> Ensure your local MTN E1/SIP Trunk credentials are fully configured on Vapi or proxy mapping servers.
+                          <strong>Phone Number Format:</strong> Make sure the number includes the country code (for example, +1 for US or +234 for Nigeria).
                         </li>
                         <li>
-                          <strong>IP Whitelisting:</strong> Check if MTN requires the Vapi outbound termination IP addresses to be explicitly whitelisted on your enterprise SBC firewall.
+                          <strong>Active Line:</strong> Verify that the phone number is active and able to receive calls.
                         </li>
                         <li>
-                          <strong>Caller ID Mapping:</strong> Confirm that the dialer is outbound routing via E.164 standard formatting (e.g. <code>+234803XXXXXXX</code>).
-                        </li>
-                        <li>
-                          <strong>BYOT Trunk Connection:</strong> If renting local gateways, verify that the Session Initiation Protocol handshakes respond with <code>200 OK</code> status.
+                          <strong>Outbound Calling:</strong> Ensure your account has permission to place outbound calls to this destination.
                         </li>
                       </ul>
                       
@@ -980,7 +977,7 @@ export default function CallLogsTable({ initialCalls }: { initialCalls: CallReco
                   </div>
                 </div>
 
-                {/* Vapi Telemetry Multi-Tabbed Diagnostics Board */}
+                {/* Call Diagnostics & Performance Board */}
                 <div>
                   <div style={{ display: 'flex', borderBottom: '1px solid var(--stripe-border)', marginBottom: '0.75rem', gap: '12px' }}>
                     {(['overview', 'sip', 'ai_engine'] as const).map((tab) => (
@@ -1053,42 +1050,42 @@ export default function CallLogsTable({ initialCalls }: { initialCalls: CallReco
                     {activeTelemetryTab === 'sip' && (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span style={{ color: 'var(--stripe-muted)' }}>Trunk Provider</span>
+                          <span style={{ color: 'var(--stripe-muted)' }}>Voice Network</span>
                           <span style={{ fontWeight: 700, color: 'var(--stripe-navy)' }}>
-                            {selectedCall.telemetry?.sipProvider || (selectedCall.endedReason?.toLowerCase().includes('error') ? 'None (Trunk Mismatch)' : 'Vapi Outbound Gateway')}
+                            {selectedCall.telemetry?.sipProvider || (selectedCall.endedReason?.toLowerCase().includes('error') ? 'None (Connection Error)' : 'Amira Voice Network')}
                           </span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span style={{ color: 'var(--stripe-muted)' }}>Local E1 Trunk</span>
+                          <span style={{ color: 'var(--stripe-muted)' }}>Connected Line</span>
                           <span style={{ fontWeight: 700, color: 'var(--stripe-navy)', fontFamily: 'monospace' }}>
-                            {selectedCall.telemetry?.localNumber || (selectedCall.endedReason?.toLowerCase().includes('error') ? '—' : '+234 803 MTN LOCAL')}
+                            {selectedCall.telemetry?.localNumber || (selectedCall.endedReason?.toLowerCase().includes('error') ? '—' : '+234 Local Line')}
                           </span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span style={{ color: 'var(--stripe-muted)' }}>SIP Response</span>
+                          <span style={{ color: 'var(--stripe-muted)' }}>Connection Status</span>
                           <span style={{ 
                             fontWeight: 700, 
                             color: selectedCall.telemetry?.sipCode === 200 || !selectedCall.endedReason?.toLowerCase().includes('error') ? '#10b981' : '#dc2626'
                           }}>
-                            {selectedCall.telemetry?.sipCode || (selectedCall.endedReason?.toLowerCase().includes('error') ? '503 Service Unavailable' : '200 OK')}
+                            {selectedCall.telemetry?.sipCode || (selectedCall.endedReason?.toLowerCase().includes('error') ? 'Connection Failed' : '200 OK')}
                           </span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span style={{ color: 'var(--stripe-muted)' }}>Network Latency</span>
+                          <span style={{ color: 'var(--stripe-muted)' }}>Response Speed</span>
                           <span style={{ fontWeight: 700, color: 'var(--stripe-navy)' }}>
                             {selectedCall.telemetry?.latencyMs ? `${selectedCall.telemetry.latencyMs}ms` : selectedCall.endedReason?.toLowerCase().includes('error') ? '—' : '210ms'}
                           </span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span style={{ color: 'var(--stripe-muted)' }}>Audio Jitter</span>
+                          <span style={{ color: 'var(--stripe-muted)' }}>Audio Quality</span>
                           <span style={{ fontWeight: 700, color: 'var(--stripe-navy)' }}>
-                            {selectedCall.telemetry?.jitterMs ? `${selectedCall.telemetry.jitterMs}ms` : selectedCall.endedReason?.toLowerCase().includes('error') ? '—' : '8ms'}
+                            {selectedCall.telemetry?.jitterMs ? `${selectedCall.telemetry.jitterMs}ms` : selectedCall.endedReason?.toLowerCase().includes('error') ? '—' : 'HD (Clear)'}
                           </span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span style={{ color: 'var(--stripe-muted)' }}>Packet Loss</span>
+                          <span style={{ color: 'var(--stripe-muted)' }}>Signal Stability</span>
                           <span style={{ fontWeight: 700, color: 'var(--stripe-navy)' }}>
-                            {selectedCall.telemetry?.packetLossPct !== undefined ? `${selectedCall.telemetry.packetLossPct}%` : selectedCall.endedReason?.toLowerCase().includes('error') ? '—' : '0.0%'}
+                            {selectedCall.telemetry?.packetLossPct !== undefined ? `${selectedCall.telemetry.packetLossPct}%` : selectedCall.endedReason?.toLowerCase().includes('error') ? '—' : '100%'}
                           </span>
                         </div>
                       </div>
@@ -1097,21 +1094,21 @@ export default function CallLogsTable({ initialCalls }: { initialCalls: CallReco
                     {activeTelemetryTab === 'ai_engine' && (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span style={{ color: 'var(--stripe-muted)' }}>LLM Core Model</span>
+                          <span style={{ color: 'var(--stripe-muted)' }}>AI Model</span>
                           <span style={{ fontWeight: 700, color: 'var(--stripe-navy)' }}>
-                            {selectedCall.telemetry?.model || 'GPT-4o (Vapi Edge)'}
+                            {selectedCall.telemetry?.model || 'Amira Voice Engine'}
                           </span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span style={{ color: 'var(--stripe-muted)' }}>STT Transcriber</span>
+                          <span style={{ color: 'var(--stripe-muted)' }}>Speech Recognition</span>
                           <span style={{ fontWeight: 700, color: 'var(--stripe-navy)' }}>
-                            {selectedCall.telemetry?.stt || 'Deepgram Nova-2'}
+                            {selectedCall.telemetry?.stt || 'Amira Speech Engine'}
                           </span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span style={{ color: 'var(--stripe-muted)' }}>TTS voice synthesizer</span>
+                          <span style={{ color: 'var(--stripe-muted)' }}>Voice Synthesis</span>
                           <span style={{ fontWeight: 700, color: 'var(--stripe-navy)' }}>
-                            {selectedCall.telemetry?.tts || 'PlayHT Jennifer'}
+                            {selectedCall.telemetry?.tts || 'Amira Natural Voice'}
                           </span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed #e2e8f0', paddingTop: '0.4rem', marginTop: '0.2rem' }}>

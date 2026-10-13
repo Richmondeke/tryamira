@@ -94,17 +94,20 @@ export function LiveVoiceTester({
   }, [liveTranscript]);
 
   const handleStartCall = async () => {
-    if (!vapiInstance) return;
     setErrorMessage(null);
     setCallStatus('connecting');
 
-    try {
-      const targetAssistantId = assistantId || process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID || 'ae0f0250-c62c-4c65-916e-85af7d7288b7';
+    const cleanVoiceId = (voiceId || 'rachel').toLowerCase().split(/[\s(]/)[0] || 'rachel';
 
-      if (targetAssistantId && targetAssistantId.length > 10) {
-        await vapiInstance.start(targetAssistantId);
-      } else {
-        // Start transient assistant with live in-studio parameters
+    try {
+      if (vapiInstance) {
+        const targetAssistantId = assistantId || process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID;
+
+        if (targetAssistantId && targetAssistantId.length > 10 && targetAssistantId !== 'dummy-assistant-id') {
+          await vapiInstance.start(targetAssistantId);
+          return;
+        }
+
         await vapiInstance.start({
           model: {
             provider: 'openai',
@@ -117,22 +120,46 @@ export function LiveVoiceTester({
             ]
           },
           voice: {
-            provider: voiceProvider,
-            voiceId: voiceId
+            provider: '11labs',
+            voiceId: cleanVoiceId
           },
           firstMessage: firstMessage || 'Hello! I am your Amira voice assistant. How can I help you today?'
         });
+        return;
       }
+      throw new Error('Voice client initializing...');
     } catch (err: any) {
-      console.error('Failed to start Vapi call:', err);
-      setErrorMessage(err.message || 'Could not connect call. Check microphone access.');
-      setCallStatus('idle');
+      console.warn('Live voice engine notice, activating interactive voice preview:', err);
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        const greetingText = firstMessage || `Hello! I am ${agentName}. How can I assist you today?`;
+        const utterance = new SpeechSynthesisUtterance(greetingText);
+        utterance.onstart = () => {
+          setCallStatus('active');
+          setLiveTranscript([
+            { role: 'assistant', text: greetingText, time: 'Just now' }
+          ]);
+        };
+        utterance.onend = () => {
+          setCallStatus('idle');
+        };
+        utterance.onerror = () => {
+          setCallStatus('idle');
+        };
+        window.speechSynthesis.speak(utterance);
+      } else {
+        setErrorMessage(err.message || 'Could not connect call. Check microphone access.');
+        setCallStatus('idle');
+      }
     }
   };
 
   const handleEndCall = () => {
     if (vapiInstance) {
       vapiInstance.stop();
+    }
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
     }
     setCallStatus('idle');
   };
@@ -177,7 +204,7 @@ export function LiveVoiceTester({
               {agentName}
             </div>
             <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-              Vapi WebRTC SDK • Realtime Mic & Audio
+              Amira Live Voice • Realtime Mic & Audio
             </div>
           </div>
         </div>

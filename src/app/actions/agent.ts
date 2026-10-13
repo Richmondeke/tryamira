@@ -1038,10 +1038,11 @@ export async function updateAgent(id: string, config: any) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
+    const agentName = config.name || config.agentName || 'Amira Agent';
     const { error } = await supabase
       .from('workspace_agents')
       .update({ 
-        name: config.agentName,
+        name: agentName,
         config,
         updated_at: new Date().toISOString()
       })
@@ -1057,9 +1058,9 @@ export async function updateAgent(id: string, config: any) {
         await supabase.from('notifications').insert({
           workspace_id: user.id,
           type: 'agent_updated',
-          title: `AI Agent "${config.agentName || 'Agent'}" configuration saved`,
+          title: `AI Agent "${agentName}" configuration saved`,
           body: 'Personality, system prompt, and voice settings have been updated.',
-          metadata: { agent_id: id, agent_name: config.agentName },
+          metadata: { agent_id: id, agent_name: agentName },
           read: false,
         });
       } catch { /* non-fatal */ }

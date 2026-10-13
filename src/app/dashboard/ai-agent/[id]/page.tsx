@@ -406,7 +406,7 @@ export default function AgentBuilderPage() {
 
     // Real WebRTC flow
     if (!vapiInstance) {
-      setToast('Vapi Web SDK is initializing, please try again.');
+      setToast('Amira Voice engine is initializing, please try again.');
       return;
     }
 
@@ -667,7 +667,7 @@ export default function AgentBuilderPage() {
         setShowCloneModal(false);
         setClonedVoiceName('');
         setClonedVoiceFile(null);
-        setToast('🎉 Voice successfully cloned at ElevenLabs and ready to speak!');
+        setToast('🎉 Voice successfully cloned and ready to speak!');
       }, 300);
     } else {
       setIsCloning(false);
@@ -755,7 +755,7 @@ export default function AgentBuilderPage() {
         setShowKbInput(false);
         setKbTitle('');
         setKbContent('');
-        setToast(`🎉 '${newDoc.title}' fully indexed in local pgvector & synced at the edge on Vapi!`);
+        setToast(`🎉 '${newDoc.title}' successfully added to your agent's knowledge!`);
       }, 300);
     } else {
       setIsTrainingKb(false);
@@ -1056,11 +1056,9 @@ export default function AgentBuilderPage() {
                     onChange={(e) => { setFilterProvider(e.target.value); setVoicePage(1); }}
                     style={{ width: '100%', padding: '0.35rem 0.5rem', border: '1px solid var(--stripe-border)', borderRadius: '4px', fontSize: '11px', color: 'var(--stripe-navy)', backgroundColor: '#fff', fontWeight: 500 }}
                   >
-                    <option value="All">All Providers</option>
-                    <option value="ElevenLabs">ElevenLabs</option>
-                    <option value="OpenAI">OpenAI</option>
-                    <option value="PlayHT">PlayHT</option>
-                    <option value="Cartesia">Cartesia</option>
+                    <option value="All">All Voice Types</option>
+                    <option value="Amira Natural">Amira Natural Voice</option>
+                    <option value="Amira Clear">Amira Clear HD</option>
                   </select>
                 </div>
 

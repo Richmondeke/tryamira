@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useDemoMode } from '@/contexts/DemoModeContext';
-import { getVapiPhoneNumbers } from '@/app/actions/vapi';
+import { getVapiPhoneNumbers, purchaseWorkspacePhoneNumber } from '@/app/actions/vapi';
 
 interface PhoneLine {
   flag: string;
@@ -21,6 +21,7 @@ export default function V3PhonePage() {
   const [selectedCountry, setSelectedCountry] = useState('United States');
   const [liveNumbers, setLiveNumbers] = useState<PhoneLine[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isPurchasing, setIsPurchasing] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -49,7 +50,7 @@ export default function V3PhonePage() {
         if (Array.isArray(data) && data.length > 0) {
           setLiveNumbers(data.map((item: any) => ({
             flag: '🌐',
-            country: 'Global Line',
+            country: item.country || 'Global Line',
             num: item.number || item.phoneNumber || 'Bound Number',
             agent: item.assistant?.name || item.assistantId || 'Amira — Executive Voice Ambassador',
             provider: 'Amira Phone Route',
@@ -72,13 +73,13 @@ export default function V3PhonePage() {
     { flag: '🇧🇷', country: 'Brazil', num: '+55 11 99999-9999', agent: 'Retention Expert', provider: 'Amira Phone Line', status: '🟢 Active', mode: 'Inbound Phone Assistant', greeting: 'Olá! How can I help with your account?' },
   ];
 
-  const [numbersList, setNumbersList] = useState<PhoneLine[]>(demoNumbers);
+  const [numbersList, setNumbersList] = useState<PhoneLine[]>([]);
 
   useEffect(() => {
-    if (!isDemoMode && liveNumbers.length > 0) {
-      setNumbersList(liveNumbers);
-    } else if (isDemoMode) {
+    if (isDemoMode) {
       setNumbersList(demoNumbers);
+    } else {
+      setNumbersList(liveNumbers);
     }
   }, [isDemoMode, liveNumbers]);
 
@@ -102,36 +103,46 @@ export default function V3PhonePage() {
     } : l));
 
     setActiveModal(null);
-    alert(`✅ Phone line ${selectedLine.num} successfully configured and bound to agent "${configAgent}"!`);
   };
 
-  const handleBuyNumber = (e: React.FormEvent) => {
+  const handleBuyNumber = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsPurchasing(true);
 
-    const flagMap: Record<string, string> = {
-      'United States': '🇺🇸',
-      'United Kingdom': '🇬🇧',
-      'Nigeria': '🇳🇬',
-      'Kenya': '🇰🇪',
-      'India': '🇮🇳',
-      'Brazil': '🇧🇷',
-      'Canada': '🇨🇦'
-    };
+    try {
+      const res = await purchaseWorkspacePhoneNumber(buyCountry, buyAgent);
+      const phoneData = res?.data || (res as any);
+      if (phoneData) {
+        const flagMap: Record<string, string> = {
+          'United States': '🇺🇸',
+          'United Kingdom': '🇬🇧',
+          'Nigeria': '🇳🇬',
+          'Kenya': '🇰🇪',
+          'India': '🇮🇳',
+          'Brazil': '🇧🇷',
+          'Canada': '🇨🇦'
+        };
 
-    const newNum: PhoneLine = {
-      flag: flagMap[buyCountry] || '🌐',
-      country: buyCountry,
-      num: `+1 (${Math.floor(200 + Math.random() * 700)}) ${Math.floor(100 + Math.random() * 900)}-${Math.floor(1000 + Math.random() * 9000)}`,
-      agent: buyAgent,
-      provider: 'Amira Phone Line',
-      status: '🟢 Active',
-      mode: 'Inbound Phone Assistant',
-      greeting: `Hello! Thanks for calling. ${buyAgent} is ready to assist you.`
-    };
+        const newNum: PhoneLine = {
+          flag: phoneData.flag || flagMap[buyCountry] || '🌐',
+          country: phoneData.country || buyCountry,
+          num: phoneData.number || phoneData.phoneNumber || `+1 (${Math.floor(200 + Math.random() * 700)}) ${Math.floor(100 + Math.random() * 900)}-${Math.floor(1000 + Math.random() * 9000)}`,
+          agent: phoneData.agent || buyAgent,
+          provider: 'Amira Phone Line',
+          status: '🟢 Active',
+          mode: 'Inbound Phone Assistant',
+          greeting: phoneData.greeting || `Hello! Thanks for calling. ${buyAgent} is ready to assist you.`
+        };
 
-    setNumbersList([newNum, ...numbersList]);
-    setActiveModal(null);
-    alert(`🎉 New phone number ${newNum.num} (${buyCountry}) successfully provisioned!`);
+        setNumbersList(prev => [newNum, ...prev]);
+        setActiveModal(null);
+      }
+    } catch (err: any) {
+      console.error('Error buying number:', err);
+      alert('Could not connect phone line right now. Please try again.');
+    } finally {
+      setIsPurchasing(false);
+    }
   };
 
   return (
@@ -362,7 +373,9 @@ export default function V3PhonePage() {
 
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
                 <button type="button" onClick={() => setActiveModal(null)} style={{ padding: '0.55rem 1rem', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'transparent', color: 'var(--text-secondary)', fontSize: '12.5px', cursor: 'pointer' }}>Cancel</button>
-                <button type="submit" style={{ padding: '0.55rem 1.25rem', borderRadius: '8px', border: 'none', backgroundColor: '#10b981', color: '#ffffff', fontSize: '12.5px', fontWeight: 700, cursor: 'pointer' }}>Provision Phone Line</button>
+                <button type="submit" disabled={isPurchasing} style={{ padding: '0.55rem 1.25rem', borderRadius: '8px', border: 'none', backgroundColor: '#10b981', color: '#ffffff', fontSize: '12.5px', fontWeight: 700, cursor: isPurchasing ? 'not-allowed' : 'pointer', opacity: isPurchasing ? 0.7 : 1 }}>
+                  {isPurchasing ? 'Connecting Phone Line...' : 'Provision Phone Line'}
+                </button>
               </div>
             </form>
           </div>
